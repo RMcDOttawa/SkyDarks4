@@ -1,0 +1,934 @@
+JFDML JFormDesigner: "7.0.0.6.255" Java: "11.0.5" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class java.awt.GridLayout ) ) {
+			name: "this"
+			"minimumSize": new java.awt.Dimension( 800, 600 )
+			add( new FormContainer( "javax.swing.JTabbedPane", new FormLayoutManager( class javax.swing.JTabbedPane ) ) {
+				name: "mainTabFrame"
+				"preferredSize": new java.awt.Dimension( 800, 600 )
+				addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "mainTabFrameStateChanged", true ) )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "hidemode 3,alignx center"
+					"$columnConstraints": "[331,grow,fill]para[330:332,grow,fill]"
+					"$rowConstraints": "[]unrel[]para[]"
+				} ) {
+					name: "startEndTab"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label1"
+						"text": "Session Start and End"
+						"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0 2 1,alignx center,growx 0"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "fill,insets 4 4 4 16,hidemode 3,align left top,gap 4 4"
+						"$columnConstraints": "[47,left][115,grow,left][grow,fill]"
+						"$rowConstraints": "[][][grow,fill][][][grow,fill]"
+					} ) {
+						name: "panel6"
+						"border": &LineBorder0 new javax.swing.border.LineBorder( sfield java.awt.Color black, 1, false )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label2"
+							"text": "Session Start"
+							"font": &Font0 new java.awt.Font( "Lucida Grande", 0, 18 )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 0 3 1"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label3"
+							"text": "Day"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 2"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startDateNowButton"
+							"text": "Now"
+							"toolTipText": "Start acquisition as soon as Proceed is clicked (on Run Session tab)"
+							"$buttonGroup": new FormReference( "startDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startDateNowButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 2 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startDateTodayButton"
+							"text": "Today"
+							"toolTipText": "Start later today, at the time given below."
+							"$buttonGroup": new FormReference( "startDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startDateTodayButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 3 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startDateGivenButton"
+							"text": "This Date:"
+							"minimumSize": new java.awt.Dimension( 48, 23 )
+							"toolTipText": "Start on this future date, at the time given below."
+							"$buttonGroup": new FormReference( "startDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startDateGivenButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 4"
+						} )
+						add( new FormComponent( "com.github.lgooddatepicker.components.DatePicker" ) {
+							name: "startDatePicker"
+							"settings": sfield com.jformdesigner.model.FormObject NULL_VALUE
+							"font": new java.awt.Font( "Lucida Grande", 0, 12 )
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "startDatePickerPropertyChange", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 4"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label4"
+							"text": "Time"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 5"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startSunsetButton"
+							"text": "Sunset"
+							"toolTipText": "Start at sunset on the specified day."
+							"$buttonGroup": new FormReference( "startTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startSunsetButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 5 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startCivilButton"
+							"text": "Civil Dusk"
+							"toolTipText": "Start at civil dusk on the specified day."
+							"$buttonGroup": new FormReference( "startTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startCivilButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 6 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startNauticalButton"
+							"text": "Nautical Dusk"
+							"toolTipText": "Start at nautical dusk on the specified day."
+							"$buttonGroup": new FormReference( "startTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startNauticalButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 7 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startAstronomicalButton"
+							"text": "Astronomical Dusk"
+							"toolTipText": "Start at astronomical dusk on the specified day."
+							"$buttonGroup": new FormReference( "startTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startAstronomicalButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 8 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "startGivenTimeButton"
+							"text": "This Time:"
+							"minimumSize": new java.awt.Dimension( 48, 23 )
+							"toolTipText": "Start at the given time on the specified day."
+							"$buttonGroup": new FormReference( "startTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "startGivenTimeButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 9"
+						} )
+						add( new FormComponent( "com.github.lgooddatepicker.components.TimePicker" ) {
+							name: "startTimePicker"
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "startTimePickerPropertyChange", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 9"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1,aligny top,growy 0"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "fill,insets 4 16 4 4,hidemode 3,align left top,gap 4 4"
+						"$columnConstraints": "[43,left][fill][grow,fill]"
+						"$rowConstraints": "[][][grow,fill][][][grow,fill][][][][]"
+					} ) {
+						name: "panel5"
+						"border": #LineBorder0
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label8"
+							"text": "Session End"
+							"font": #Font0
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 0 3 1"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label6"
+							"text": "Day"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 2"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endDateDoneButton"
+							"text": "When Done"
+							"toolTipText": "Run until all frames are acquired, no matter how long that takes."
+							"$buttonGroup": new FormReference( "endDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endDateDoneButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 2 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endDateTodayButton"
+							"text": "Today / Tomorrow"
+							"toolTipText": "Stop today or tomorrow at the time specified below. (Tomorrow if that time has passed today.)"
+							"$buttonGroup": new FormReference( "endDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endDateTodayButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 3 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endDateGivenButton"
+							"text": "This Date:"
+							"toolTipText": "Stop on this future date, at the time specified below."
+							"$buttonGroup": new FormReference( "endDayRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endDateGivenButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 4"
+						} )
+						add( new FormComponent( "com.github.lgooddatepicker.components.DatePicker" ) {
+							name: "endDatePicker"
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "endDatePickerPropertyChange", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 4"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label7"
+							"text": "Time"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 5"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endSunriseButton"
+							"text": "Sunrise"
+							"toolTipText": "Stop at sunrise on the date given above."
+							"$buttonGroup": new FormReference( "endTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endSunriseButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 5 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endCivilButton"
+							"text": "Civil Dawn"
+							"toolTipText": "Stop at civil dawn on the date given above."
+							"$buttonGroup": new FormReference( "endTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endCivilButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 6 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endNauticalButton"
+							"text": "Nautical Dawn"
+							"toolTipText": "Stop at nautical dawn on the date given above."
+							"$buttonGroup": new FormReference( "endTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endNauticalButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 7 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endAstronomicalButton"
+							"text": "Astronomical Dawn"
+							"toolTipText": "Stop at astronomical dawn on the date given above."
+							"$buttonGroup": new FormReference( "endTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endAstronomicalButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 8 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JRadioButton" ) {
+							name: "endGivenTimeButton"
+							"text": "This Time:"
+							"toolTipText": "Stop at the given time on the date given above."
+							"$buttonGroup": new FormReference( "endTimeRadioGroup" )
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "endGivenTimeButtonActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 9"
+						} )
+						add( new FormComponent( "com.github.lgooddatepicker.components.TimePicker" ) {
+							name: "endTimePicker"
+							addEvent( new FormEvent( "java.beans.PropertyChangeListener", "propertyChange", "endTimePickerPropertyChange", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 9"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 1,aligny top,growy 0"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "fill,insets 04 4 4 16,hidemode 3,align left top,gap 4 4"
+						"$columnConstraints": "[fill][grow,fill]"
+						"$rowConstraints": "[grow,fill][][][][][]"
+					} ) {
+						name: "panel3"
+						"border": #LineBorder0
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label9"
+							"text": "Location (for Dusk/Dawn Calculation)"
+							"font": #Font0
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 0 2 1"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label11"
+							"text": "Name: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 2"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "locationName"
+							"toolTipText": "Arbitrary name for this site"
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "locationNameActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 2"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label13"
+							"text": "Time Zone: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 3"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "timeZoneOffset"
+							"toolTipText": "Time zone as offset from UTC.  e.g. EST = -5"
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "timeZoneOffsetActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 3"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label12"
+							"text": "Latitude: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 4"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "latitude"
+							"toolTipText": "Latitude of observing site."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "latitudeActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 4"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label10"
+							"text": "Longitude: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 5"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "longitude"
+							"toolTipText": "Longitude of observing site."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "longitudeActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 5"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 2,aligny top,growy 0"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "fill,insets 04 16 4 4,hidemode 3,align left top,gap 4 4"
+						"$columnConstraints": "[fill][grow,fill][fill]"
+						"$rowConstraints": "[grow,fill][][][][][]"
+					} ) {
+						name: "panel4"
+						"border": #LineBorder0
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label14"
+							"text": "When Done"
+							"font": #Font0
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 0"
+						} )
+						add( new FormComponent( "javax.swing.JCheckBox" ) {
+							name: "warmUpCheckbox"
+							"text": "Warm up CCD for "
+							"toolTipText": "When finished, turn off CCD cooling so it can warm up gently."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "warmUpCheckboxActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 2"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "warmUpSeconds"
+							"toolTipText": "How long to leave CCD warming up before disconnecting."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "warmUpSecondsActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 2"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label15"
+							"text": "seconds"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 2"
+						} )
+						add( new FormComponent( "javax.swing.JCheckBox" ) {
+							name: "disconnectCheckbox"
+							"text": "Disconnect Camera (after warmup)"
+							"toolTipText": "Disconnect camera when done."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "disconnectCheckboxActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 3 3 1"
+						} )
+						add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+							name: "vSpacer6"
+							"preferredSize": new java.awt.Dimension( 10, 36 )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 5 3 1"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 2,aligny top,growy 0"
+					} )
+				}, new FormLayoutConstraints( null ) {
+					"title": "Start/End"
+					"toolTipText": "Controls when the data acquisition starts and ends."
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "hidemode 3,alignx center"
+					"$columnConstraints": "[75,fill][label]"
+					"$rowConstraints": "[]para"
+				} ) {
+					name: "temperatureTab"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$columnConstraints": "[56,fill][grow,fill][left][68,grow,fill][614,fill]"
+						"$rowConstraints": "[]para[][][][][][][][]"
+						"$layoutConstraints": "hidemode 3,alignx center"
+					} ) {
+						name: "panel1"
+						"border": new javax.swing.border.LineBorder( sfield java.awt.Color black, 1, false )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label5"
+							"text": "Camera Temperature Settings"
+							"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 0 3 1,alignx center,growx 0"
+						} )
+						add( new FormComponent( "javax.swing.JCheckBox" ) {
+							name: "temperatureRegulatedCheckbox"
+							"text": "Camera is temperature-regulated"
+							"toolTipText": "Camera is temperature-controlled and should be set as specified below."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "temperatureRegulatedCheckboxActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 1 3 1"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label16"
+							"text": "Target Temperature: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 2"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "targetTemperature"
+							"minimumSize": new java.awt.Dimension( 100, 26 )
+							"toolTipText": "Target temperature setpoint for camera."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "targetTemperatureActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 2"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label17"
+							"text": "° C"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 2"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label18"
+							"text": "Within +/-:"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 3"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "temperatureWithin"
+							"toolTipText": "How close to target is good enough to begin session?"
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "temperatureWithinActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 3"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label23"
+							"text": "° C"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 3"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label19"
+							"text": "Cooling Check Interval: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 4"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "coolingCheckInterval"
+							"toolTipText": "While cooling, check camera temperature this often."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingCheckIntervalActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 4"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label24"
+							"text": "seconds"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 4"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label20"
+							"text": "Max Time to Try Cooling: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 5"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "coolingTimeout"
+							"toolTipText": "If camera doesn't reach target temperature in this time, assume it never will."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingTimeoutActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 5"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label25"
+							"text": "seconds"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 5"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label21"
+							"text": "Cooling Retry Count: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 6"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "coolingRetryCount"
+							"toolTipText": "If camera fails to reach target temperature, wait a bit and retry this many times."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingRetryCountActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 6"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label26"
+							"text": "times"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 6"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label22"
+							"text": "Cooling Retry Delay: "
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 7"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "coolingRetryDelay"
+							"toolTipText": "How long to wait after a failed cooling attempt."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingRetryDelayActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 7"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label27"
+							"text": "seconds"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 7"
+						} )
+						add( new FormComponent( "javax.swing.JCheckBox" ) {
+							name: "abortOnTempRiseCheckbox"
+							"text": "Abort if Temp Rises: "
+							"toolTipText": "If temperature rises above target durring acquisition, abort the session."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "abortOnTempRiseCheckboxActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 8"
+						} )
+						add( new FormComponent( "javax.swing.JTextField" ) {
+							name: "abortOnTempRiseThreshold"
+							"toolTipText": "How much temperature needs to rise to abort session."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "abortOnTempRiseThresholdActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 3 8"
+						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "label28"
+							"text": "° C"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 4 8"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0"
+					} )
+				}, new FormLayoutConstraints( null ) {
+					"title": "Temperature"
+					"toolTipText": "Controls the CCD temperature regulation."
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "hidemode 3,alignx center"
+					"$columnConstraints": "[fill][grow,fill][fill][fill][grow,fill]"
+					"$rowConstraints": "[][33][][][][][][][][]"
+				} ) {
+					name: "serverTab"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label39"
+						"text": "Network Settings"
+						"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0 5 1,alignx center,growx 0"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label29"
+						"text": "Server Address"
+						"font": new java.awt.Font( "Lucida Grande", 0, 18 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 2 2 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label33"
+						"text": "Wake on LAN"
+						"font": new java.awt.Font( "Lucida Grande", 0, 18 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 2 2 1"
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "sendWOLcheckbox"
+						"text": "Send Wake on LAN packet before starting."
+						"toolTipText": "Wake the server some time before starting acquisition."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "sendWOLcheckboxActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 4 2 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label30"
+						"text": "IP Address or Host Name: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 5"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "serverAddress"
+						"toolTipText": "IPv4 address or host name of server."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "serverAddressActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 5"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label34"
+						"text": "Seconds before start to send WOL: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 5"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "wolSecondsBefore"
+						"toolTipText": "How long before acquisition to send the wakeup command."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolSecondsBeforeActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 4 5"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label31"
+						"text": "Port Number: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 6"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "portNumber"
+						"toolTipText": "Port number where TheSkyX is listening."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "portNumberActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 6"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label35"
+						"text": "Server MAC address: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 6"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "wolMacAddress"
+						"toolTipText": "MAC address of computer where TheSkyX runs."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolMacAddressActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 4 6"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label36"
+						"text": "Network broadcast address: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 7"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "wolBroadcastAddress"
+						"toolTipText": "Address to broadcast wakeup to whole LAN. Use 255.255.255.255 except in very special circumstances."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolBroadcastAddressActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 4 7"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "testConnectionButton"
+						"text": "Test Connection"
+						"minimumSize": new java.awt.Dimension( 100, 29 )
+						"toolTipText": "Try to connect to TheSkyX to see if it works."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "testConnectionButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 9,alignx left,growx 0"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label37"
+						"text": "message"
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 9"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "sendWOLbutton"
+						"text": "Send WOL Now"
+						"toolTipText": "Send the Wakeup command now."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "sendWOLbuttonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 9,alignx left,growx 0"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label38"
+						"text": "message"
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 4 9"
+					} )
+				}, new FormLayoutConstraints( null ) {
+					"title": "TheSkyX Server"
+					"toolTipText": "Information for connecting to the TheSkyX server"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+					"$horizontalGroup": "par l {seq {par l {comp scrollPane1::t:::x, seq {par l {seq l {space :9:9:p, comp autosaveCheckbox::::589:x}, seq {space :p:156:p, comp hSpacer1:::p::p, space :1:1:p, comp editFramesetButton:::p::p, space :96:96:p, comp hSpacer2:::p::p, space :1:1:p, comp resetCompletedButton:::p::p, space :1:1:p, comp hSpacer3:::p::p}, seq {space :p:237:p, comp bulkAddButton:::p::p}, seq {space :p:80:p, comp deleteFramesetButton:::p::p}, seq {space :p:10:p, comp addFramesetButton:::p::p}}, space :::p, comp moveUpButton:::p::p, space :::p, comp moveDownButton:::p::p, space :p:1:p}, comp label40::l::767:x}, space :::p}}"
+					"$verticalGroup": "par l {seq {space :p:27:p, comp label40:::p::p, space :::p, comp scrollPane1::::370:x, par l {seq {space :p:4:p, par l {comp editFramesetButton:::p::p, comp resetCompletedButton:::p::p, par b {comp moveDownButton::b:p::p, comp moveUpButton::b:p::p}, comp bulkAddButton:::p::p, comp deleteFramesetButton:::p::p, comp addFramesetButton:::p::p, seq {space :8:8:p, par l {comp hSpacer1:::p:12:p, comp hSpacer2:::p:12:p, comp hSpacer3:::p:12:p}}}}, seq {space :p:30:p, comp autosaveCheckbox:::p::p}}, space :p:12:p}}"
+				} ) {
+					name: "framesPlanTab"
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane1"
+						add( new FormComponent( "javax.swing.JTable" ) {
+							name: "framesetTable"
+							"fillsViewportHeight": true
+							"toolTipText": "The complete set of frames to be acquired, and what has already been completed."
+						} )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "addFramesetButton"
+						"text": "+"
+						"toolTipText": "Add a new frame set above the selected row or to the end of the table."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "addFramesetButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "deleteFramesetButton"
+						"text": "-"
+						"toolTipText": "Remove the selected frame set(s) from the table"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "deleteFramesetButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer1"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "editFramesetButton"
+						"text": "Edit"
+						"toolTipText": "Edit the specification of the selected frame set."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "editFramesetButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "bulkAddButton"
+						"text": "Bulk Add"
+						"toolTipText": "Rapidly add multiple frame sets in a standard pattern."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "bulkAddButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer2"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "resetCompletedButton"
+						"text": "Reset Completed"
+						"toolTipText": "Set all the \"Completed\" counts back to zero, causing all frame sets to be re-acquired."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "resetCompletedButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+						name: "hSpacer3"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "moveUpButton"
+						"text": "Up"
+						"toolTipText": "Move the selected frame set(s) up one row."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "moveUpButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "moveDownButton"
+						"text": "Down"
+						"toolTipText": "Move the selected frame set(s) down one row."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "moveDownButtonActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JCheckBox" ) {
+						name: "autosaveCheckbox"
+						"text": "Auto-save after each completed frame"
+						"toolTipText": "During acquisition, save this plan after each acquired frame."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "autosaveCheckboxActionPerformed", true ) )
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label40"
+						"text": "Frame Sets to be Acquired"
+						"horizontalAlignment": 0
+						"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+					} )
+				}, new FormLayoutConstraints( null ) {
+					"title": "Frames Plan"
+					"toolTipText": "Lists the frames to be acquired, and progress to date."
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "hidemode 3"
+					"$columnConstraints": "[grow,fill][fill][115,grow,fill][grow,fill][fill][fill][fill][grow,fill][fill][fill]"
+					"$rowConstraints": "[][][][grow][][]"
+				} ) {
+					name: "runSessionTab"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label44"
+						"text": "Acquisition Session"
+						"horizontalAlignment": 0
+						"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0 8 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label42"
+						"text": "Camera Autosave Path: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label43"
+						"text": "(Displayed when connected)"
+						"font": new java.awt.Font( "Lucida Grande", 2, 13 )
+						"toolTipText": "The path on the server where TheSkyX will be auto-saving acquired images."
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 1 2 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label32"
+						"text": "Console Log:"
+						"font": new java.awt.Font( "Lucida Grande", 0, 18 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 2 3 1"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label41"
+						"text": "Images Being Acquired:"
+						"font": new java.awt.Font( "Lucida Grande", 0, 18 )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 7 2"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane2"
+						add( new FormComponent( "javax.swing.JList" ) {
+							name: "list1"
+							"selectionMode": 0
+							"visibleRowCount": 22
+							"focusable": false
+							"toolTipText": "Messages on progress of the session."
+							"prototypeCellValue": "10:30 AM THis is a typical line in the console log."
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 3 6 1,aligny top,grow 100 0"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "scrollPane3"
+						add( new FormComponent( "javax.swing.JTable" ) {
+							name: "sessionFramesetTable"
+							"autoResizeMode": 4
+							"enabled": false
+							"fillsViewportHeight": true
+							"toolTipText": "The frames that will be acquired this session. The row we are actively working on is highlighted."
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 7 3 3 1,align left top,grow 0 0"
+					} )
+					add( new FormComponent( "javax.swing.JProgressBar" ) {
+						name: "progressBar1"
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 4 10 1"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "beginSessionButton"
+						"text": "Begin Session"
+						"minimumSize": new java.awt.Dimension( 100, 29 )
+						"toolTipText": "Begin the acquisition session."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "beginSessionButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 5"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "cancelSessionButton"
+						"text": "Cancel Session"
+						"toolTipText": "Cancel the acquisition session that is in progress."
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelSessionButtonActionPerformed", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 5,alignx trailing,growx 0"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label45"
+						"text": "Cooler Power: "
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 7 5,alignx right,growx 0"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label46"
+						"text": "100%"
+						"toolTipText": "The camera reports that its cooler is running at this power level."
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 8 5"
+					} )
+				}, new FormLayoutConstraints( null ) {
+					"title": "Run Session"
+					"toolTipText": "Console to start and monitor the acquisition process"
+				} )
+			} )
+			menuBar: new FormContainer( "javax.swing.JMenuBar", new FormLayoutManager( class javax.swing.JMenuBar ) ) {
+				name: "menuBar1"
+				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
+					name: "menu1"
+					"text": "File"
+				} )
+			}
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 775, 575 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "startDayRadioGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 555 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "startTimeRadioGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 609 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "endDayRadioGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 663 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "endTimeRadioGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 717 )
+		} )
+		addBindingGroup( new FormBindingGroup( class org.jdesktop.beansbinding.BindingGroup ) {
+			"name": "bindingGroup"
+			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startSunsetButton", "enabled" ) )
+			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startCivilButton", "enabled" ) )
+			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startNauticalButton", "enabled" ) )
+			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startAstronomicalButton", "enabled" ) )
+			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startGivenTimeButton", "enabled" ) )
+			addBinding( new FormBinding( "startDateGivenButton", "selected", "startDatePicker", "enabled" ) )
+			addBinding( new FormBinding( "startGivenTimeButton", "${selected}", "startTimePicker", "enabled" ) )
+			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endSunriseButton", "enabled" ) )
+			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endCivilButton", "enabled" ) )
+			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endNauticalButton", "enabled" ) )
+			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endAstronomicalButton", "enabled" ) )
+			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endGivenTimeButton", "enabled" ) )
+			addBinding( new FormBinding( "endDateGivenButton", "selected", "endDatePicker", "enabled" ) )
+			addBinding( new FormBinding( "endGivenTimeButton", "selected", "endTimePicker", "enabled" ) )
+			addBinding( new FormBinding( "warmUpCheckbox", "selected", "warmUpSeconds", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "targetTemperature", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "temperatureWithin", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingCheckInterval", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingTimeout", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingRetryCount", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingRetryDelay", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "abortOnTempRiseCheckbox", "enabled" ) )
+			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "abortOnTempRiseThreshold", "enabled" ) )
+			addBinding( new FormBinding( "sendWOLcheckbox", "${selected}", "wolSecondsBefore", "enabled" ) )
+			addBinding( new FormBinding( "sendWOLcheckbox", "${selected}", "wolMacAddress", "enabled" ) )
+			addBinding( new FormBinding( "sendWOLcheckbox", "selected", "wolBroadcastAddress", "enabled" ) )
+			addBinding( new FormBinding( "this", "${dataModel.netAddress eq \"x\"}", "testConnectionButton", "enabled" ) )
+		} )
+	}
+}
