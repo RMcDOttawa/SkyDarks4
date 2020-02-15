@@ -547,9 +547,33 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  Send Wake On Lan packet to the network broadcast address, with the given MAC address
+    //  in the packet, to attempt to wake the server.  This is done immediately, and is
+    //  primarily for testing.  The delayed wake-on-lan feature is implemented in the session thread.
+
     private void sendWOLbuttonActionPerformed(ActionEvent e) {
-        System.out.println("sendWOLbuttonActionPerformed");
-        // TODO sendWOLbuttonActionPerformed
+        String addressString = wolBroadcastAddress.getText().trim(); // Could be IP or host name
+        String macAddressString = wolMacAddress.getText().trim();
+
+        byte[] broadcastAddressBytes = RmNetUtils.parseIP4FromString(addressString);
+        if (broadcastAddressBytes != null) {
+            //  Have a valid broadcast address
+            byte[] macAddressBytes = RmNetUtils.parseMacAddress(macAddressString);
+            if (macAddressBytes != null) {
+                //  Have a valid Mac address
+                if (RmNetUtils.sendWakeOnLan(broadcastAddressBytes, macAddressBytes)) {
+                    LocalTime timeNow = LocalTime.now();
+                    wolTestMessage.setText("Sent "
+                            + LocalTime.of(timeNow.getHour(), timeNow.getMinute(), timeNow.getSecond()).toString());
+                } else {
+                    wolTestMessage.setText("Error on Send");
+                }
+            } else {
+                wolTestMessage.setText("Bad MAC address");
+            }
+        } else {
+            wolTestMessage.setText("Bad broadcast address");
+        }
     }
 
     private void addFramesetButtonActionPerformed(ActionEvent e) {
@@ -759,7 +783,7 @@ public class MainWindow extends JFrame {
         testConnectionButton = new JButton();
         testConnectionMessage = new JLabel();
         sendWOLbutton = new JButton();
-        label38 = new JLabel();
+        wolTestMessage = new JLabel();
         framesPlanTab = new JPanel();
         scrollPane1 = new JScrollPane();
         framesetTable = new JTable();
@@ -1479,9 +1503,9 @@ public class MainWindow extends JFrame {
                 sendWOLbutton.addActionListener(e -> sendWOLbuttonActionPerformed(e));
                 serverTab.add(sendWOLbutton, "cell 3 9,alignx left,growx 0");
 
-                //---- label38 ----
-                label38.setText("message");
-                serverTab.add(label38, "cell 4 9");
+                //---- wolTestMessage ----
+                wolTestMessage.setText("message");
+                serverTab.add(wolTestMessage, "cell 4 9");
             }
             mainTabFrame.addTab("TheSkyX Server", null, serverTab, "Information for connecting to the TheSkyX server");
 
@@ -1930,7 +1954,7 @@ public class MainWindow extends JFrame {
     private JButton testConnectionButton;
     private JLabel testConnectionMessage;
     private JButton sendWOLbutton;
-    private JLabel label38;
+    private JLabel wolTestMessage;
     private JPanel framesPlanTab;
     private JScrollPane scrollPane1;
     private JTable framesetTable;
