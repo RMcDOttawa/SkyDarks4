@@ -26,7 +26,7 @@ new FormModel {
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 						"$layoutConstraints": "fill,insets 4 4 4 16,hidemode 3,align left top,gap 4 4"
 						"$columnConstraints": "[47,left][115,grow,left][grow,fill]"
-						"$rowConstraints": "[][][grow,fill][][][grow,fill]"
+						"$rowConstraints": "[][][grow,fill][][][grow,fill][grow,fill][grow,fill][grow,fill][grow,fill][]"
 					} ) {
 						name: "panel6"
 						"border": &LineBorder0 new javax.swing.border.LineBorder( sfield java.awt.Color black, 1, false )
@@ -137,13 +137,19 @@ new FormModel {
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 2 9"
 						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "startTimeDisplay"
+							"text": "text"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 10"
+						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 1,aligny top,growy 0"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 						"$layoutConstraints": "fill,insets 4 16 4 4,hidemode 3,align left top,gap 4 4"
 						"$columnConstraints": "[43,left][fill][grow,fill]"
-						"$rowConstraints": "[][][grow,fill][][][grow,fill][][][][]"
+						"$rowConstraints": "[][][grow,fill][][][grow,fill][][][][][]"
 					} ) {
 						name: "panel5"
 						"border": #LineBorder0
@@ -250,6 +256,12 @@ new FormModel {
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 2 9"
 						} )
+						add( new FormComponent( "javax.swing.JLabel" ) {
+							name: "endTimeDisplay"
+							"text": "text"
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 10"
+						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 1 1,aligny top,growy 0"
 					} )
@@ -277,6 +289,7 @@ new FormModel {
 							name: "locationName"
 							"toolTipText": "Arbitrary name for this site"
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "locationNameActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "locationNameFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 1 2"
 						} )
@@ -287,9 +300,10 @@ new FormModel {
 							"value": "cell 0 3"
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
-							name: "timeZoneOffset"
-							"toolTipText": "Time zone as offset from UTC.  e.g. EST = -5"
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "timeZoneOffsetActionPerformed", true ) )
+							name: "timeZoneName"
+							"toolTipText": "Time zone identifier. Standard abbreviation, or Continent/City, or offset from GMT as Etc/GMT-5. Search \"java TimeZone class\" to see all the valid values."
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "timeZoneNameActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "timeZoneNameFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 1 3"
 						} )
@@ -303,6 +317,7 @@ new FormModel {
 							name: "latitude"
 							"toolTipText": "Latitude of observing site."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "latitudeActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "latitudeFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 1 4"
 						} )
@@ -316,6 +331,7 @@ new FormModel {
 							name: "longitude"
 							"toolTipText": "Longitude of observing site."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "longitudeActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "longitudeFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 1 5"
 						} )
@@ -417,6 +433,7 @@ new FormModel {
 							"minimumSize": new java.awt.Dimension( 100, 26 )
 							"toolTipText": "Target temperature setpoint for camera."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "targetTemperatureActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "targetTemperatureFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 2"
 						} )
@@ -436,6 +453,7 @@ new FormModel {
 							name: "temperatureWithin"
 							"toolTipText": "How close to target is good enough to begin session?"
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "temperatureWithinActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "temperatureWithinFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 3"
 						} )
@@ -455,6 +473,7 @@ new FormModel {
 							name: "coolingCheckInterval"
 							"toolTipText": "While cooling, check camera temperature this often."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingCheckIntervalActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "coolingCheckIntervalFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 4"
 						} )
@@ -474,6 +493,7 @@ new FormModel {
 							name: "coolingTimeout"
 							"toolTipText": "If camera doesn't reach target temperature in this time, assume it never will."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingTimeoutActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "coolingTimeoutFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 5"
 						} )
@@ -493,6 +513,7 @@ new FormModel {
 							name: "coolingRetryCount"
 							"toolTipText": "If camera fails to reach target temperature, wait a bit and retry this many times."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingRetryCountActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "coolingRetryCountFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 6"
 						} )
@@ -512,6 +533,7 @@ new FormModel {
 							name: "coolingRetryDelay"
 							"toolTipText": "How long to wait after a failed cooling attempt."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "coolingRetryDelayActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "coolingRetryDelayFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 7"
 						} )
@@ -533,6 +555,7 @@ new FormModel {
 							name: "abortOnTempRiseThreshold"
 							"toolTipText": "How much temperature needs to rise to abort session."
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "abortOnTempRiseThresholdActionPerformed", true ) )
+							addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "abortOnTempRiseThresholdFocusLost", true ) )
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 							"value": "cell 3 8"
 						} )
@@ -593,6 +616,7 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "serverAddress"
 						"toolTipText": "IPv4 address or host name of server."
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "serverAddressFocusLost", true ) )
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "serverAddressActionPerformed", true ) )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 1 5"
@@ -607,6 +631,7 @@ new FormModel {
 						name: "wolSecondsBefore"
 						"toolTipText": "How long before acquisition to send the wakeup command."
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolSecondsBeforeActionPerformed", true ) )
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "wolSecondsBeforeFocusLost", true ) )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 4 5"
 					} )
@@ -620,6 +645,7 @@ new FormModel {
 						name: "portNumber"
 						"toolTipText": "Port number where TheSkyX is listening."
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "portNumberActionPerformed", true ) )
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "portNumberFocusLost", true ) )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 1 6"
 					} )
@@ -633,6 +659,7 @@ new FormModel {
 						name: "wolMacAddress"
 						"toolTipText": "MAC address of computer where TheSkyX runs."
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolMacAddressActionPerformed", true ) )
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "wolMacAddressFocusLost", true ) )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 4 6"
 					} )
@@ -646,6 +673,7 @@ new FormModel {
 						name: "wolBroadcastAddress"
 						"toolTipText": "Address to broadcast wakeup to whole LAN. Use 255.255.255.255 except in very special circumstances."
 						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "wolBroadcastAddressActionPerformed", true ) )
+						addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "wolBroadcastAddressFocusLost", true ) )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 4 7"
 					} )
@@ -684,7 +712,7 @@ new FormModel {
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 					"$horizontalGroup": "par l {seq {par l {comp scrollPane1::t:::x, seq {par l {seq l {space :9:9:p, comp autosaveCheckbox::::589:x}, seq {space :p:156:p, comp hSpacer1:::p::p, space :1:1:p, comp editFramesetButton:::p::p, space :96:96:p, comp hSpacer2:::p::p, space :1:1:p, comp resetCompletedButton:::p::p, space :1:1:p, comp hSpacer3:::p::p}, seq {space :p:237:p, comp bulkAddButton:::p::p}, seq {space :p:80:p, comp deleteFramesetButton:::p::p}, seq {space :p:10:p, comp addFramesetButton:::p::p}}, space :::p, comp moveUpButton:::p::p, space :::p, comp moveDownButton:::p::p, space :p:1:p}, comp label40::l::767:x}, space :::p}}"
-					"$verticalGroup": "par l {seq {space :p:27:p, comp label40:::p::p, space :::p, comp scrollPane1::::370:x, par l {seq {space :p:4:p, par l {comp editFramesetButton:::p::p, comp resetCompletedButton:::p::p, par b {comp moveDownButton::b:p::p, comp moveUpButton::b:p::p}, comp bulkAddButton:::p::p, comp deleteFramesetButton:::p::p, comp addFramesetButton:::p::p, seq {space :8:8:p, par l {comp hSpacer1:::p:12:p, comp hSpacer2:::p:12:p, comp hSpacer3:::p:12:p}}}}, seq {space :p:30:p, comp autosaveCheckbox:::p::p}}, space :p:12:p}}"
+					"$verticalGroup": "par l {seq {space :p:27:p, comp label40:::p::p, space :::p, comp scrollPane1::::405:x, par l {seq {space :p:4:p, par l {comp editFramesetButton:::p::p, comp resetCompletedButton:::p::p, par b {comp moveDownButton::b:p::p, comp moveUpButton::b:p::p}, comp bulkAddButton:::p::p, comp deleteFramesetButton:::p::p, comp addFramesetButton:::p::p, seq {space :8:8:p, par l {comp hSpacer1:::p:12:p, comp hSpacer2:::p:12:p, comp hSpacer3:::p:12:p}}}}, seq {space :p:30:p, comp autosaveCheckbox:::p::p}}, space :p:12:p}}"
 				} ) {
 					name: "framesPlanTab"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
@@ -878,7 +906,7 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 775, 575 )
+			"size": new java.awt.Dimension( 775, 610 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "startDayRadioGroup"
@@ -908,7 +936,6 @@ new FormModel {
 			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startAstronomicalButton", "enabled" ) )
 			addBinding( new FormBinding( "startDateNowButton", "${not selected}", "startGivenTimeButton", "enabled" ) )
 			addBinding( new FormBinding( "startDateGivenButton", "selected", "startDatePicker", "enabled" ) )
-			addBinding( new FormBinding( "startGivenTimeButton", "${selected}", "startTimePicker", "enabled" ) )
 			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endSunriseButton", "enabled" ) )
 			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endCivilButton", "enabled" ) )
 			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endNauticalButton", "enabled" ) )
@@ -916,7 +943,6 @@ new FormModel {
 			addBinding( new FormBinding( "endDateDoneButton", "${not selected}", "endGivenTimeButton", "enabled" ) )
 			addBinding( new FormBinding( "endDateGivenButton", "selected", "endDatePicker", "enabled" ) )
 			addBinding( new FormBinding( "endGivenTimeButton", "selected", "endTimePicker", "enabled" ) )
-			addBinding( new FormBinding( "warmUpCheckbox", "selected", "warmUpSeconds", "enabled" ) )
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "targetTemperature", "enabled" ) )
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "temperatureWithin", "enabled" ) )
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingCheckInterval", "enabled" ) )
@@ -924,11 +950,13 @@ new FormModel {
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingRetryCount", "enabled" ) )
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "coolingRetryDelay", "enabled" ) )
 			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "abortOnTempRiseCheckbox", "enabled" ) )
-			addBinding( new FormBinding( "temperatureRegulatedCheckbox", "${selected}", "abortOnTempRiseThreshold", "enabled" ) )
 			addBinding( new FormBinding( "sendWOLcheckbox", "${selected}", "wolSecondsBefore", "enabled" ) )
 			addBinding( new FormBinding( "sendWOLcheckbox", "${selected}", "wolMacAddress", "enabled" ) )
 			addBinding( new FormBinding( "sendWOLcheckbox", "selected", "wolBroadcastAddress", "enabled" ) )
-			addBinding( new FormBinding( "this", "${dataModel.netAddress eq \"x\"}", "testConnectionButton", "enabled" ) )
+			addBinding( new FormBinding( "warmUpCheckbox", "selected", "warmUpSeconds", "enabled" ) )
+			addBinding( new FormBinding( "startGivenTimeButton", "selected", "startTimePicker", "enabled" ) )
+			addBinding( new FormBinding( "this", "${dataModel.temperatureRegulated and dataModel.temperatureAbortOnRise}", "abortOnTempRiseThreshold", "enabled" ) )
+			addBinding( new FormBinding( "this", "${dataModel.netAddress != \"\"}", "testConnectionButton", "enabled" ) )
 		} )
 	}
 }

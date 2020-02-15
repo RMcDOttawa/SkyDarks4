@@ -1,13 +1,20 @@
+import luckycatlabs.Location;
+import luckycatlabs.SunriseSunsetCalculator;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+
 
 public class DataModel {
     //  Location of the site (for calculating sun times)
     private String locationName = "EWHO";
-    private int timeZone = -5;
-    private double latitude = 45.309645;
-    private double longitude = -75.886471;
+    private String timeZone = "EST";
+    private Double latitude = 45.309645;
+    private Double longitude = -75.886471;
     public static final double LATITUDE_NULL = -99999.0;
     public static final double LONGITUDE_NULL = -99999.0;
 
@@ -24,33 +31,33 @@ public class DataModel {
     private LocalTime givenEndTime = null;                      // If specific time given
 
     //  What do we do when we're done?
-    private boolean disconnectWhenDone      = true;             // Disconnect camera?
-    private boolean warmUpWhenDone          = true;             // Allow camera to warm up first?
-    private int warmUpWhenDoneSeconds   = 300;              //  Warm up for how long before disconnect?
+    private Boolean disconnectWhenDone      = true;             // Disconnect camera?
+    private Boolean warmUpWhenDone          = true;             // Allow camera to warm up first?
+    private Integer warmUpWhenDoneSeconds   = 300;              //  Warm up for how long before disconnect?
 
     //  Do we want a "Wake on Lan" command sent to the host computer
     //  as part of starting up the run?
 
-    private boolean sendWakeOnLanBeforeStarting = true;         // Send a WOL command?
-    private int sendWolSecondsBefore = 15 * 60;             // Send WOL this many seconds before start
+    private Boolean sendWakeOnLanBeforeStarting = true;         // Send a WOL command?
+    private Integer sendWolSecondsBefore = 15 * 60;             // Send WOL this many seconds before start
     private String wolMacAddress = "74-27-ea-5a-7c-66";         // MAC address to receive WOL command
     private String wolBroadcastAddress = "255.255.255.255";     //  Hits entire current sublan (rarely changed)
 
     //  Network address information
     private String netAddress = "localhost";
-    private int portNumber = 3040;     //  The default from TheSkyX TCP server
+    private Integer portNumber = 3040;     //  The default from TheSkyX TCP server
 
     //  Info about temperature regulation for the run
 
-    private boolean temperatureRegulated = true;                //  Use camera temperature regulation
-    private double temperatureTarget = 0.0;                     //  Camera setpoint target temperature
-    private double temperatureWithin = 0.1;                     //  Start when temp at target within this much
-    private int temperatureSettleSeconds = 60;              //  Check temp every this often while cooling
-    private int maxCoolingWaitTime = 30 * 60;               //  Try cooling for this long in one attempt
-    private int temperatureFailRetryCount = 5;              //  If can't cool to target, wait and retry this often
-    private int temperatureFailRetryDelaySeconds = 300;     //      Delay between cooling retries
-    private boolean temperatureAbortOnRise = true;              //  Abort run if temperature rises
-    private double temperatureAbortRiseLimit = 1.0;             //       this much
+    private Boolean temperatureRegulated = true;                //  Use camera temperature regulation
+    private Double temperatureTarget = 0.0;                     //  Camera setpoint target temperature
+    private Double temperatureWithin = 0.1;                     //  Start when temp at target within this much
+    private Integer temperatureSettleSeconds = 60;              //  Check temp every this often while cooling
+    private Integer maxCoolingWaitTime = 30 * 60;               //  Try cooling for this long in one attempt
+    private Integer temperatureFailRetryCount = 5;              //  If can't cool to target, wait and retry this often
+    private Integer temperatureFailRetryDelaySeconds = 300;     //      Delay between cooling retries
+    private Boolean temperatureAbortOnRise = true;              //  Abort run if temperature rises
+    private Double temperatureAbortRiseLimit = 1.0;             //       this much
 
     //  List of frames to be collected during the run
 
@@ -61,7 +68,20 @@ public class DataModel {
     //  Information dealing with saving the model to a file or reading from a file
 
     private transient static final String dataFileSuffix = "pskdk4";
-    private boolean autoSaveAfterEachFrame = true;
+    private Boolean autoSaveAfterEachFrame = true;
+
+    //  Java beans change support methods (see JSR 295)
+
+    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
 
     // Getters and Setters
 
@@ -69,240 +89,318 @@ public class DataModel {
         return locationName;
     }
 
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
+    public void setLocationName(String newName) {
+        String oldName = this.locationName;
+        this.locationName = newName;
+        changeSupport.firePropertyChange("location", oldName, newName);
     }
 
-    public int getTimeZone() {
+    public String getTimeZone() {
         return timeZone;
     }
 
-    public void setTimeZone(int timeZone) {
-        this.timeZone = timeZone;
+    public void setTimeZone(String newTimeZone) {
+        String oldTimeZone = this.timeZone;
+        this.timeZone = newTimeZone;
+        changeSupport.firePropertyChange("timeZone", oldTimeZone, newTimeZone);
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setLatitude(Double newLatitude) {
+        Double oldLatitude = this.latitude;
+        this.latitude = newLatitude;
+        changeSupport.firePropertyChange("latitude", oldLatitude, newLatitude);
     }
 
-    public double getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setLongitude(Double newLongitude) {
+        Double oldLongitude = this.longitude;
+        this.longitude = newLongitude;
+        changeSupport.firePropertyChange("longitude", oldLongitude, newLongitude);
     }
 
     public StartDate getStartDateType() {
         return startDateType;
     }
 
-    public void setStartDateType(StartDate startDateType) {
-        this.startDateType = startDateType;
+    public void setStartDateType(StartDate newStartDateType) {
+        StartDate oldStartDateType = this.startDateType;
+        this.startDateType = newStartDateType;
+        changeSupport.firePropertyChange("startDateType", oldStartDateType, newStartDateType);
     }
 
     public StartTime getStartTimeType() {
         return startTimeType;
     }
 
-    public void setStartTimeType(StartTime startTimeType) {
-        this.startTimeType = startTimeType;
+    public void setStartTimeType(StartTime newStartTimeType) {
+        StartTime oldStartTimeType = this.startTimeType;
+        this.startTimeType = newStartTimeType;
+        changeSupport.firePropertyChange("startTimeType", oldStartTimeType, newStartTimeType);
     }
 
     public LocalDate getGivenStartDate() {
         return givenStartDate;
     }
 
-    public void setGivenStartDate(LocalDate givenStartDate) {
-        this.givenStartDate = givenStartDate;
+    public void setGivenStartDate(LocalDate newGivenDate) {
+        LocalDate oldGivenDate = this.givenStartDate;
+        this.givenStartDate = newGivenDate;
+        changeSupport.firePropertyChange("givenStartDate", oldGivenDate, newGivenDate);
     }
 
     public LocalTime getGivenStartTime() {
         return givenStartTime;
     }
 
-    public void setGivenStartTime(LocalTime givenStartTime) {
-        this.givenStartTime = givenStartTime;
+    public void setGivenStartTime(LocalTime newGivenStartTime) {
+        LocalTime oldGivenStartTime = this.givenStartTime;
+        this.givenStartTime = newGivenStartTime;
+        changeSupport.firePropertyChange("givenStartTime", oldGivenStartTime, newGivenStartTime);
     }
 
     public EndDate getEndDateType() {
         return endDateType;
     }
 
-    public void setEndDateType(EndDate endDateType) {
-        this.endDateType = endDateType;
+    public void setEndDateType(EndDate newEndDateType) {
+        EndDate oldEndDateType = this.endDateType;
+        this.endDateType = newEndDateType;
+        changeSupport.firePropertyChange("endDateType", oldEndDateType, newEndDateType);
     }
 
     public EndTime getEndTimeType() {
         return endTimeType;
     }
 
-    public void setEndTimeType(EndTime endTimeType) {
-        this.endTimeType = endTimeType;
+    public void setEndTimeType(EndTime newEndTimeType) {
+        EndTime oldEndTimeType = this.endTimeType;
+        this.endTimeType = newEndTimeType;
+        changeSupport.firePropertyChange("endTimeType", oldEndTimeType, newEndTimeType);
     }
 
     public LocalDate getGivenEndDate() {
         return givenEndDate;
     }
 
-    public void setGivenEndDate(LocalDate givenEndDate) {
-        this.givenEndDate = givenEndDate;
+    public void setGivenEndDate(LocalDate newGivenEndDate) {
+        LocalDate oldGivenEndDate = this.givenEndDate;
+        this.givenEndDate = newGivenEndDate;
+        changeSupport.firePropertyChange("givenEndDate", oldGivenEndDate, newGivenEndDate);
     }
 
     public LocalTime getGivenEndTime() {
         return givenEndTime;
     }
 
-    public void setGivenEndTime(LocalTime givenEndTime) {
-        this.givenEndTime = givenEndTime;
+    public void setGivenEndTime(LocalTime newGivenEndTime) {
+        LocalTime oldGivenEndTime = this.givenEndTime;
+        this.givenEndTime = newGivenEndTime;
+        changeSupport.firePropertyChange("givenEndTime", oldGivenEndTime, newGivenEndTime);
     }
 
-    public boolean getDisconnectWhenDone() {
+    public Boolean getDisconnectWhenDone() {
         return disconnectWhenDone;
     }
 
-    public void setDisconnectWhenDone(boolean disconnectWhenDone) {
-        this.disconnectWhenDone = disconnectWhenDone;
+    public void setDisconnectWhenDone(Boolean newDisconnectWhenDone) {
+        Boolean oldDisconnectWhenDone = this.disconnectWhenDone;
+        this.disconnectWhenDone = newDisconnectWhenDone;
+        changeSupport.firePropertyChange("disconnectWhenDone",
+                oldDisconnectWhenDone, newDisconnectWhenDone);
     }
 
-    public boolean getWarmUpWhenDone() {
-        return warmUpWhenDone;
+    public Boolean getWarmUpWhenDone() {
+        return this.warmUpWhenDone;
     }
 
-    public void setWarmUpWhenDone(boolean warmUpWhenDone) {
-        this.warmUpWhenDone = warmUpWhenDone;
+    public void setWarmUpWhenDone(Boolean newWarmUpWhenDone) {
+        Boolean oldWarmUpWhenDone = this.warmUpWhenDone;
+        this.warmUpWhenDone = newWarmUpWhenDone;
+        System.out.println("Broadcasting change to warmUpWhenDone from " + oldWarmUpWhenDone + " to " + newWarmUpWhenDone);
+        changeSupport.firePropertyChange("warmUpWhenDone", oldWarmUpWhenDone, newWarmUpWhenDone);
     }
 
-    public int getWarmUpWhenDoneSeconds() {
+    public Integer getWarmUpWhenDoneSeconds() {
         return warmUpWhenDoneSeconds;
     }
 
-    public void setWarmUpWhenDoneSeconds(int warmUpWhenDoneSeconds) {
-        this.warmUpWhenDoneSeconds = warmUpWhenDoneSeconds;
+    public void setWarmUpWhenDoneSeconds(Integer newWarmUpWhenDoneSeconds) {
+        Integer oldWarmUpWhenDoneSeconds = this.warmUpWhenDoneSeconds;
+        this.warmUpWhenDoneSeconds = newWarmUpWhenDoneSeconds;
+        changeSupport.firePropertyChange("warmUpWhenDoneSeconds",
+                oldWarmUpWhenDoneSeconds, newWarmUpWhenDoneSeconds);
     }
 
-    public boolean getSendWakeOnLanBeforeStarting() {
+    public Boolean getSendWakeOnLanBeforeStarting() {
         return sendWakeOnLanBeforeStarting;
     }
 
-    public void setSendWakeOnLanBeforeStarting(boolean sendWakeOnLanBeforeStarting) {
-        this.sendWakeOnLanBeforeStarting = sendWakeOnLanBeforeStarting;
+    public void setSendWakeOnLanBeforeStarting(Boolean newSendWakeOnLanBeforeStarting) {
+        Boolean oldSendWakeOnLanBeforeStarting = this.sendWakeOnLanBeforeStarting;
+        this.sendWakeOnLanBeforeStarting = newSendWakeOnLanBeforeStarting;
+        changeSupport.firePropertyChange("sendWakeOnLanBeforeStarting",
+                oldSendWakeOnLanBeforeStarting, newSendWakeOnLanBeforeStarting);
     }
 
-    public int getSendWolSecondsBefore() {
+    public Integer getSendWolSecondsBefore() {
         return sendWolSecondsBefore;
     }
 
-    public void setSendWolSecondsBefore(int sendWolSecondsBefore) {
-        this.sendWolSecondsBefore = sendWolSecondsBefore;
+    public void setSendWolSecondsBefore(Integer newSendWolSecondsBefore) {
+        Integer oldSendWolSecondsBefore = this.sendWolSecondsBefore;
+        this.sendWolSecondsBefore = newSendWolSecondsBefore;
+        changeSupport.firePropertyChange("sendWolSecondsBefore",
+                oldSendWolSecondsBefore, newSendWolSecondsBefore);
     }
 
     public String getWolMacAddress() {
         return wolMacAddress;
     }
 
-    public void setWolMacAddress(String wolMacAddress) {
-        this.wolMacAddress = wolMacAddress;
+    public void setWolMacAddress(String newWolMacAddress) {
+        String oldWolMacAddress = this.wolMacAddress;
+        this.wolMacAddress = newWolMacAddress;
+        changeSupport.firePropertyChange("wolMacAddress", oldWolMacAddress, newWolMacAddress);
     }
 
     public String getWolBroadcastAddress() {
         return wolBroadcastAddress;
     }
 
-    public void setWolBroadcastAddress(String wolBroadcastAddress) {
-        this.wolBroadcastAddress = wolBroadcastAddress;
+    public void setWolBroadcastAddress(String newWolBroadcastAddress) {
+        String oldWolBroadcastAddress = this.wolBroadcastAddress;
+        this.wolBroadcastAddress = newWolBroadcastAddress;
+        changeSupport.firePropertyChange("wolBroadcastAddress",
+                oldWolBroadcastAddress, newWolBroadcastAddress);
     }
 
     public String getNetAddress() {
         return netAddress;
     }
 
-    public void setNetAddress(String netAddress) {
-        this.netAddress = netAddress;
+    public void setNetAddress(String newNetAddress) {
+        String oldNetAddress = this.netAddress;
+        this.netAddress = newNetAddress;
+        changeSupport.firePropertyChange("netAddress", oldNetAddress, newNetAddress);
     }
 
-    public int getPortNumber() {
+    public Integer getPortNumber() {
         return portNumber;
     }
 
-    public void setPortNumber(int portNumber) {
-        this.portNumber = portNumber;
+    public void setPortNumber(Integer newPortNumber) {
+        Integer oldPortNumber = this.portNumber;
+        this.portNumber = newPortNumber;
+        changeSupport.firePropertyChange("portNumber", oldPortNumber, newPortNumber);
     }
 
-    public boolean getTemperatureRegulated() {
+    public Boolean getTemperatureRegulated() {
         return temperatureRegulated;
     }
 
-    public void setTemperatureRegulated(boolean temperatureRegulated) {
-        this.temperatureRegulated = temperatureRegulated;
+    public void setTemperatureRegulated(Boolean newTemperatureRegulated) {
+        Boolean oldTemperatureRegulated = this.temperatureRegulated;
+        this.temperatureRegulated = newTemperatureRegulated;
+        changeSupport.firePropertyChange("temperatureRegulated",
+                oldTemperatureRegulated, newTemperatureRegulated);
     }
 
-    public double getTemperatureTarget() {
+    public Double getTemperatureTarget() {
         return temperatureTarget;
     }
 
-    public void setTemperatureTarget(double temperatureTarget) {
-        this.temperatureTarget = temperatureTarget;
+    public void setTemperatureTarget(Double newTemperatureTarget) {
+        Double oldTemperatureTarget = this.temperatureTarget;
+        this.temperatureTarget = newTemperatureTarget;
+        changeSupport.firePropertyChange("temperatureTarget",
+                oldTemperatureTarget, newTemperatureTarget);
     }
 
-    public double getTemperatureWithin() {
+    public Double getTemperatureWithin() {
         return temperatureWithin;
     }
 
-    public void setTemperatureWithin(double temperatureWithin) {
-        this.temperatureWithin = temperatureWithin;
+    public void setTemperatureWithin(Double newTemperatureWithin) {
+        Double oldTemperatureWithin = this.temperatureWithin;
+        this.temperatureWithin = newTemperatureWithin;
+        changeSupport.firePropertyChange("temperatureWithin", oldTemperatureWithin, newTemperatureWithin);
     }
 
-    public int getTemperatureSettleSeconds() {
+    public Integer getTemperatureSettleSeconds() {
         return temperatureSettleSeconds;
     }
 
-    public void setTemperatureSettleSeconds(int temperatureSettleSeconds) {
-        this.temperatureSettleSeconds = temperatureSettleSeconds;
+    public void setTemperatureSettleSeconds(Integer newTemperatureSettleSeconds) {
+        Integer oldTemperatureSettleSeconds = this.temperatureSettleSeconds;
+        this.temperatureSettleSeconds = newTemperatureSettleSeconds;
+        changeSupport.firePropertyChange("temperatureSettleSeconds",
+                oldTemperatureSettleSeconds,
+                newTemperatureSettleSeconds);
     }
 
-    public int getMaxCoolingWaitTime() {
+    public Integer getMaxCoolingWaitTime() {
         return maxCoolingWaitTime;
     }
 
-    public void setMaxCoolingWaitTime(int maxCoolingWaitTime) {
-        this.maxCoolingWaitTime = maxCoolingWaitTime;
+    public void setMaxCoolingWaitTime(Integer newMaxCoolingWaitTime) {
+        Integer oldMaxCoolingWaitTime = this.maxCoolingWaitTime;
+        this.maxCoolingWaitTime = newMaxCoolingWaitTime;
+        changeSupport.firePropertyChange("maxCoolingWaitTime", oldMaxCoolingWaitTime, newMaxCoolingWaitTime);
     }
 
-    public int getTemperatureFailRetryCount() {
+    public Integer getTemperatureFailRetryCount() {
         return temperatureFailRetryCount;
     }
 
-    public void setTemperatureFailRetryCount(int temperatureFailRetryCount) {
-        this.temperatureFailRetryCount = temperatureFailRetryCount;
+    public void setTemperatureFailRetryCount(Integer newTemperatureFailRetryCount) {
+        Integer oldTemperatureFailRetryCount = this.temperatureFailRetryCount;
+        this.temperatureFailRetryCount = newTemperatureFailRetryCount;
+        changeSupport.firePropertyChange("temperatureFailRetryCount",
+                oldTemperatureFailRetryCount,
+                newTemperatureFailRetryCount);
     }
 
-    public int getTemperatureFailRetryDelaySeconds() {
+    public Integer getTemperatureFailRetryDelaySeconds() {
         return temperatureFailRetryDelaySeconds;
     }
 
-    public void setTemperatureFailRetryDelaySeconds(int temperatureFailRetryDelaySeconds) {
-        this.temperatureFailRetryDelaySeconds = temperatureFailRetryDelaySeconds;
+    public void setTemperatureFailRetryDelaySeconds(Integer newTemperatureFailRetryDelaySeconds) {
+        Integer oldTemperatureFailRetryDelaySeconds = this.temperatureFailRetryDelaySeconds;
+        this.temperatureFailRetryDelaySeconds = newTemperatureFailRetryDelaySeconds;
+        changeSupport.firePropertyChange("temperatureFailRetryDelaySeconds",
+                oldTemperatureFailRetryDelaySeconds,
+                newTemperatureFailRetryDelaySeconds);
     }
 
-    public boolean getTemperatureAbortOnRise() {
+    public Boolean getTemperatureAbortOnRise() {
         return temperatureAbortOnRise;
     }
 
-    public void setTemperatureAbortOnRise(boolean temperatureAbortOnRise) {
-        this.temperatureAbortOnRise = temperatureAbortOnRise;
+    public void setTemperatureAbortOnRise(Boolean newTemperatureAbortOnRise) {
+        Boolean oldTemperatureAbortOnRise = this.temperatureAbortOnRise;
+        this.temperatureAbortOnRise = newTemperatureAbortOnRise;
+        changeSupport.firePropertyChange("temperatureAbortOnRise",
+                oldTemperatureAbortOnRise,
+                newTemperatureAbortOnRise);
     }
 
-    public double getTemperatureAbortRiseLimit() {
+    public Double getTemperatureAbortRiseLimit() {
         return temperatureAbortRiseLimit;
     }
 
-    public void setTemperatureAbortRiseLimit(double temperatureAbortRiseLimit) {
-        this.temperatureAbortRiseLimit = temperatureAbortRiseLimit;
+    public void setTemperatureAbortRiseLimit(Double newTemperatureAbortRiseLimit) {
+        Double oldTemperatureAbortRiseLimit = this.temperatureAbortRiseLimit;
+        this.temperatureAbortRiseLimit = newTemperatureAbortRiseLimit;
+        changeSupport.firePropertyChange("temperatureAbortRiseLimit",
+                oldTemperatureAbortRiseLimit,
+                newTemperatureAbortRiseLimit);
     }
 
     public ArrayList<FrameSet> getSavedFrameSets() {
@@ -313,20 +411,16 @@ public class DataModel {
         this.savedFrameSets = savedFrameSets;
     }
 
-    public boolean getAutoSaveAfterEachFrame() {
+    public Boolean getAutoSaveAfterEachFrame() {
         return autoSaveAfterEachFrame;
     }
 
-    public void setAutoSaveAfterEachFrame(boolean autoSaveAfterEachFrame) {
-        this.autoSaveAfterEachFrame = autoSaveAfterEachFrame;
-    }
-
-    //  Pseudo-properties (i.e. Get methods for non-existant attributes) that are used in bindings
-    //  in the ui to enable and disable fields on more complex situations.
-
-    public boolean getEnableStartTimePicker() {
-        System.out.println("getEnableStartTimePicker");
-        return true;
+    public void setAutoSaveAfterEachFrame(Boolean newAutoSaveAfterEachFrame) {
+        Boolean oldAutoSaveAfterEachFrame = this.autoSaveAfterEachFrame;
+        this.autoSaveAfterEachFrame = newAutoSaveAfterEachFrame;
+        changeSupport.firePropertyChange("autoSaveAfterEachFrame",
+                oldAutoSaveAfterEachFrame,
+                newAutoSaveAfterEachFrame);
     }
 
     //  Creator static factories
@@ -352,6 +446,104 @@ public class DataModel {
         newModel.getSavedFrameSets().add(f5);
 
         return newModel;
+    }
+
+    //  Get start time, one of the 4 dusks or the given time
+    //  Dusks are only available if lat/long are known
+    public LocalTime appropriateStartTime() {
+        LocalTime result = null;
+        LocalDate startDate = LocalDate.now();  // Date right now
+        if (this.startDateType == StartDate.GIVEN_DATE) {
+            startDate = this.givenStartDate;
+        }
+        Location loc = new Location(this.latitude, this.longitude);
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(loc, String.valueOf(this.timeZone));
+        switch (this.startTimeType) {
+            case SUNSET:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getOfficialSunsetForDate(localDateToCalendar(startDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case CIVIL_DUSK:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getCivilSunsetForDate(localDateToCalendar(startDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case NAUTICAL_DUSK:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getNauticalSunsetForDate(localDateToCalendar(startDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case ASTRONOMICAL_DUSK:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getAstronomicalSunsetForDate(localDateToCalendar(startDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case GIVEN_TIME:
+                result = this.givenStartTime;
+                break;
+        }
+        return result;
+    }
+
+    //  Get stop time, sunrise, one of the 3 dawns, or the given time
+    //  Sunset and dawns are only available if lat/long are known
+    public LocalTime appropriateEndTime() {
+        LocalTime result = null;
+        LocalDate stopDate = LocalDate.now();  // Date right now
+        if (this.endDateType == EndDate.GIVEN_DATE) {
+            stopDate = this.givenEndDate;
+        }
+        Location loc = new Location(this.latitude, this.longitude);
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(loc, this.timeZone);
+        switch (this.endTimeType) {
+            case SUNRISE:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getOfficialSunriseForDate(localDateToCalendar(stopDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case CIVIL_DAWN:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getCivilSunriseForDate(localDateToCalendar(stopDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case NAUTICAL_DAWN:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getNauticalSunriseForDate(localDateToCalendar(stopDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case ASTRONOMICAL_DAWN:
+                if ((this.latitude != LATITUDE_NULL) && (this.longitude != LONGITUDE_NULL)) {
+                    String resultString = calc.getAstronomicalSunriseForDate(localDateToCalendar(stopDate));
+                    result = LocalTime.parse(resultString);
+                }
+                break;
+            case GIVEN_TIME:
+                result = this.givenEndTime;
+                break;
+        }
+        return result;
+    }
+
+    private static Calendar localDateToCalendar(LocalDate localDate) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
+        if (localDate != null) {
+            int theYear = localDate.getYear();
+            int theMonth = localDate.getMonthValue() - 1;
+            int theDay = localDate.getDayOfMonth();
+            //assuming start of day
+            calendar.set(theYear, theMonth, theDay);
+        }
+//        System.out.println("Local date " + localDate + " converted to calendar " + calendar);
+        return calendar;
     }
 
 }
