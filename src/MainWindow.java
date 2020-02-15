@@ -576,9 +576,17 @@ public class MainWindow extends JFrame {
         }
     }
 
+    // User has clicked "+" in the framesets table area.  We will open a separate dialog
+    // window in which they can specify the parameters of a frameset to be added.  The new
+    // frameset will go above the selected row or, if nothing selected, at the end of the list
     private void addFramesetButtonActionPerformed(ActionEvent e) {
         System.out.println("addFramesetButtonActionPerformed");
-        // TODO addFramesetButtonActionPerformed
+        AddFramesetDialog addDialog = new AddFramesetDialog(this, this.dataModel);
+        addDialog.setVisible(true);
+        if (addDialog.getSaveClicked()) {
+            System.out.println("Dialog returned frameset: " + addDialog.getFrameSet());
+        }
+        // TODO Insert new frameset into the plan at selection point or at end
     }
 
     private void deleteFramesetButtonActionPerformed(ActionEvent e) {

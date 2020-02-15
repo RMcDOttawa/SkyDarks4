@@ -67,6 +67,20 @@ public class FrameSet {
 
     }
 
+    //  Render to string
+
+    public String toString() {
+        return "FrameSet "
+                + "(#=" + numberOfFrames
+                + ", " + this.getFrameType()
+                + ", " + exposureSeconds
+                + " secs, " + binning
+                + " x " + binning
+                + ", " + numberComplete
+                + " done)";
+    }
+
+
 }
 
 
