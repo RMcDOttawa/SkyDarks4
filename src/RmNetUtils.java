@@ -1,5 +1,8 @@
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.BufferedReader;
+import java.net.InetAddress;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
@@ -180,7 +183,7 @@ public class RmNetUtils {
         return result;
     }
 
-    public static boolean testConnection(byte[] ipAddressBytes, int port) {
+    public static boolean testConnectionIP(byte[] ipAddressBytes, int port) {
 //        System.out.println("testConnection(" + formatBytesToDecimalString(ipAddressBytes,".")
 //                + ", " + port + ")");
         boolean success;
@@ -215,4 +218,32 @@ public class RmNetUtils {
         }
         return resultIpAddress;
     }
+
+    //  Test connection to given server and port.  Server might be a name or an IP address.
+
+    public static ImmutablePair<Boolean, String> testConnection(String addressString, int port) {
+        boolean success = false;
+        String message = "";
+
+        byte[] ipBytes = parseIP4FromString(addressString);
+        if (ipBytes != null) {
+            // We have a valid address, now try to connect
+            try {
+                InetAddress address = InetAddress.getByAddress(ipBytes);
+                InetSocketAddress socketAddress = new InetSocketAddress(address, port);
+                Socket socket = new Socket();
+                socket.connect(socketAddress, CONNECT_TIMEOUT);
+                success = true;
+                socket.close();
+            } catch (IOException e) {
+                message = "Connection Failed";
+            }
+        } else {
+            message = "Bad Address";
+        }
+
+        return ImmutablePair.of(success, message);
+    }
+
+
 }

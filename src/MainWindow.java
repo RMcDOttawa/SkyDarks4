@@ -261,7 +261,7 @@ public class MainWindow extends JFrame {
 
     private void timeZoneNameActionPerformed(ActionEvent e) {
         String oldTimeZone = this.dataModel.getTimeZone();
-        String proposedTimeZone = timeZoneOffset.getText().trim();
+        String proposedTimeZone = timeZoneName.getText().trim();
         boolean valid = false;
         if (proposedTimeZone.length() > 0) {
             valid = this.validateTimeZone(proposedTimeZone);
@@ -270,7 +270,7 @@ public class MainWindow extends JFrame {
                 this.dataModel.setTimeZone(proposedTimeZone);
             }
         }
-        this.recordTextFieldValidity(timeZoneOffset, valid);
+        this.recordTextFieldValidity(timeZoneName, valid);
     }
 
     // Validate proposed time zone name against names the built-in class will accept
@@ -537,7 +537,14 @@ public class MainWindow extends JFrame {
 
     private void testConnectionButtonActionPerformed(ActionEvent e) {
         System.out.println("testConnectionButtonActionPerformed");
-        // TODO testConnectionButtonActionPerformed
+        String addressString = this.dataModel.getNetAddress().trim();
+        int port = this.dataModel.getPortNumber();
+        ImmutablePair<Boolean, String> result = RmNetUtils.testConnection(addressString, port);
+        if (result.left) {
+            this.testConnectionMessage.setText("Success");
+        } else {
+            this.testConnectionMessage.setText(result.right);
+        }
     }
 
     private void sendWOLbuttonActionPerformed(ActionEvent e) {
@@ -697,7 +704,7 @@ public class MainWindow extends JFrame {
         label11 = new JLabel();
         locationName = new JTextField();
         label13 = new JLabel();
-        timeZoneOffset = new JTextField();
+        timeZoneName = new JTextField();
         label12 = new JLabel();
         latitude = new JTextField();
         label10 = new JLabel();
@@ -750,7 +757,7 @@ public class MainWindow extends JFrame {
         label36 = new JLabel();
         wolBroadcastAddress = new JTextField();
         testConnectionButton = new JButton();
-        label37 = new JLabel();
+        testConnectionMessage = new JLabel();
         sendWOLbutton = new JButton();
         label38 = new JLabel();
         framesPlanTab = new JPanel();
@@ -1060,16 +1067,16 @@ public class MainWindow extends JFrame {
                     label13.setText("Time Zone: ");
                     panel3.add(label13, "cell 0 3");
 
-                    //---- timeZoneOffset ----
-                    timeZoneOffset.setToolTipText("Time zone identifier. Standard abbreviation, or Continent/City, or offset from GMT as Etc/GMT-5. Search \"java TimeZone class\" to see all the valid values.");
-                    timeZoneOffset.addActionListener(e -> timeZoneNameActionPerformed(e));
-                    timeZoneOffset.addFocusListener(new FocusAdapter() {
+                    //---- timeZoneName ----
+                    timeZoneName.setToolTipText("Time zone identifier. Standard abbreviation, or Continent/City, or offset from GMT as Etc/GMT-5. Search \"java TimeZone class\" to see all the valid values.");
+                    timeZoneName.addActionListener(e -> timeZoneNameActionPerformed(e));
+                    timeZoneName.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
                             timeZoneNameFocusLost(e);
                         }
                     });
-                    panel3.add(timeZoneOffset, "cell 1 3");
+                    panel3.add(timeZoneName, "cell 1 3");
 
                     //---- label12 ----
                     label12.setText("Latitude: ");
@@ -1462,9 +1469,9 @@ public class MainWindow extends JFrame {
                 testConnectionButton.addActionListener(e -> testConnectionButtonActionPerformed(e));
                 serverTab.add(testConnectionButton, "cell 0 9,alignx left,growx 0");
 
-                //---- label37 ----
-                label37.setText("message");
-                serverTab.add(label37, "cell 1 9");
+                //---- testConnectionMessage ----
+                testConnectionMessage.setText(" ");
+                serverTab.add(testConnectionMessage, "cell 1 9");
 
                 //---- sendWOLbutton ----
                 sendWOLbutton.setText("Send WOL Now");
@@ -1868,7 +1875,7 @@ public class MainWindow extends JFrame {
     private JLabel label11;
     private JTextField locationName;
     private JLabel label13;
-    private JTextField timeZoneOffset;
+    private JTextField timeZoneName;
     private JLabel label12;
     private JTextField latitude;
     private JLabel label10;
@@ -1921,7 +1928,7 @@ public class MainWindow extends JFrame {
     private JLabel label36;
     private JTextField wolBroadcastAddress;
     private JButton testConnectionButton;
-    private JLabel label37;
+    private JLabel testConnectionMessage;
     private JButton sendWOLbutton;
     private JLabel label38;
     private JPanel framesPlanTab;
@@ -2032,7 +2039,7 @@ public class MainWindow extends JFrame {
 		}
 
         locationName.setText(dataModel.getLocationName());
-        timeZoneOffset.setText(String.valueOf(dataModel.getTimeZone()));
+        timeZoneName.setText(String.valueOf(dataModel.getTimeZone()));
         latitude.setText(String.valueOf(dataModel.getLatitude()));
         longitude.setText(String.valueOf(dataModel.getLongitude()));
 

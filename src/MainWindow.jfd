@@ -687,8 +687,8 @@ new FormModel {
 						"value": "cell 0 9,alignx left,growx 0"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label37"
-						"text": "message"
+						name: "testConnectionMessage"
+						"text": " "
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 1 9"
 					} )
