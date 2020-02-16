@@ -721,6 +721,7 @@ new FormModel {
 							name: "framesetTable"
 							"fillsViewportHeight": true
 							"toolTipText": "The complete set of frames to be acquired, and what has already been completed."
+							addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "framesetTableMouseClicked", true ) )
 						} )
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {

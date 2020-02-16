@@ -1,4 +1,4 @@
-public class FrameSet {
+public class FrameSet implements Cloneable {
 
     //  Properties of a Frame Set, and their default values
 
@@ -64,7 +64,18 @@ public class FrameSet {
         newFrameSet.binning = binning;
         newFrameSet.numberComplete = completed;
         return newFrameSet;
+    }
 
+    // Make a copy of ourself, return as a new frame set
+    
+    public FrameSet copy() {
+        FrameSet newFrameSet = new FrameSet();
+        newFrameSet.numberOfFrames = this.numberOfFrames;
+        newFrameSet.frameType = this.frameType;
+        newFrameSet.exposureSeconds = this.exposureSeconds;
+        newFrameSet.binning = this.binning;
+        newFrameSet.numberComplete = this.numberComplete;
+        return newFrameSet;
     }
 
     //  Render to string

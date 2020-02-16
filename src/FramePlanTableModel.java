@@ -51,4 +51,25 @@ public class FramePlanTableModel extends AbstractTableModel {
     public String getColumnName(int column) {
         return this.columnHeaders[column];
     }
+
+    public void deleteRow(int index) {
+        this.dataModel.getSavedFrameSets().remove(index);
+        this.fireTableRowsDeleted(index, index);
+    }
+
+    public void appendRow(FrameSet newFrameSet) {
+        this.dataModel.getSavedFrameSets().add(newFrameSet);
+        int newRowIndex = this.dataModel.getSavedFrameSets().size() - 1;
+        this.fireTableRowsInserted(newRowIndex, newRowIndex);
+    }
+
+    public void insertRow(int selectedRow, FrameSet newFrameSet) {
+        this.dataModel.getSavedFrameSets().add(selectedRow, newFrameSet);
+        this.fireTableRowsInserted(selectedRow, selectedRow);
+    }
+
+    public void replaceRow(int replacementPoint, FrameSet changedFrameSet) {
+        this.dataModel.getSavedFrameSets().set(replacementPoint, changedFrameSet);
+        this.fireTableRowsUpdated(replacementPoint, replacementPoint);
+    }
 }

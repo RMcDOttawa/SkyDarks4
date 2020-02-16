@@ -32,6 +32,8 @@ public class AddFramesetDialog extends JDialog {
         return this.frameSet;
     }
 
+    //  This version of the constructor opens the dialog to create a new frame set
+
     public AddFramesetDialog(Window owner, DataModel dataModel) {
         super(owner);
         initComponents();
@@ -41,6 +43,25 @@ public class AddFramesetDialog extends JDialog {
         // When creating a new frame, we don't offer the "completed" fields
         this.completedLabel.setVisible(false);
         this.numberCompleted.setVisible(false);
+    }
+
+    //  This version of the constructor, called with an existing frame set,
+    //  opens the dialog to edit that frame set
+
+    public AddFramesetDialog(Window owner, DataModel dataModel, FrameSet frameSetToEdit) {
+        super(owner);
+        initComponents();
+        this.dataModel = dataModel;
+        //  We keep a copy, not the original, so the field updates don't change the original.
+        //  This protects the ability to click Cancel and have nothing changed.
+        this.frameSet = frameSetToEdit.copy();
+        this.loadFields();
+        // When editing an existing frame, we offer the "completed" fields
+        this.completedLabel.setVisible(true);
+        this.numberCompleted.setVisible(true);
+        // Change the label and title to reflect that this is an edit, not a new set
+        this.dialogTitle.setText("Edit Existing Frame Set");
+        this.setTitle("Edit Frame Set");
     }
 
     private void loadFields() {
@@ -109,11 +130,12 @@ public class AddFramesetDialog extends JDialog {
     }
 
     // Validate entry in Number Complete field: must be a positive integer.
-    //  If valid, store it in the frame set.
+    //  If valid, store it in the frame set.  Extra validation:  the number complete can't
+    //  be larger than the total number of frame sets being acquired.
 
     private void numberCompletedActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(this.numberCompleted.getText(),
-                1, 1000);
+                0, this.frameSet.getNumberOfFrames());
         if (validation.left) {
             this.frameSet.setNumberComplete(validation.right);
         }

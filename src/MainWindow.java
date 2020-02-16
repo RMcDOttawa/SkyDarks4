@@ -12,9 +12,12 @@ import net.miginfocom.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jdesktop.beansbinding.*;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
@@ -38,9 +41,11 @@ public class MainWindow extends JFrame {
     private FramePlanTableModel framePlanTableModel;
     private static int SESSION_TAB_INDEX = 4;
     private SessionFrameTableModel sessionFrameTableModel;
+    private FrameTableSelectionListener frameTableSelectionListener;
 
     public MainWindow(DataModel theDataModel) {
         this.dataModel = theDataModel;
+        this.frameTableSelectionListener = new FrameTableSelectionListener(this);
         initComponents();
     }
 
@@ -535,6 +540,40 @@ public class MainWindow extends JFrame {
         }
     }
 
+    // Manually-established listener for selection changes in the frames plan table
+    //  We'll use this to enable and disable various editing buttons that are allowed
+    //  only with certain kinds of selections
+
+    public void framePlanTableSelectionChanged() {
+        int[] selectedRows = this.framesetTable.getSelectedRows();
+        Arrays.sort(selectedRows);  // Ensure they're in ascending order
+        int numSelected = selectedRows.length;
+
+        //  Add and Bulk Add buttons:  zero or one rows selected
+        this.addFramesetButton.setEnabled((numSelected == 0) || (numSelected == 1));
+        this.bulkAddButton.setEnabled((numSelected == 0) || (numSelected == 1));
+
+        //  Delete button: one or more rows selected
+        this.deleteFramesetButton.setEnabled(numSelected >= 1);
+
+        //  Edit button: exactly one row selected
+        this.editFramesetButton.setEnabled(numSelected == 1);
+
+        //  Move up button:  one or more rows selected, not including row 0
+        boolean enableMoveUp = false;
+        if (numSelected > 0) {
+            enableMoveUp = (selectedRows[0] != 0);
+        }
+        this.moveUpButton.setEnabled(enableMoveUp);
+
+        //  Move down button:  one or more rows selected, not including last row
+        boolean enableMoveDown = false;
+        if (numSelected > 0) {
+            enableMoveDown = (selectedRows[selectedRows.length - 1] != this.framesetTable.getRowCount() - 1);
+        }
+        this.moveDownButton.setEnabled(enableMoveDown);
+    }
+
     private void testConnectionButtonActionPerformed(ActionEvent e) {
         System.out.println("testConnectionButtonActionPerformed");
         String addressString = this.dataModel.getNetAddress().trim();
@@ -579,24 +618,76 @@ public class MainWindow extends JFrame {
     // User has clicked "+" in the framesets table area.  We will open a separate dialog
     // window in which they can specify the parameters of a frameset to be added.  The new
     // frameset will go above the selected row or, if nothing selected, at the end of the list
+
     private void addFramesetButtonActionPerformed(ActionEvent e) {
-        System.out.println("addFramesetButtonActionPerformed");
         AddFramesetDialog addDialog = new AddFramesetDialog(this, this.dataModel);
         addDialog.setVisible(true);
         if (addDialog.getSaveClicked()) {
-            System.out.println("Dialog returned frameset: " + addDialog.getFrameSet());
+            FrameSet newFrameSet = addDialog.getFrameSet();
+            System.out.println("Dialog returned frameset: " + newFrameSet);
+            //  Insert new frameset into the plan at selection point or at end
+            int[] selectedRows = this.framesetTable.getSelectedRows();
+            // There has to be zero or one row or button would have been disabled
+            assert(selectedRows.length < 2);
+            if (selectedRows.length == 0) {
+                // Nothing selected: append new frame set to the bottom
+                this.framePlanTableModel.appendRow(newFrameSet);
+            } else {
+                // Insert new frame set above selected row
+                int insertionPoint = selectedRows[0];
+                this.framePlanTableModel.insertRow(insertionPoint, newFrameSet);
+                //  Move selection so originally-selected row (now +1) is still selected
+                this.framesetTable.setRowSelectionInterval(insertionPoint + 1, insertionPoint + 1);
+            }
+            this.makeDirty();
         }
-        // TODO Insert new frameset into the plan at selection point or at end
     }
 
+    // 1 or more rows in the frame set table are selected, and the delete button has been clicked.
+    // We delete those rows from the table model and tell the table it needs to be updated
     private void deleteFramesetButtonActionPerformed(ActionEvent e) {
-        System.out.println("deleteFramesetButtonActionPerformed");
-        // TODO deleteFramesetButtonActionPerformed
+        int[] selectedRowIndices = this.framesetTable.getSelectedRows();
+
+        //  Process the list in descending order so the indices don't change
+        //  as rows are deleted.
+        Arrays.sort(selectedRowIndices);
+        ArrayUtils.reverse(selectedRowIndices);
+        for (int index: selectedRowIndices) {
+            this.framePlanTableModel.deleteRow(index);
+        }
+        this.makeDirty();
     }
+
+    // With one row selected, user has clicked "Edit".  Open a dialog to allow them to change
+    // the frame set.  We use the same dialog as "Add".
 
     private void editFramesetButtonActionPerformed(ActionEvent e) {
-        System.out.println("editFramesetButtonActionPerformed");
-        // TODO editFramesetButtonActionPerformed
+        //  There has to be exactly one row selected or the button would have been disabled.
+        //  Get the frameset from that row.
+        int selectedRowIndex = this.framesetTable.getSelectedRow();
+        FrameSet frameSetToEdit = this.dataModel.getSavedFrameSets().get(selectedRowIndex);
+
+        //  Open and run edit dialog
+        AddFramesetDialog editDialog = new AddFramesetDialog(this, this.dataModel, frameSetToEdit);
+        editDialog.setVisible(true);
+        if (editDialog.getSaveClicked()) {
+            FrameSet changedFrameSet = editDialog.getFrameSet();
+            //  Insert new frame set into the plan at selection point or at end
+            // Replace the frame set at the selected row
+            this.framePlanTableModel.replaceRow(selectedRowIndex, changedFrameSet);
+            this.makeDirty();
+        }
+    }
+
+    // Set up double-click to act as Edit if exactly one row selected
+
+    private void framesetTableMouseClicked(MouseEvent mouseEvent) {
+        if ((mouseEvent.getClickCount() == 2) && (mouseEvent.getButton() == MouseEvent.BUTTON1)) {
+            int[] selectedRows = this.framesetTable.getSelectedRows();
+            if (selectedRows.length == 1) {
+                this.editFramesetButtonActionPerformed(null);
+            }
+        }
     }
 
     private void bulkAddButtonActionPerformed(ActionEvent e) {
@@ -609,14 +700,60 @@ public class MainWindow extends JFrame {
         // TODO resetCompletedButtonActionPerformed
     }
 
+    //  Move Up button has been clicked.  "Up" is in the visual sense in the user interface.
+    //  In terms of data structure, it means moving elements to lower indices.
+    //  We know that
+    //      1 or more rows are selected
+    //      the first row is not selected
+    //  Move every selected row up one position
     private void moveUpButtonActionPerformed(ActionEvent e) {
-        System.out.println("moveUpButtonActionPerformed");
-        // TODO moveUpButtonActionPerformed
+        int[] selectedRows = this.framesetTable.getSelectedRows();
+        assert(selectedRows.length > 0);    // Row(s) are selected
+        assert(selectedRows[0] != 0);       // First row not selected
+        //	Moving rows de-selects them, so we'll build up a list of the new, moved, row
+        //	indices for re-selection after
+        ArrayList<Integer> newSelection = new ArrayList<>(selectedRows.length);
+        for (int indexToMove: selectedRows) {
+            FrameSet frameBeingMoved = this.dataModel.getSavedFrameSets().get(indexToMove);
+            this.framePlanTableModel.deleteRow(indexToMove);
+            this.framePlanTableModel.insertRow(indexToMove - 1, frameBeingMoved);
+            newSelection.add(indexToMove - 1);
+        }
+        //	Re-select the rows in their new positions
+        ListSelectionModel selectionModel = framesetTable.getSelectionModel();
+        selectionModel.clearSelection();
+        for (int newRowToSelect: newSelection) {
+            selectionModel.addSelectionInterval(newRowToSelect, newRowToSelect);
+        }
     }
 
+    //  Move Down button has been clicked.  "Down" is in the visual sense in the user interface.
+    //  In terms of data structure, it means moving elements to higher indices.
+    //  We know that
+    //      1 or more rows are selected
+    //      the last row is not selected
+    //  Move every selected row down one position
     private void moveDownButtonActionPerformed(ActionEvent e) {
-        System.out.println("moveDownButtonActionPerformed");
-        // TODO moveDownButtonActionPerformed
+        int[] selectedRows = this.framesetTable.getSelectedRows();
+        //  Process the rows in reverse order so we don't have to constantly adjust indices
+        ArrayUtils.reverse(selectedRows);
+        assert(selectedRows.length > 0);    // Row(s) are selected
+        assert(selectedRows[0] != this.framePlanTableModel.getRowCount() - 1);       // Last row not selected
+        //	Moving rows de-selects them, so we'll build up a list of the new, moved, row
+        //	indices for re-selection after
+        ArrayList<Integer> newSelection = new ArrayList<>(selectedRows.length);
+        for (int indexToMove: selectedRows) {
+            FrameSet frameBeingMoved = this.dataModel.getSavedFrameSets().get(indexToMove);
+            this.framePlanTableModel.deleteRow(indexToMove);
+            this.framePlanTableModel.insertRow(indexToMove + 1, frameBeingMoved);
+            newSelection.add(indexToMove + 1);
+        }
+        //	Re-select the rows in their new positions
+        ListSelectionModel selectionModel = framesetTable.getSelectionModel();
+        selectionModel.clearSelection();
+        for (int newRowToSelect: newSelection) {
+            selectionModel.addSelectionInterval(newRowToSelect, newRowToSelect);
+        }
     }
 
     private void beginSessionButtonActionPerformed(ActionEvent e) {
@@ -1526,6 +1663,12 @@ public class MainWindow extends JFrame {
                     //---- framesetTable ----
                     framesetTable.setFillsViewportHeight(true);
                     framesetTable.setToolTipText("The complete set of frames to be acquired, and what has already been completed.");
+                    framesetTable.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            framesetTableMouseClicked(e);
+                        }
+                    });
                     scrollPane1.setViewportView(framesetTable);
                 }
 
@@ -2118,6 +2261,12 @@ public class MainWindow extends JFrame {
         //  model, and could change, that tab is populated in the responder for clicking on the
         //  tab, not here. That way it is not calculated until needed, and is always recalculated as needed
 
+        //  Listen for changes to the frames plan table
+
+        ListSelectionModel selectionModel = this.framesetTable.getSelectionModel();
+        selectionModel.addListSelectionListener(this.frameTableSelectionListener);
+        this.framePlanTableSelectionChanged();
+
         this.displayStartTime();
         this.displayEndTime();
 	}
@@ -2129,7 +2278,11 @@ public class MainWindow extends JFrame {
             startTimeDisplay.setText(" ");
         } else {
             LocalTime time = this.dataModel.appropriateStartTime();
-            startTimeDisplay.setText(time.toString());
+            if (time == null) {
+                startTimeDisplay.setText(" ");
+            } else {
+                startTimeDisplay.setText(time.toString());
+            }
         }
     }
 
@@ -2140,7 +2293,11 @@ public class MainWindow extends JFrame {
             endTimeDisplay.setText(" ");
         } else {
             LocalTime time = this.dataModel.appropriateEndTime();
-            endTimeDisplay.setText(time.toString());
+            if (time == null) {
+                endTimeDisplay.setText(" ");
+            } else {
+                endTimeDisplay.setText(time.toString());
+            }
         }
     }
 
