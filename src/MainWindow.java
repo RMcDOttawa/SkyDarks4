@@ -52,10 +52,6 @@ public class MainWindow extends JFrame {
     private void makeDirty() {
     }
 
-    private static int SECONDS_IN_DAY = 24 * 60 * 60;
-    private static double WATER_BOILS = 100.0;
-    private static double ABSOLUTE_ZERO = -273.15;
-
     //  This listener method is invoked whenever the Tab is changed in the main tab view.
     //  We're only interested in when the Run Session tab has become active, so we can
     //  populate its data view.
@@ -337,7 +333,7 @@ public class MainWindow extends JFrame {
 
     private void warmUpSecondsActionPerformed(ActionEvent e) {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(warmUpSeconds.getText(),
-                0, SECONDS_IN_DAY);
+                0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
             int seconds = validation.right;
             if (seconds != this.dataModel.getWarmUpWhenDoneSeconds()) {
@@ -358,7 +354,7 @@ public class MainWindow extends JFrame {
 
     private void targetTemperatureActionPerformed(ActionEvent e) {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(targetTemperature.getText(),
-                ABSOLUTE_ZERO, WATER_BOILS);
+                CommonUtils.ABSOLUTE_ZERO, CommonUtils.WATER_BOILS);
         if (validation.left) {
             double temperature = validation.right;
             if (temperature != this.dataModel.getTemperatureTarget()) {
@@ -423,7 +419,7 @@ public class MainWindow extends JFrame {
 
     private void coolingRetryDelayActionPerformed(ActionEvent e) {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingRetryDelay.getText(),
-                0, SECONDS_IN_DAY);
+                0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
             int delay = validation.right;
             if (delay != this.dataModel.getTemperatureFailRetryDelaySeconds()) {
@@ -444,7 +440,7 @@ public class MainWindow extends JFrame {
 
     private void abortOnTempRiseThresholdActionPerformed(ActionEvent e) {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(abortOnTempRiseThreshold.getText(),
-                0.1, WATER_BOILS);
+                0.1, CommonUtils.WATER_BOILS);
         if (validation.left) {
             double threshold = validation.right;
             if (threshold != this.dataModel.getTemperatureAbortRiseLimit()) {
@@ -500,7 +496,7 @@ public class MainWindow extends JFrame {
 
     private void wolSecondsBeforeActionPerformed(ActionEvent e) {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(wolSecondsBefore.getText(),
-                0, SECONDS_IN_DAY);
+                0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
             int seconds = validation.right;
             if (seconds != this.dataModel.getSendWolSecondsBefore()) {
@@ -690,9 +686,42 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  User has clicked "Bulk Add".  We open a dialog in which they can describe a large
+    //  set of bias and dark frames quickly. If they click "OK" we will then insert all those
+    //  frames into the plan.
+
     private void bulkAddButtonActionPerformed(ActionEvent e) {
         System.out.println("bulkAddButtonActionPerformed");
-        // TODO bulkAddButtonActionPerformed
+        //  Open the bulk-add dialog and wait for the user to close the window when done
+        BulkAddDialog bulkAddDialog = new BulkAddDialog(this);
+        bulkAddDialog.setVisible(true);
+        if (bulkAddDialog.getSaveClicked()) {
+            System.out.println("Bulk add save clicked");
+            //  User clicked "Save" not "Cancel", so we want to do bulk entry
+            //  Get the complete list of frame sets represented by the filled-in form
+            ArrayList<FrameSet> frameSetsToAdd = bulkAddDialog.generateFramesToAdd();
+
+            //  The frame sets will be added above the selected row, or to the end if no row is selected
+            int[] selectedRows = this.framesetTable.getSelectedRows();
+            // There has to be zero or one row or the button would have been disabled
+            assert(selectedRows.length < 2);
+            //  Do append or insert on each of the generated Frame Sets
+            for (FrameSet newFrameSet : frameSetsToAdd) {
+                if (selectedRows.length == 0) {
+                    // Nothing selected: append new frame set to the bottom
+                    this.framePlanTableModel.appendRow(newFrameSet);
+                } else {
+                    // Insert new frame set above selected row
+                    int insertionPoint = selectedRows[0];
+                    this.framePlanTableModel.insertRow(insertionPoint, newFrameSet);
+                    //  Move selection so originally-selected row (now +1) is still selected
+                    this.framesetTable.setRowSelectionInterval(insertionPoint + 1, insertionPoint + 1);
+                }
+            }
+            this.makeDirty();
+        } else {
+            System.out.println("Cancel clicked");
+        }
     }
 
     private void resetCompletedButtonActionPerformed(ActionEvent e) {
@@ -2315,10 +2344,15 @@ public class MainWindow extends JFrame {
         }
 
         //  Create and open the main window
-		DataModel dataModel = DataModel.newInstance();
-        MainWindow mainWindow = new MainWindow(dataModel);
-		mainWindow.loadDataModel(dataModel);
-		mainWindow.setVisible(true);
+        try {
+            DataModel dataModel = DataModel.newInstance();
+            MainWindow mainWindow = new MainWindow(dataModel);
+            mainWindow.loadDataModel(dataModel);
+            mainWindow.setVisible(true);
+        } catch (Exception e) {
+            System.out.println("Uncaught exception: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     //  Record the validity of the given text field.

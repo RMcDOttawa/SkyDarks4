@@ -1,0 +1,126 @@
+JFDML JFormDesigner: "7.0.0.6.255" Java: "11.0.5" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {comp label1:::::x, seq l {space :::p, par l {seq l {par l {seq l {comp label2:::p::p, space s:::p, comp numBiasFrames:::p:83:p, space :::p, comp label3:::p:106:p}, seq l {comp label4:::p::p, par l {seq {space :p:99:p, par t {comp biasBinned3x3:::p::p, par l:t {comp darkBinned2x2:::p::p, comp darkBinned3x3::l:p::p, comp darkBinned4x4::l:p::p, seq l {space :p:2:p, comp biasBinned4x4:::p::p}, comp darkBinned1x1::l:p::p}, par l:t {comp biasBinned1x1:::p::p, comp biasBinned2x2:::p::p}}}, seq l {space :p:12:p, comp numDarkFrames:::p:81:p, space u:::p, comp label5:::p:103:p}}}}, space :0:0:x}, seq l {space :p:7:p, par l {seq {comp saveButton:::p::p, space :::x, comp cancelButton:::p::p}, seq {comp label6:::p:161:p, space :::p, comp exposureLengths:::::x}}}}, space :::p}}"
+			"$verticalGroup": "par l {seq {space :p:4:p, comp label1:::p::p, space :p:31:p, par b {comp label2::b:p::p, comp numBiasFrames::b:p:30:p, comp label3::b:p::p}, space :::p, comp biasBinned1x1:::p::p, space :::p, comp biasBinned2x2:::p::p, space :::p, comp biasBinned3x3:::p::p, space :::p, comp biasBinned4x4:::p::p, space :p:19:p, par b {comp label4::b:p::p, comp label5::b:p::p, comp numDarkFrames::b:p::p}, space :::p, comp darkBinned1x1:::p::p, space :::p, comp darkBinned2x2:::p::p, space :::p, comp darkBinned3x3:::p::p, space :::p, comp darkBinned4x4:::p::p, space s:::p, par l {seq {comp label6:::p:65:p, space :0:67:x}, seq {comp exposureLengths:::p:81:p, space ::24:x, par b {comp saveButton::b:p::p, comp cancelButton::b:p::p}}}, space :::p}}"
+		} ) {
+			name: "this"
+			"modal": true
+			"minimumSize": new java.awt.Dimension( 570, 545 )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Bulk Entry of Frame Set Specifications"
+				"font": new java.awt.Font( "Lucida Grande", 0, 24 )
+				"horizontalAlignment": 0
+				"verticalAlignment": 1
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "Bias Frames: "
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "numBiasFrames"
+				"minimumSize": new java.awt.Dimension( 11, 30 )
+				"toolTipText": "If you want bias frames, binned as shown below, enter the number of frames of each binning as a single integer."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "numBiasFramesActionPerformed", false ) )
+				addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "numBiasFramesFocusLost", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "each, binned:"
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "biasBinned1x1"
+				"text": "1 x 1"
+				"toolTipText": "Take bias frames binned 1 x 1."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "biasBinned1x1ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "biasBinned2x2"
+				"text": "2 x 2"
+				"toolTipText": "Take bias frames binned 2 x 2."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "biasBinned2x2ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "biasBinned3x3"
+				"text": "3 x 3"
+				"toolTipText": "Take bias frames binned 3 x 3."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "biasBinned3x3ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "biasBinned4x4"
+				"text": "4 x 4"
+				"toolTipText": "Take bias frames binned 4 x 4."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "biasBinned4x4ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "Dark Frames: "
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "numDarkFrames"
+				"toolTipText": "If you want Dark frames of the binning and exposure lengths shown, enter the number of frames wanted of each combination, as a single integer.  "
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "numDarkFramesActionPerformed", false ) )
+				addEvent( new FormEvent( "java.awt.event.FocusListener", "focusLost", "numDarkFramesFocusLost", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": "each, binned:"
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "darkBinned1x1"
+				"text": "1 x 1"
+				"toolTipText": "Take dark frames, binned 1 x 1, of the exposure times below."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "darkBinned1x1ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "darkBinned2x2"
+				"text": "2 x 2"
+				"toolTipText": "Take dark frames, binned 2 x 2, of the exposure times below."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "darkBinned2x2ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "darkBinned3x3"
+				"text": "3 x 3"
+				"toolTipText": "Take dark frames, binned 3 x 3, of the exposure times below."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "darkBinned3x3ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
+				name: "darkBinned4x4"
+				"text": "4 x 4"
+				"toolTipText": "Take dark frames, binned 4 x 4, of the exposure times below."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "darkBinned4x4ActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JTextArea" ) {
+				name: "exposureLengths"
+				"lineWrap": true
+				"wrapStyleWord": true
+				"toolTipText": "Enter all the exposure times desired for dark frames, separated by blanks or commas. Times are in seconds."
+				"tabSize": 0
+				addEvent( new FormEvent( "java.awt.event.KeyListener", "keyTyped", "exposureLengthsKeyTyped", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label6"
+				"text": "<html>Exposure lengths, in seconds, separated by blanks:</html>"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "saveButton"
+				"text": "Save"
+				"toolTipText": "Close this window and add the frames described here to the plan."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "saveButtonActionPerformed", false ) )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "cancelButton"
+				"text": "Cancel"
+				"toolTipText": "Close and abandon this window; don't add anything to the plan."
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelButtonActionPerformed", false ) )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 570, 545 )
+		} )
+	}
+}

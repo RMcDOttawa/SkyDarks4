@@ -430,20 +430,20 @@ public class DataModel {
     public static DataModel newInstance() {
         DataModel newModel = new DataModel();
 
-//        The following lines are used to insert some initial framesets into the data model for testing.
+//        Uncomment the following lines to insert some initial framesets into the data model for testing.
 //        In production, we don't insert any, so the user is presented with an initial empty list.
 
-        FrameSet f1 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 1, 0);
-        FrameSet f2 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 2, 0);
-        FrameSet f3 =  FrameSet.of(12, FrameType.DARK_FRAME, 10.0, 1, 0);
-        FrameSet f4 =  FrameSet.of(14, FrameType.DARK_FRAME, 20.0, 2, 0);
-        FrameSet f5 =  FrameSet.of(16, FrameType.DARK_FRAME, 30.0, 3, 0);
-//
-        newModel.getSavedFrameSets().add(f1);
-        newModel.getSavedFrameSets().add(f2);
-        newModel.getSavedFrameSets().add(f3);
-        newModel.getSavedFrameSets().add(f4);
-        newModel.getSavedFrameSets().add(f5);
+//        FrameSet f1 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 1, 0);
+//        FrameSet f2 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 2, 0);
+//        FrameSet f3 =  FrameSet.of(12, FrameType.DARK_FRAME, 10.0, 1, 0);
+//        FrameSet f4 =  FrameSet.of(14, FrameType.DARK_FRAME, 20.0, 2, 0);
+//        FrameSet f5 =  FrameSet.of(16, FrameType.DARK_FRAME, 30.0, 3, 0);
+////
+//        newModel.getSavedFrameSets().add(f1);
+//        newModel.getSavedFrameSets().add(f2);
+//        newModel.getSavedFrameSets().add(f3);
+//        newModel.getSavedFrameSets().add(f4);
+//        newModel.getSavedFrameSets().add(f5);
 
         return newModel;
     }

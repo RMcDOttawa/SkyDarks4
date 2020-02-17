@@ -22,8 +22,6 @@ public class AddFramesetDialog extends JDialog {
     private boolean     numberCompleteValid = true;
     private boolean     saveClicked = true;
 
-    private static Double SECONDS_IN_DAY = 24.0 * 60 * 60;
-
     public boolean getSaveClicked() {
         return this.saveClicked;
     }
@@ -188,7 +186,7 @@ public class AddFramesetDialog extends JDialog {
 
     private void exposureSecondsActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(this.exposureSeconds.getText(),
-                0, SECONDS_IN_DAY);
+                0, CommonUtils.SECONDS_IN_DAY);
         if (validation.left) {
             this.frameSet.setExposureSeconds(validation.right);
         }
