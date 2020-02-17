@@ -68,11 +68,11 @@ public class MainWindow extends JFrame {
             Font headerFont = header.getFont();
             Font newFont = new Font(header.getName(), Font.BOLD, headerFont.getSize() + 1);
             header.setFont(newFont);
+            this.enableBeginButton();
         }
     }
 
     private void startDateNowButtonActionPerformed(ActionEvent e) {
-//        System.out.println("startDateNowButtonActionPerformed");
         if (this.dataModel.getStartDateType() != StartDate.NOW) {
             this.makeDirty();
             this.dataModel.setStartDateType(StartDate.NOW);
@@ -620,7 +620,6 @@ public class MainWindow extends JFrame {
         addDialog.setVisible(true);
         if (addDialog.getSaveClicked()) {
             FrameSet newFrameSet = addDialog.getFrameSet();
-            System.out.println("Dialog returned frameset: " + newFrameSet);
             //  Insert new frameset into the plan at selection point or at end
             int[] selectedRows = this.framesetTable.getSelectedRows();
             // There has to be zero or one row or button would have been disabled
@@ -796,6 +795,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  TODO Disable Cancel Session button by default
+    //  TODO Enable Begin Session button if everything needed is ok
+
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
         // TODO beginSessionButtonActionPerformed
@@ -868,6 +870,10 @@ public class MainWindow extends JFrame {
 
     private void wolBroadcastAddressFocusLost(FocusEvent e) {
         wolBroadcastAddressActionPerformed(null);
+    }
+
+    private void warmUpSecondsFocusLost(FocusEvent e) {
+        this.warmUpSecondsActionPerformed(null);
     }
 
     private void initComponents() {
@@ -1350,6 +1356,12 @@ public class MainWindow extends JFrame {
                     //---- warmUpSeconds ----
                     warmUpSeconds.setToolTipText("How long to leave CCD warming up before disconnecting.");
                     warmUpSeconds.addActionListener(e -> warmUpSecondsActionPerformed(e));
+                    warmUpSeconds.addFocusListener(new FocusAdapter() {
+                        @Override
+                        public void focusLost(FocusEvent e) {
+                            warmUpSecondsFocusLost(e);
+                        }
+                    });
                     panel4.add(warmUpSeconds, "cell 1 2");
 
                     //---- label15 ----
@@ -1915,6 +1927,7 @@ public class MainWindow extends JFrame {
                 //---- cancelSessionButton ----
                 cancelSessionButton.setText("Cancel Session");
                 cancelSessionButton.setToolTipText("Cancel the acquisition session that is in progress.");
+                cancelSessionButton.setEnabled(false);
                 cancelSessionButton.addActionListener(e -> cancelSessionButtonActionPerformed(e));
                 runSessionTab.add(cancelSessionButton, "cell 3 5,alignx trailing,growx 0");
 
@@ -2311,7 +2324,64 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
 	}
 
-	//  Set the Start Time Display field to the time that will be used with the current settings
+	//  The Begin button on the session tab is enabled only if the session is ready to run.
+    //  We check the following:
+    //      1. No invalid text fields recorded in the validity dictionary;
+    //      2. Server name and port are given
+    //      3. At least one incomplete frame set is in the session table
+
+    private void enableBeginButton() {
+        boolean okToBegin = true;
+        String toolTip = "Begin the acquisition session.";
+        //  Any invalid text fields?
+        if (this.anyInvalidTextFields()) {
+            toolTip = "Disabled because there are invalid text fields.";
+            okToBegin = false;
+        }
+        //  Do we have server information?
+        if (okToBegin && !this.serverInfoReady()) {
+            toolTip = "Disabled because there is incomplete server information,";
+            okToBegin = false;
+        }
+        //  Is there at least one work item in the work list?
+        if (okToBegin && this.countSessionFrameSets() == 0) {
+            toolTip = "Disabled because there are no frame sets to be acquired.";
+            okToBegin = false;
+        }
+
+        this.beginSessionButton.setToolTipText(toolTip);
+        this.beginSessionButton.setEnabled(okToBegin);
+    }
+
+    private int countSessionFrameSets() {
+	    int result = 0;
+	    if (this.sessionFrameTableModel != null) {
+	        result = this.sessionFrameTableModel.getRowCount();
+        }
+	    return result;
+    }
+
+    private boolean serverInfoReady() {
+        // The server name can be blank - ensure it isn't.
+        return this.dataModel.getNetAddress().trim().length() > 0;
+    }
+
+    // Determine if any text input fields are still invalid.  (We've been recording valid/invalid flags
+    // for fields in a dictionary as we process their input.)
+
+    private boolean anyInvalidTextFields() {
+        boolean anyInvalid = false;
+        for (HashMap.Entry<JTextField,Boolean> entry : this.textFieldValidity.entrySet()) {
+            boolean isValid = entry.getValue();
+            if (!isValid) {
+                anyInvalid = true;
+                break;
+            }
+        }
+        return anyInvalid;
+    }
+
+    //  Set the Start Time Display field to the time that will be used with the current settings
     //  Sunset, dusk, given time, etc.  If start is "Now", blank the field.
     private void displayStartTime() {
         if (this.dataModel.getStartDateType() == StartDate.NOW) {
