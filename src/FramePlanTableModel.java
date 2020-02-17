@@ -72,4 +72,15 @@ public class FramePlanTableModel extends AbstractTableModel {
         this.dataModel.getSavedFrameSets().set(replacementPoint, changedFrameSet);
         this.fireTableRowsUpdated(replacementPoint, replacementPoint);
     }
+
+    public void resetCompletedCounts() {
+        int numFrameSets = this.dataModel.getSavedFrameSets().size();
+        if (numFrameSets > 0) {
+            for (int index = 0; index < numFrameSets; index++) {
+                FrameSet thisFrameSet = this.dataModel.getSavedFrameSets().get(index);
+                thisFrameSet.setNumberComplete(0);
+            }
+            this.fireTableRowsUpdated(0, numFrameSets - 1);
+        }
+    }
 }

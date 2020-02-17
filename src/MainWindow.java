@@ -724,9 +724,20 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  User has clicked "Reset Completed".  This could cause them to lose the book keeping for their
+    //  in-progress acquisition plan, so we'll do an "are you sure" dialog.  Then, if they are sure,
+    //  set the Completed count to all the framesets in the plan back to zero.
+
     private void resetCompletedButtonActionPerformed(ActionEvent e) {
-        System.out.println("resetCompletedButtonActionPerformed");
-        // TODO resetCompletedButtonActionPerformed
+        //  Set up and display dialog asking the user if they want to save first
+        Integer response = JOptionPane.showConfirmDialog(this,
+                "This will reset ALL the Completed counts in the plan,\ncausing ALL "
+                + "the frame sets to be re-acquired.\nAre you sure you want to do this?",
+                "Confirm Reset",
+                JOptionPane.YES_NO_OPTION);
+        if (response == 0) {
+            this.framePlanTableModel.resetCompletedCounts();
+        }
     }
 
     //  Move Up button has been clicked.  "Up" is in the visual sense in the user interface.
