@@ -889,11 +889,6 @@ public class MainWindow extends JFrame {
         this.warmUpSecondsActionPerformed(null);
     }
 
-    private void newMenuItemActionPerformed() {
-        // TODO newMenuItemActionPerformed
-        System.out.println("newMenuItemActionPerformed");
-    }
-
     //  OPEN menu has been invoked.
     //  Use a file dialog to get the file to be opened.  Open and decode it to a new data model
     //  then update the displayed window to reflect that new data model.
@@ -933,7 +928,17 @@ public class MainWindow extends JFrame {
             System.out.println("Unable to write to file.");
             JOptionPane.showMessageDialog(null, "IO error, unable to read file");
         }
+    }
 
+    // NEW menu invoked. Create a new default data model and load it.
+
+    private void newMenuItemActionPerformed() {
+        System.out.println("newMenuItemActionPerformed");
+        DataModel newDataModel = DataModel.newInstance();
+        this.dataModel = null;
+        this.loadDataModel(newDataModel, CommonUtils.UNSAVED_WINDOW_TITLE);
+        this.filePath = "";
+        this.makeNotDirty();
     }
 
     //  todo open file if passed in as application argument
@@ -2389,16 +2394,24 @@ public class MainWindow extends JFrame {
 
         //  Important to set these date fields before the radio buttons, they interact.  If the
         //  radio buttons are set first, it wipes out the stored date values.
-        if (dataModelInput.getGivenStartDate() != null) {
+        if (dataModelInput.getGivenStartDate() == null) {
+            startDatePicker.setDate(null);
+        } else {
             startDatePicker.setDate(dataModelInput.getGivenStartDate());
         }
-        if (dataModelInput.getGivenStartTime() != null) {
+        if (dataModelInput.getGivenStartTime() == null) {
+            startTimePicker.setTime(null);
+        } else {
             startTimePicker.setTime(dataModelInput.getGivenStartTime());
         }
-        if (dataModelInput.getGivenEndDate() != null) {
+        if (dataModelInput.getGivenEndDate() == null) {
+            endDatePicker.setDate(null);
+        } else {
             endDatePicker.setDate(dataModelInput.getGivenEndDate());
         }
-        if (dataModelInput.getGivenEndTime() != null) {
+        if (dataModelInput.getGivenEndTime() == null) {
+            endTimePicker.setTime(null);
+        } else {
             endTimePicker.setTime(dataModelInput.getGivenEndTime());
         }
 
