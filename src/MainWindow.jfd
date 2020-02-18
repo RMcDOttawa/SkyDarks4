@@ -905,6 +905,33 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JMenu", new FormLayoutManager( class javax.swing.JMenu ) ) {
 					name: "menu1"
 					"text": "File"
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "newMenuItem"
+						"text": "New"
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 78, 4356, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "newMenuItemActionPerformed", false ) )
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "openMenuItem"
+						"text": "Open"
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 79, 4356, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "openMenuItemActionPerformed", false ) )
+					} )
+					add( new FormComponent( "javax.swing.JPopupMenu$Separator" ) {
+						name: "separator1"
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "saveAsMenuItem"
+						"text": "Save As…"
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 83, 4421, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "saveAsMenuItemActionPerformed", false ) )
+					} )
+					add( new FormComponent( "javax.swing.JMenuItem" ) {
+						name: "saveMenuItem"
+						"text": "Save"
+						"accelerator": static javax.swing.KeyStroke getKeyStroke( 83, 4356, false )
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "saveMenuItemActionPerformed", false ) )
+					} )
 				} )
 			}
 		}, new FormLayoutConstraints( null ) {

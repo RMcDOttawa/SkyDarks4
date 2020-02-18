@@ -1,5 +1,6 @@
+import java.io.Serializable;
 
-public enum EndTime  {
+public enum EndTime   implements Serializable {
     SUNRISE,
     CIVIL_DAWN,
     NAUTICAL_DAWN,

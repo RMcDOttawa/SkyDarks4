@@ -1,20 +1,22 @@
-public class FrameSet implements Cloneable {
+import java.io.Serializable;
+
+public class FrameSet implements Serializable {
 
     //  Properties of a Frame Set, and their default values
 
-    private int         numberOfFrames  = 16;
+    private Integer     numberOfFrames  = 16;
     private FrameType   frameType       = FrameType.DARK_FRAME;
-    private double      exposureSeconds = 300.0;
-    private int         binning         = 1;
-    private int         numberComplete  = 0;
+    private Double      exposureSeconds = 300.0;
+    private Integer     binning         = 1;
+    private Integer     numberComplete  = 0;
 
     public FrameSet() {}
 
-    public int getNumberOfFrames() {
+    public Integer getNumberOfFrames() {
         return numberOfFrames;
     }
 
-    public void setNumberOfFrames(int numberOfFrames) {
+    public void setNumberOfFrames(Integer numberOfFrames) {
         this.numberOfFrames = numberOfFrames;
     }
 
@@ -26,37 +28,37 @@ public class FrameSet implements Cloneable {
         this.frameType = frameType;
     }
 
-    public double getExposureSeconds() {
+    public Double getExposureSeconds() {
         return exposureSeconds;
     }
 
-    public void setExposureSeconds(double exposureSeconds) {
+    public void setExposureSeconds(Double exposureSeconds) {
         this.exposureSeconds = exposureSeconds;
     }
 
-    public int getBinning() {
+    public Integer getBinning() {
         return binning;
     }
 
-    public void setBinning(int binning) {
+    public void setBinning(Integer binning) {
         this.binning = binning;
     }
 
-    public int getNumberComplete() {
+    public Integer getNumberComplete() {
         return numberComplete;
     }
 
-    public void setNumberComplete(int numberComplete) {
+    public void setNumberComplete(Integer numberComplete) {
         this.numberComplete = numberComplete;
     }
 
     //  Static creator factory methods
 
-    public static FrameSet of(int count,
+    public static FrameSet of(Integer count,
                               FrameType frameType,
-                              double exposureSeconds,
-                              int binning,
-                              int completed) {
+                              Double exposureSeconds,
+                              Integer binning,
+                              Integer completed) {
         FrameSet newFrameSet = new FrameSet();
         newFrameSet.numberOfFrames = count;
         newFrameSet.frameType = frameType;

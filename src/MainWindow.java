@@ -3,6 +3,7 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.JTableHeader;
 
 import com.github.lgooddatepicker.components.DatePicker;
@@ -10,6 +11,9 @@ import com.github.lgooddatepicker.components.TimePicker;
 import net.miginfocom.swing.*;
 
 import java.awt.*;
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -22,6 +26,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jdesktop.beansbinding.*;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
+
 /*
  * Created by JFormDesigner on Wed Feb 12 19:55:56 EST 2020
  */
@@ -36,6 +41,7 @@ public class MainWindow extends JFrame {
     public DataModel getDataModel() {
         return dataModel;
     }
+    private static final String dataFileSuffix = "pskdk4";
 
     private HashMap<JTextField,Boolean> textFieldValidity = new HashMap<>();
     private FramePlanTableModel framePlanTableModel;
@@ -795,8 +801,8 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  TODO Disable Cancel Session button by default
-    //  TODO Enable Begin Session button if everything needed is ok
+    // todo Intercept Quit to do protected save
+    // todo Intercept Close to do protected save
 
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
@@ -876,11 +882,110 @@ public class MainWindow extends JFrame {
         this.warmUpSecondsActionPerformed(null);
     }
 
+    private void newMenuItemActionPerformed() {
+        // TODO newMenuItemActionPerformed
+        System.out.println("newMenuItemActionPerformed");
+    }
+
+    private void openMenuItemActionPerformed() {
+        // TODO openMenuItemActionPerformed
+        System.out.println("openMenuItemActionPerformed");
+    }
+
+    //  todo open file if passed in as application argument
+
+    //  User has selected the "Save As" menu item.  Prompt for a new name and location
+    //  for the file, then write out serialized data model.
+
+    private void saveAsMenuItemActionPerformed() {
+
+        // The following code block is the native Java Swing file chooser.  However, it
+        // doesn't come up looking like the standard system file dialog, and there is
+        // a strange bug preventing it from drilling into some directories.  To keep the user
+        // experience closer to what they're used to, we'll use the AWT file dialog instead, below.
+
+//        OutputFileChooser fileChooser = new OutputFileChooser("pySkyDarks4 FrameSet plans",
+//                dataFileSuffix);
+/*
+        JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "pySkyDark4 Files", dataFileSuffix);
+        fileChooser.setFileFilter(filter);
+        // Get file name for saving
+        fileChooser.setDialogTitle("Where should we save the FrameSet plan?");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.rescanCurrentDirectory();
+        int userSelection = fileChooser.showOpenDialog(this);
+//        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            writeToFile(fileToSave);
+        }
+*/
+        FileDialog fileDialog = new FileDialog(this, "Save Plan File", FileDialog.SAVE);
+        fileDialog.setMultipleMode(false);
+        fileDialog.setVisible(true);
+        String selectedFile = fileDialog.getFile();
+        if (selectedFile != null) {
+            String selectedDirectory = fileDialog.getDirectory();
+            String fullPath = selectedDirectory + selectedFile;
+            if (!fullPath.endsWith(("." + dataFileSuffix))) {
+                fullPath += "." + dataFileSuffix;
+            }
+            System.out.println("Output path: " + fullPath);
+            File newFile = new File(fullPath);
+            this.writeToFile(newFile);
+        }
+    }
+
+    //  Write the current data model, serialized to XML, to the given file
+    //  Go through a temporary file so there is no data loss in the event of a crash
+    private void writeToFile(File fileToSave) {
+        // Write serialized data model to file
+        String serialized = this.dataModel.serialize();
+
+        // Write to temporary file then delete and rename old copy
+        // This way, if system crashes, either old or new file will still exist - no data loss
+        String fileNameWithExtension = fileToSave.getName();
+        assert(fileNameWithExtension.endsWith(dataFileSuffix));
+        String justFileName = fileNameWithExtension.substring(0,
+                fileNameWithExtension.length() - (1 + dataFileSuffix.length()));
+        String directory = fileToSave.getParent();
+        try {
+            File tempFile = File.createTempFile(justFileName, dataFileSuffix, new File(directory));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile.getAbsolutePath()));
+            writer.write(serialized);
+            writer.close();
+
+            //  Content is now in temporary file.   Delete original file name and rename temporary.
+            fileToSave.delete();
+            tempFile.renameTo(fileToSave);
+        } catch (FileNotFoundException e) {
+            System.out.println("FileNotFound Exception. Not sure how this can happen, probably can't.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Unable to write to file.");
+            JOptionPane.showMessageDialog(null, "IO error, unable to save file");
+        }
+        // todo set title of main window
+        // todo un-dirty the document
+
+    }
+
+    private void saveMenuItemActionPerformed() {
+        // TODO saveMenuItemActionPerformed
+        System.out.println("saveMenuItemActionPerformed");
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
         menuBar1 = new JMenuBar();
         menu1 = new JMenu();
+        newMenuItem = new JMenuItem();
+        openMenuItem = new JMenuItem();
+        saveAsMenuItem = new JMenuItem();
+        saveMenuItem = new JMenuItem();
         mainTabFrame = new JTabbedPane();
         startEndTab = new JPanel();
         label1 = new JLabel();
@@ -1017,6 +1122,31 @@ public class MainWindow extends JFrame {
             //======== menu1 ========
             {
                 menu1.setText("File");
+
+                //---- newMenuItem ----
+                newMenuItem.setText("New");
+                newMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                newMenuItem.addActionListener(e -> newMenuItemActionPerformed());
+                menu1.add(newMenuItem);
+
+                //---- openMenuItem ----
+                openMenuItem.setText("Open");
+                openMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                openMenuItem.addActionListener(e -> openMenuItemActionPerformed());
+                menu1.add(openMenuItem);
+                menu1.addSeparator();
+
+                //---- saveAsMenuItem ----
+                saveAsMenuItem.setText("Save As\u2026");
+                saveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()|KeyEvent.SHIFT_MASK));
+                saveAsMenuItem.addActionListener(e -> saveAsMenuItemActionPerformed());
+                menu1.add(saveAsMenuItem);
+
+                //---- saveMenuItem ----
+                saveMenuItem.setText("Save");
+                saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                saveMenuItem.addActionListener(e -> saveMenuItemActionPerformed());
+                menu1.add(saveMenuItem);
             }
             menuBar1.add(menu1);
         }
@@ -2065,6 +2195,10 @@ public class MainWindow extends JFrame {
     // Generated using JFormDesigner non-commercial license
     private JMenuBar menuBar1;
     private JMenu menu1;
+    private JMenuItem newMenuItem;
+    private JMenuItem openMenuItem;
+    private JMenuItem saveAsMenuItem;
+    private JMenuItem saveMenuItem;
     private JTabbedPane mainTabFrame;
     private JPanel startEndTab;
     private JLabel label1;

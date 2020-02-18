@@ -1,4 +1,6 @@
-public enum StartTime {
+import java.io.Serializable;
+
+public enum StartTime  implements Serializable {
     SUNSET,
     CIVIL_DUSK,
     NAUTICAL_DUSK,

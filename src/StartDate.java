@@ -1,16 +1,8 @@
-public enum StartDate {
-    NOW("Now"),
-    TODAY("Today"),
-    GIVEN_DATE("Given");
-    private String typeName;
+import java.io.Serializable;
 
-    StartDate(String theTypeName) {
-        this.typeName = theTypeName;
-    }
-
-    @Override
-    public String toString(){
-        return this.typeName;
-    }
+public enum StartDate  implements Serializable {
+    NOW,
+    TODAY,
+    GIVEN_DATE
 }
 

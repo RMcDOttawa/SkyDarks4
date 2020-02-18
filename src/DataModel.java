@@ -3,13 +3,19 @@ import luckycatlabs.SunriseSunsetCalculator;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.XMLEncoder;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
 
-public class DataModel {
+public class DataModel  implements Serializable {
     //  Location of the site (for calculating sun times)
     private String locationName = "EWHO";
     private String timeZone = "EST";
@@ -21,14 +27,21 @@ public class DataModel {
     //  Info about when the run starts
     private StartDate startDateType = StartDate.TODAY;          // What day?
     private StartTime startTimeType = StartTime.CIVIL_DUSK;     // What time on that day?
-    private LocalDate givenStartDate = null;                    // If specific date given
-    private LocalTime givenStartTime = null;                    // If specific time given
+    private transient LocalDate givenStartDate = null;                    // If specific date given
+    private transient LocalTime givenStartTime = null;                    // If specific time given
 
     //  Info about when the run stops
     private EndDate endDateType = EndDate.TODAY_TOMORROW;       // What day (or just when done)?
     private EndTime endTimeType = EndTime.CIVIL_DAWN;           // What time that day (if applicable)?
-    private LocalDate givenEndDate = null;                      // If specific date given
-    private LocalTime givenEndTime = null;                      // If specific time given
+    private transient LocalDate givenEndDate = null;                      // If specific date given
+    private transient LocalTime givenEndTime = null;                      // If specific time given
+
+    //  LocalDate and LocalTime objects don't XML Serialize, so we will store string
+    //  representations of them when saving the file
+    private String givenStartDateAsString = "";
+    private String givenStartTimeAsString = "";
+    private String givenEndDateAsString = "";
+    private String givenEndTimeAsString = "";
 
     //  What do we do when we're done?
     private Boolean disconnectWhenDone      = true;             // Disconnect camera?
@@ -67,7 +80,6 @@ public class DataModel {
 
     //  Information dealing with saving the model to a file or reading from a file
 
-    private transient static final String dataFileSuffix = "pskdk4";
     private Boolean autoSaveAfterEachFrame = true;
 
     //  Java beans change support methods (see JSR 295)
@@ -203,6 +215,38 @@ public class DataModel {
         LocalTime oldGivenEndTime = this.givenEndTime;
         this.givenEndTime = newGivenEndTime;
         changeSupport.firePropertyChange("givenEndTime", oldGivenEndTime, newGivenEndTime);
+    }
+
+    public String getGivenStartDateAsString() {
+        return givenStartDateAsString;
+    }
+
+    public void setGivenStartDateAsString(String givenStartDateAsString) {
+        this.givenStartDateAsString = givenStartDateAsString;
+    }
+
+    public String getGivenStartTimeAsString() {
+        return givenStartTimeAsString;
+    }
+
+    public void setGivenStartTimeAsString(String givenStartTimeAsString) {
+        this.givenStartTimeAsString = givenStartTimeAsString;
+    }
+
+    public String getGivenEndDateAsString() {
+        return givenEndDateAsString;
+    }
+
+    public void setGivenEndDateAsString(String givenEndDateAsString) {
+        this.givenEndDateAsString = givenEndDateAsString;
+    }
+
+    public String getGivenEndTimeAsString() {
+        return givenEndTimeAsString;
+    }
+
+    public void setGivenEndTimeAsString(String givenEndTimeAsString) {
+        this.givenEndTimeAsString = givenEndTimeAsString;
     }
 
     public Boolean getDisconnectWhenDone() {
@@ -546,5 +590,70 @@ public class DataModel {
         return calendar;
     }
 
+    public String serialize() {
+        // LocalDate and LocalTime values don't serialize well, and are causing errors.
+        // So, we temporarily set them to null and conver them to serializable strings
+        this.setDateAndTimeStrings();
+        LocalDate saveStartDate = this.givenStartDate;
+        LocalDate saveEndDate = this.givenEndDate;
+        LocalTime saveStartTime = this.givenStartTime;
+        LocalTime saveEndTime = this.givenEndTime;
+        this.givenStartDate = null;
+        this.givenEndDate = null;
+        this.givenStartTime = null;
+        this.givenEndTime = null;
+
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        BufferedOutputStream outputStream = new BufferedOutputStream(byteStream);
+        XMLEncoder encoder = new XMLEncoder(outputStream);
+        encoder.writeObject(this);
+        encoder.close();
+        try {
+            outputStream.close();
+            byteStream.close();
+        } catch (IOException e) {
+            System.out.println("Exception serializing data model: " + e.getMessage());
+            e.printStackTrace();
+        }
+        String resultString = byteStream.toString();
+
+        this.givenStartDate = saveStartDate;
+        this.givenEndDate = saveEndDate;
+        this.givenStartTime = saveStartTime;
+        this.givenEndTime = saveEndTime;
+
+        return resultString;
+    }
+
+    //  LocalDate and LocalTime objects don't seem to serialize, so we convert them to and
+    //  from strings when writing and reading files.
+
+    private void setDateAndTimeStrings() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (this.givenStartDate == null) {
+            this.givenStartDateAsString = null;
+        } else {
+            this.givenStartDateAsString = this.givenStartDate.format(dateFormatter);
+        }
+        if (this.givenEndDate == null) {
+            this.givenEndDateAsString = null;
+        } else {
+            this.givenEndDateAsString = this.givenEndDate.format(dateFormatter);
+        }
+
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        if (this.givenStartTime == null) {
+            this.givenStartTimeAsString = null;
+        } else {
+            this.givenStartTimeAsString = this.givenStartTime.format(timeFormatter);
+        }
+        if (this.givenEndTime == null) {
+            this.givenEndTimeAsString = null;
+        } else {
+            this.givenEndTimeAsString = this.givenEndTime.format(timeFormatter);
+        }
+
+    }
 }
 
