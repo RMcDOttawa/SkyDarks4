@@ -12,6 +12,8 @@ import net.miginfocom.swing.*;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -42,6 +44,7 @@ public class MainWindow extends JFrame {
         return dataModel;
     }
     private static final String dataFileSuffix = "pskdk4";
+    private String filePath = "";  // Set when file is saved
 
     private HashMap<JTextField,Boolean> textFieldValidity = new HashMap<>();
     private FramePlanTableModel framePlanTableModel;
@@ -56,6 +59,9 @@ public class MainWindow extends JFrame {
     }
 
     private void makeDirty() {
+    }
+
+    private void makeNotDirty() {
     }
 
     //  This listener method is invoked whenever the Tab is changed in the main tab view.
@@ -803,7 +809,8 @@ public class MainWindow extends JFrame {
 
     // todo Intercept Quit to do protected save
     // todo Intercept Close to do protected save
-
+    // todo protected save on Open
+    // todo protected save on New
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
         // TODO beginSessionButtonActionPerformed
@@ -887,9 +894,46 @@ public class MainWindow extends JFrame {
         System.out.println("newMenuItemActionPerformed");
     }
 
+    //  OPEN menu has been invoked.
+    //  Use a file dialog to get the file to be opened.  Open and decode it to a new data model
+    //  then update the displayed window to reflect that new data model.
+
     private void openMenuItemActionPerformed() {
-        // TODO openMenuItemActionPerformed
-        System.out.println("openMenuItemActionPerformed");
+        FileDialog fileDialog = new FileDialog(this, "Plan File", FileDialog.LOAD);
+        fileDialog.setMultipleMode(false);
+        fileDialog.setVisible(true);
+        String selectedFile = fileDialog.getFile();
+        String selectedDirectory = fileDialog.getDirectory();
+        String fullPath = selectedDirectory + selectedFile;
+        if (selectedFile != null) {
+            this.readFromFile(selectedFile, fullPath);
+        }
+    }
+
+    //  Given full path name of an existing file, read it, decode it, and change over to that data model
+
+    private void readFromFile(String fileName, String fullPath) {
+        System.out.println("readFromFile: " + fullPath);
+        byte[] encoded = new byte[0];
+        try {
+            encoded = Files.readAllBytes(Paths.get(fullPath));
+            String encodedData = new String(encoded, StandardCharsets.US_ASCII);
+            DataModel newDataModel = DataModel.newFromXml(encodedData);
+            if (newDataModel != null) {
+                if (fileName.endsWith("." + dataFileSuffix)) {
+                    // Strip suffix if present
+                    fileName = fileName.substring(0, fileName.length() - (1 + dataFileSuffix.length()));
+                }
+                this.dataModel = null;
+                this.loadDataModel(newDataModel, fileName);
+                this.filePath = fullPath;
+                this.makeNotDirty();
+            }
+        } catch (IOException e) {
+            System.out.println("Unable to write to file.");
+            JOptionPane.showMessageDialog(null, "IO error, unable to read file");
+        }
+
     }
 
     //  todo open file if passed in as application argument
@@ -960,6 +1004,13 @@ public class MainWindow extends JFrame {
             //  Content is now in temporary file.   Delete original file name and rename temporary.
             fileToSave.delete();
             tempFile.renameTo(fileToSave);
+
+            // Set title of main window
+            this.setTitle(justFileName);
+            //  un-dirty the document
+            this.makeNotDirty();
+            //  Remember the file path for future saves
+            this.filePath = fileToSave.getAbsolutePath();
         } catch (FileNotFoundException e) {
             System.out.println("FileNotFound Exception. Not sure how this can happen, probably can't.");
             e.printStackTrace();
@@ -967,14 +1018,18 @@ public class MainWindow extends JFrame {
             System.out.println("Unable to write to file.");
             JOptionPane.showMessageDialog(null, "IO error, unable to save file");
         }
-        // todo set title of main window
-        // todo un-dirty the document
 
     }
 
+    //  SAVE menu invoked.  If we already have a file defined, just re-save it.
+    //  Otherwise, treat this like a Save-As so the file gets prompted.
+
     private void saveMenuItemActionPerformed() {
-        // TODO saveMenuItemActionPerformed
-        System.out.println("saveMenuItemActionPerformed");
+        if (this.filePath.equals("")) {
+            this.saveAsMenuItemActionPerformed();
+        } else {
+            this.writeToFile(new File(this.filePath));
+        }
     }
 
     private void initComponents() {
@@ -2326,12 +2381,28 @@ public class MainWindow extends JFrame {
     private BindingGroup bindingGroup;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-	public void loadDataModel(DataModel dataModel) {
-        this.dataModel = dataModel;
+	public void loadDataModel(DataModel dataModelInput, String windowTitle) {
+        this.dataModel = dataModelInput;
+        this.setTitle(windowTitle);
 
 		// Start-End tab pane
 
-		switch (dataModel.getStartDateType()) {
+        //  Important to set these date fields before the radio buttons, they interact.  If the
+        //  radio buttons are set first, it wipes out the stored date values.
+        if (dataModelInput.getGivenStartDate() != null) {
+            startDatePicker.setDate(dataModelInput.getGivenStartDate());
+        }
+        if (dataModelInput.getGivenStartTime() != null) {
+            startTimePicker.setTime(dataModelInput.getGivenStartTime());
+        }
+        if (dataModelInput.getGivenEndDate() != null) {
+            endDatePicker.setDate(dataModelInput.getGivenEndDate());
+        }
+        if (dataModelInput.getGivenEndTime() != null) {
+            endTimePicker.setTime(dataModelInput.getGivenEndTime());
+        }
+
+        switch (dataModelInput.getStartDateType()) {
 			case NOW:
 				startDateNowButton.setSelected(true);
 				break;
@@ -2342,7 +2413,7 @@ public class MainWindow extends JFrame {
 				startDateGivenButton.setSelected(true);
 				break;
 		}
-		switch (dataModel.getStartTimeType()) {
+		switch (dataModelInput.getStartTimeType()) {
             case SUNSET:
                 startSunsetButton.setSelected(true);
                 break;
@@ -2359,7 +2430,7 @@ public class MainWindow extends JFrame {
                 startGivenTimeButton.setSelected(true);
                 break;
         }
-        switch (dataModel.getEndDateType()) {
+        switch (dataModelInput.getEndDateType()) {
             case WHEN_DONE:
                 endDateDoneButton.setSelected(true);
                 break;
@@ -2370,7 +2441,7 @@ public class MainWindow extends JFrame {
                 endDateGivenButton.setSelected(true);
                 break;
         }
-        switch (dataModel.getEndTimeType()) {
+        switch (dataModelInput.getEndTimeType()) {
             case SUNRISE:
                 endSunriseButton.setSelected(true);
                 break;
@@ -2387,60 +2458,48 @@ public class MainWindow extends JFrame {
                 endGivenTimeButton.setSelected(true);
                 break;
         }
-        if (dataModel.getGivenStartDate() != null) {
-			startDatePicker.setDate(dataModel.getGivenStartDate());
-		}
-        if (dataModel.getGivenStartTime() != null) {
-        	startTimePicker.setTime(dataModel.getGivenStartTime());
-		}
-        if (dataModel.getGivenEndDate() != null) {
-        	endDatePicker.setDate(dataModel.getGivenEndDate());
-		}
-        if (dataModel.getGivenEndTime() != null) {
-        	endTimePicker.setTime(dataModel.getGivenEndTime());
-		}
 
-        locationName.setText(dataModel.getLocationName());
-        timeZoneName.setText(String.valueOf(dataModel.getTimeZone()));
-        latitude.setText(String.valueOf(dataModel.getLatitude()));
-        longitude.setText(String.valueOf(dataModel.getLongitude()));
+        locationName.setText(dataModelInput.getLocationName());
+        timeZoneName.setText(String.valueOf(dataModelInput.getTimeZone()));
+        latitude.setText(String.valueOf(dataModelInput.getLatitude()));
+        longitude.setText(String.valueOf(dataModelInput.getLongitude()));
 
-        warmUpCheckbox.setSelected(dataModel.getWarmUpWhenDone());
-        warmUpSeconds.setText(String.valueOf(dataModel.getWarmUpWhenDoneSeconds()));
-        disconnectCheckbox.setSelected(dataModel.getDisconnectWhenDone());
+        warmUpCheckbox.setSelected(dataModelInput.getWarmUpWhenDone());
+        warmUpSeconds.setText(String.valueOf(dataModelInput.getWarmUpWhenDoneSeconds()));
+        disconnectCheckbox.setSelected(dataModelInput.getDisconnectWhenDone());
 
 		// Temperature tab pane
 
-		temperatureRegulatedCheckbox.setSelected(dataModel.getTemperatureRegulated());
-		targetTemperature.setText(String.valueOf(dataModel.getTemperatureTarget()));
-		temperatureWithin.setText(String.valueOf(dataModel.getTemperatureWithin()));
-		coolingCheckInterval.setText(String.valueOf(dataModel.getTemperatureSettleSeconds()));
-		coolingTimeout.setText(String.valueOf(dataModel.getMaxCoolingWaitTime()));
-		coolingRetryCount.setText(String.valueOf(dataModel.getTemperatureFailRetryCount()));
-		coolingRetryDelay.setText(String.valueOf(dataModel.getTemperatureFailRetryDelaySeconds()));
-		abortOnTempRiseCheckbox.setSelected(dataModel.getTemperatureAbortOnRise());
-		abortOnTempRiseThreshold.setText(String.valueOf(dataModel.getTemperatureAbortRiseLimit()));
+		temperatureRegulatedCheckbox.setSelected(dataModelInput.getTemperatureRegulated());
+		targetTemperature.setText(String.valueOf(dataModelInput.getTemperatureTarget()));
+		temperatureWithin.setText(String.valueOf(dataModelInput.getTemperatureWithin()));
+		coolingCheckInterval.setText(String.valueOf(dataModelInput.getTemperatureSettleSeconds()));
+		coolingTimeout.setText(String.valueOf(dataModelInput.getMaxCoolingWaitTime()));
+		coolingRetryCount.setText(String.valueOf(dataModelInput.getTemperatureFailRetryCount()));
+		coolingRetryDelay.setText(String.valueOf(dataModelInput.getTemperatureFailRetryDelaySeconds()));
+		abortOnTempRiseCheckbox.setSelected(dataModelInput.getTemperatureAbortOnRise());
+		abortOnTempRiseThreshold.setText(String.valueOf(dataModelInput.getTemperatureAbortRiseLimit()));
 
 		// Server tab pane
 
-		serverAddress.setText(dataModel.getNetAddress());
-		portNumber.setText(String.valueOf(dataModel.getPortNumber()));
-		sendWOLcheckbox.setSelected(dataModel.getSendWakeOnLanBeforeStarting());
-		wolSecondsBefore.setText(String.valueOf(dataModel.getSendWolSecondsBefore()));
-		wolMacAddress.setText(dataModel.getWolMacAddress());
-		wolBroadcastAddress.setText(dataModel.getWolBroadcastAddress());
+		serverAddress.setText(dataModelInput.getNetAddress());
+		portNumber.setText(String.valueOf(dataModelInput.getPortNumber()));
+		sendWOLcheckbox.setSelected(dataModelInput.getSendWakeOnLanBeforeStarting());
+		wolSecondsBefore.setText(String.valueOf(dataModelInput.getSendWolSecondsBefore()));
+		wolMacAddress.setText(dataModelInput.getWolMacAddress());
+		wolBroadcastAddress.setText(dataModelInput.getWolBroadcastAddress());
 
 		// Frames Plan tab pane
 
-        autosaveCheckbox.setSelected(dataModel.getAutoSaveAfterEachFrame());
-        this.framePlanTableModel = FramePlanTableModel.create(dataModel);
+        autosaveCheckbox.setSelected(dataModelInput.getAutoSaveAfterEachFrame());
+        this.framePlanTableModel = FramePlanTableModel.create(dataModelInput);
         framesetTable.setModel(this.framePlanTableModel);
 
-        // Make table column headers bold and 1 point larger than default
+        // Make table column headers bold
 
         JTableHeader header = framesetTable.getTableHeader();
         Font headerFont = header.getFont();
-        Font newFont = new Font(header.getName(), Font.BOLD, headerFont.getSize() + 1);
+        Font newFont = new Font(header.getName(), Font.BOLD, headerFont.getSize());
         header.setFont(newFont);
 
         // Run Session tab pane
@@ -2562,7 +2621,7 @@ public class MainWindow extends JFrame {
         try {
             DataModel dataModel = DataModel.newInstance();
             MainWindow mainWindow = new MainWindow(dataModel);
-            mainWindow.loadDataModel(dataModel);
+            mainWindow.loadDataModel(dataModel, CommonUtils.UNSAVED_WINDOW_TITLE);
             mainWindow.setVisible(true);
         } catch (Exception e) {
             System.out.println("Uncaught exception: " + e.getMessage());

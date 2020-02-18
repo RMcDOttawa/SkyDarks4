@@ -1,13 +1,12 @@
 import luckycatlabs.Location;
 import luckycatlabs.SunriseSunsetCalculator;
+import org.xml.sax.InputSource;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +15,9 @@ import java.util.Calendar;
 
 
 public class DataModel  implements Serializable {
+    //  Version control of the data model, to allow backward-compatibility of saved files
+    private Integer modelVersion = 1;
+
     //  Location of the site (for calculating sun times)
     private String locationName = "EWHO";
     private String timeZone = "EST";
@@ -27,14 +29,14 @@ public class DataModel  implements Serializable {
     //  Info about when the run starts
     private StartDate startDateType = StartDate.TODAY;          // What day?
     private StartTime startTimeType = StartTime.CIVIL_DUSK;     // What time on that day?
-    private transient LocalDate givenStartDate = null;                    // If specific date given
-    private transient LocalTime givenStartTime = null;                    // If specific time given
+    private LocalDate givenStartDate = null;                    // If specific date given
+    private LocalTime givenStartTime = null;                    // If specific time given
 
     //  Info about when the run stops
     private EndDate endDateType = EndDate.TODAY_TOMORROW;       // What day (or just when done)?
     private EndTime endTimeType = EndTime.CIVIL_DAWN;           // What time that day (if applicable)?
-    private transient LocalDate givenEndDate = null;                      // If specific date given
-    private transient LocalTime givenEndTime = null;                      // If specific time given
+    private LocalDate givenEndDate = null;                      // If specific date given
+    private LocalTime givenEndTime = null;                      // If specific time given
 
     //  LocalDate and LocalTime objects don't XML Serialize, so we will store string
     //  representations of them when saving the file
@@ -96,6 +98,14 @@ public class DataModel  implements Serializable {
 
 
     // Getters and Setters
+
+    public Integer getModelVersion() {
+        return modelVersion;
+    }
+
+    public void setModelVersion(Integer modelVersion) {
+        this.modelVersion = modelVersion;
+    }
 
     public String getLocationName() {
         return locationName;
@@ -628,8 +638,11 @@ public class DataModel  implements Serializable {
     //  LocalDate and LocalTime objects don't seem to serialize, so we convert them to and
     //  from strings when writing and reading files.
 
+    private static final String dateFormatterPattern = "yyyy-MM-dd";
+    private static final String timeFormatterPattern = "HH:mm:ss";
+
     private void setDateAndTimeStrings() {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormatterPattern);
 
         if (this.givenStartDate == null) {
             this.givenStartDateAsString = null;
@@ -642,7 +655,7 @@ public class DataModel  implements Serializable {
             this.givenEndDateAsString = this.givenEndDate.format(dateFormatter);
         }
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(timeFormatterPattern);
         if (this.givenStartTime == null) {
             this.givenStartTimeAsString = null;
         } else {
@@ -652,6 +665,60 @@ public class DataModel  implements Serializable {
             this.givenEndTimeAsString = null;
         } else {
             this.givenEndTimeAsString = this.givenEndTime.format(timeFormatter);
+        }
+
+    }
+
+    //  Create a new instance of datamodel by decoding the provided xml string
+    //  This includes translating the encoded start and end dates and times back to localdates
+    //  See serialize above to see what that's about.
+
+    public static DataModel newFromXml(String serialized) {
+        InputSource inputSource = new InputSource(new StringReader(serialized));
+        XMLDecoder decoder = new XMLDecoder(inputSource);
+        Object decodedObject = decoder.readObject();
+        DataModel newModel = null;
+        if (decodedObject instanceof DataModel) {
+            newModel = (DataModel) decodedObject;
+            newModel.restoreDatesAndTimes();
+        }
+        return newModel;
+    }
+
+    //  Before the datamodel was encoded to XML and saved to a file, we saved the LocalDate and LocalTime
+    //  attributes in string format and then nulled the objects, because they don't serialize well.
+    //  Now we restore those objects from the saved strings.
+
+    private void restoreDatesAndTimes() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormatterPattern);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(timeFormatterPattern);
+
+        // Given start date
+        if (this.givenStartDateAsString == null) {
+            this.setGivenStartDate(null);
+        } else {
+            this.setGivenStartDate(LocalDate.parse(this.givenStartDateAsString, dateFormatter));
+        }
+
+        // Given end data
+        if (this.givenEndDateAsString == null) {
+            this.setGivenEndDate(null);
+        } else {
+            this.setGivenEndDate(LocalDate.parse(this.givenEndDateAsString, dateFormatter));
+        }
+
+        // Given start time
+        if (this.givenStartTimeAsString == null) {
+            this.setGivenStartTime(null);
+        } else {
+            this.setGivenStartTime(LocalTime.parse(this.givenStartTimeAsString, timeFormatter));
+        }
+
+        // Given end time
+        if (this.givenEndTimeAsString == null) {
+            this.setGivenEndTime(null);
+        } else {
+            this.setGivenEndTime(LocalTime.parse(this.givenEndTimeAsString, timeFormatter));
         }
 
     }
