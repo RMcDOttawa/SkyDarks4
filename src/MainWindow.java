@@ -52,6 +52,8 @@ public class MainWindow extends JFrame {
     private SessionFrameTableModel sessionFrameTableModel;
     private FrameTableSelectionListener frameTableSelectionListener;
 
+    private boolean documentDirtyFlag = false;
+
     public MainWindow(DataModel theDataModel) {
         this.dataModel = theDataModel;
         this.frameTableSelectionListener = new FrameTableSelectionListener(this);
@@ -59,9 +61,15 @@ public class MainWindow extends JFrame {
     }
 
     private void makeDirty() {
+        this.documentDirtyFlag = true;
     }
 
     private void makeNotDirty() {
+        this.documentDirtyFlag = false;
+    }
+
+    private boolean isDirty() {
+        return this.documentDirtyFlag;
     }
 
     //  This listener method is invoked whenever the Tab is changed in the main tab view.
@@ -154,8 +162,10 @@ public class MainWindow extends JFrame {
             ;
         } else {
             LocalDate newDate = startDatePicker.getDate();
-            this.makeDirty();
-            this.dataModel.setGivenStartDate(newDate);
+            if (newDate != this.dataModel.getGivenStartDate()) {
+                this.makeDirty();
+                this.dataModel.setGivenStartDate(newDate);
+            }
         }
         this.displayStartTime();
     }
@@ -166,8 +176,10 @@ public class MainWindow extends JFrame {
             ;
         } else {
             LocalTime newTime = startTimePicker.getTime();
-            this.makeDirty();
-            this.dataModel.setGivenStartTime(newTime);
+            if (newTime != this.dataModel.getGivenStartTime()) {
+                this.makeDirty();
+                this.dataModel.setGivenStartTime(newTime);
+            }
         }
         this.displayStartTime();
     }
@@ -202,8 +214,10 @@ public class MainWindow extends JFrame {
             ;
         } else {
             LocalDate newDate = endDatePicker.getDate();
-            this.makeDirty();
-            this.dataModel.setGivenEndDate(newDate);
+            if (newDate != this.dataModel.getGivenEndDate()) {
+                this.makeDirty();
+                this.dataModel.setGivenEndDate(newDate);
+            }
         }
         this.displayEndTime();
     }
@@ -254,8 +268,10 @@ public class MainWindow extends JFrame {
             ;
         } else {
             LocalTime newTime = endTimePicker.getTime();
-            this.makeDirty();
-            this.dataModel.setGivenEndTime(newTime);
+            if (newTime != this.dataModel.getGivenEndTime()) {
+                this.makeDirty();
+                this.dataModel.setGivenEndTime(newTime);
+            }
         }
         this.displayEndTime();
     }
@@ -809,7 +825,6 @@ public class MainWindow extends JFrame {
 
     // todo Intercept Quit to do protected save
     // todo Intercept Close to do protected save
-    // todo protected save on Open
     // todo protected save on New
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
@@ -894,21 +909,55 @@ public class MainWindow extends JFrame {
     //  then update the displayed window to reflect that new data model.
 
     private void openMenuItemActionPerformed() {
-        FileDialog fileDialog = new FileDialog(this, "Plan File", FileDialog.LOAD);
-        fileDialog.setMultipleMode(false);
-        fileDialog.setVisible(true);
-        String selectedFile = fileDialog.getFile();
-        String selectedDirectory = fileDialog.getDirectory();
-        String fullPath = selectedDirectory + selectedFile;
-        if (selectedFile != null) {
-            this.readFromFile(selectedFile, fullPath);
+        if (protectedSaveProceed()) {
+            FileDialog fileDialog = new FileDialog(this, "Plan File", FileDialog.LOAD);
+            fileDialog.setMultipleMode(false);
+            fileDialog.setVisible(true);
+            String selectedFile = fileDialog.getFile();
+            String selectedDirectory = fileDialog.getDirectory();
+            String fullPath = selectedDirectory + selectedFile;
+            if (selectedFile != null) {
+                this.readFromFile(selectedFile, fullPath);
+            }
         }
+    }
+
+    // We're about to do something that will erase the current frame set plan.  If it is "dirty", i.e.
+    // contains changes not yet saved to disk, ask the user if they want to do a save.  If they do, do the
+    // save.  There are 3 possible outcomes on a dirty document
+    //  1. Do a save
+    //  2. Don't do a save, losing the unsaved changes
+    //  3. Cancel, don't do the operation that caused this
+
+    private boolean protectedSaveProceed() {
+        boolean proceed = true;
+        if (this.isDirty()) {
+            Object[] options = { "Cancel", "Discard", "Save"};
+            int result = JOptionPane.showOptionDialog(null,
+                    "Your frame set plan has unsaved changes. "
+                            + "Save these or discard them?", "Warning",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+                    null, options, options[2]);
+
+            switch (result) {
+                case 0:
+                    // Cancel was selected
+                    proceed = false;
+                    break;
+                case 1:
+                    // Discard selected - no need to save
+                    break;
+                case 2:
+                    // Save selected - do a save then proceed
+                    this.saveMenuItemActionPerformed();
+            }
+        }
+        return proceed;
     }
 
     //  Given full path name of an existing file, read it, decode it, and change over to that data model
 
     private void readFromFile(String fileName, String fullPath) {
-        System.out.println("readFromFile: " + fullPath);
         byte[] encoded = new byte[0];
         try {
             encoded = Files.readAllBytes(Paths.get(fullPath));
