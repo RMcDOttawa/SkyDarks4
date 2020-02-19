@@ -3,7 +3,6 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.JTableHeader;
 
 import com.github.lgooddatepicker.components.DatePicker;
@@ -14,7 +13,6 @@ import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -43,7 +41,6 @@ public class MainWindow extends JFrame {
     public DataModel getDataModel() {
         return dataModel;
     }
-    private static final String dataFileSuffix = "pskdk4";
     private String filePath = "";  // Set when file is saved
 
     private HashMap<JTextField,Boolean> textFieldValidity = new HashMap<>();
@@ -54,17 +51,24 @@ public class MainWindow extends JFrame {
 
     private boolean documentDirtyFlag = false;
 
-    public MainWindow(DataModel theDataModel) {
-        this.dataModel = theDataModel;
+    public MainWindow() {
         this.frameTableSelectionListener = new FrameTableSelectionListener(this);
         initComponents();
+    }
+
+    public void setDataModel(DataModel theModel) {
+        this.dataModel = theModel;
+    }
+
+    public void setFilePath(String thePath) {
+        this.filePath = thePath;
     }
 
     private void makeDirty() {
         this.documentDirtyFlag = true;
     }
 
-    private void makeNotDirty() {
+    public void makeNotDirty() {
         this.documentDirtyFlag = false;
     }
 
@@ -166,8 +170,8 @@ public class MainWindow extends JFrame {
                 this.makeDirty();
                 this.dataModel.setGivenStartDate(newDate);
             }
+            this.displayStartTime();
         }
-        this.displayStartTime();
     }
 
     private void startTimePickerPropertyChange(PropertyChangeEvent e) {
@@ -180,8 +184,8 @@ public class MainWindow extends JFrame {
                 this.makeDirty();
                 this.dataModel.setGivenStartTime(newTime);
             }
+            this.displayStartTime();
         }
-        this.displayStartTime();
     }
 
     private void endDateDoneButtonActionPerformed(ActionEvent e) {
@@ -218,8 +222,8 @@ public class MainWindow extends JFrame {
                 this.makeDirty();
                 this.dataModel.setGivenEndDate(newDate);
             }
+            this.displayEndTime();
         }
-        this.displayEndTime();
     }
 
     private void endSunriseButtonActionPerformed(ActionEvent e) {
@@ -272,8 +276,8 @@ public class MainWindow extends JFrame {
                 this.makeDirty();
                 this.dataModel.setGivenEndTime(newTime);
             }
+            this.displayEndTime();
         }
-        this.displayEndTime();
     }
 
     private void locationNameActionPerformed(ActionEvent e) {
@@ -825,7 +829,7 @@ public class MainWindow extends JFrame {
 
     // todo Intercept Quit to do protected save
     // todo Intercept Close to do protected save
-    // todo protected save on New
+
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
         // TODO beginSessionButtonActionPerformed
@@ -917,7 +921,7 @@ public class MainWindow extends JFrame {
             String selectedDirectory = fileDialog.getDirectory();
             String fullPath = selectedDirectory + selectedFile;
             if (selectedFile != null) {
-                this.readFromFile(selectedFile, fullPath);
+                this.readFromFile(fullPath);
             }
         }
     }
@@ -957,24 +961,20 @@ public class MainWindow extends JFrame {
 
     //  Given full path name of an existing file, read it, decode it, and change over to that data model
 
-    private void readFromFile(String fileName, String fullPath) {
+    private void readFromFile(String fullPath) {
         byte[] encoded = new byte[0];
         try {
             encoded = Files.readAllBytes(Paths.get(fullPath));
             String encodedData = new String(encoded, StandardCharsets.US_ASCII);
             DataModel newDataModel = DataModel.newFromXml(encodedData);
             if (newDataModel != null) {
-                if (fileName.endsWith("." + dataFileSuffix)) {
-                    // Strip suffix if present
-                    fileName = fileName.substring(0, fileName.length() - (1 + dataFileSuffix.length()));
-                }
                 this.dataModel = null;
-                this.loadDataModel(newDataModel, fileName);
+                this.loadDataModel(newDataModel, CommonUtils.simpleFileNameFromPath(fullPath));
                 this.filePath = fullPath;
                 this.makeNotDirty();
             }
         } catch (IOException e) {
-            System.out.println("Unable to write to file.");
+            System.out.println("Unable to read file.");
             JOptionPane.showMessageDialog(null, "IO error, unable to read file");
         }
     }
@@ -982,12 +982,13 @@ public class MainWindow extends JFrame {
     // NEW menu invoked. Create a new default data model and load it.
 
     private void newMenuItemActionPerformed() {
-        System.out.println("newMenuItemActionPerformed");
-        DataModel newDataModel = DataModel.newInstance();
-        this.dataModel = null;
-        this.loadDataModel(newDataModel, CommonUtils.UNSAVED_WINDOW_TITLE);
-        this.filePath = "";
-        this.makeNotDirty();
+        if (protectedSaveProceed()) {
+            DataModel newDataModel = DataModel.newInstance();
+            this.dataModel = null;
+            this.loadDataModel(newDataModel, CommonUtils.UNSAVED_WINDOW_TITLE);
+            this.filePath = "";
+            this.makeNotDirty();
+        }
     }
 
     //  todo open file if passed in as application argument
@@ -1027,8 +1028,8 @@ public class MainWindow extends JFrame {
         if (selectedFile != null) {
             String selectedDirectory = fileDialog.getDirectory();
             String fullPath = selectedDirectory + selectedFile;
-            if (!fullPath.endsWith(("." + dataFileSuffix))) {
-                fullPath += "." + dataFileSuffix;
+            if (!fullPath.endsWith(("." + CommonUtils.DATA_FILE_SUFFIX))) {
+                fullPath += "." + CommonUtils.DATA_FILE_SUFFIX;
             }
             System.out.println("Output path: " + fullPath);
             File newFile = new File(fullPath);
@@ -1045,12 +1046,11 @@ public class MainWindow extends JFrame {
         // Write to temporary file then delete and rename old copy
         // This way, if system crashes, either old or new file will still exist - no data loss
         String fileNameWithExtension = fileToSave.getName();
-        assert(fileNameWithExtension.endsWith(dataFileSuffix));
-        String justFileName = fileNameWithExtension.substring(0,
-                fileNameWithExtension.length() - (1 + dataFileSuffix.length()));
+        assert(fileNameWithExtension.endsWith("." + CommonUtils.DATA_FILE_SUFFIX));
+        String justFileName = CommonUtils.simpleFileNameFromPath(fileToSave.getAbsolutePath());
         String directory = fileToSave.getParent();
         try {
-            File tempFile = File.createTempFile(justFileName, dataFileSuffix, new File(directory));
+            File tempFile = File.createTempFile(justFileName, CommonUtils.DATA_FILE_SUFFIX, new File(directory));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile.getAbsolutePath()));
             writer.write(serialized);
             writer.close();
@@ -1086,6 +1086,16 @@ public class MainWindow extends JFrame {
         }
     }
 
+    // User has clicked the system close button on the window.
+    //  Do an "unsaved data protection" then exit the program
+
+    private void thisWindowClosing(WindowEvent e) {
+        if (protectedSaveProceed()) {
+            this.setVisible(false);
+            System.exit(0);
+        }
+    }
+    
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -1222,6 +1232,12 @@ public class MainWindow extends JFrame {
 
         //======== this ========
         setMinimumSize(new Dimension(800, 600));
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                thisWindowClosing(e);
+            }
+        });
         var contentPane = getContentPane();
         contentPane.setLayout(new GridLayout());
 
@@ -2438,6 +2454,7 @@ public class MainWindow extends JFrame {
 	public void loadDataModel(DataModel dataModelInput, String windowTitle) {
         this.dataModel = dataModelInput;
         this.setTitle(windowTitle);
+        this.clearFieldValidityWarnings();
 
 		// Start-End tab pane
 
@@ -2672,25 +2689,6 @@ public class MainWindow extends JFrame {
         super.setMaximizedBounds(bounds);
     }
 
-    public static void main(String[] args) {
-        //  If we are running on a Mac, use the system menu bar instead of windows-style window menu
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.startsWith("mac os x")) {
-            System.setProperty("apple.laf.useScreenMenuBar", "true");
-        }
-
-        //  Create and open the main window
-        try {
-            DataModel dataModel = DataModel.newInstance();
-            MainWindow mainWindow = new MainWindow(dataModel);
-            mainWindow.loadDataModel(dataModel, CommonUtils.UNSAVED_WINDOW_TITLE);
-            mainWindow.setVisible(true);
-        } catch (Exception e) {
-            System.out.println("Uncaught exception: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     //  Record the validity of the given text field.
     //  In a dict indexed by the text field, record the validity state so we can, later, quickly check
     //  if all the fields are valid.  Also colour the field red if it is not valid.
@@ -2709,6 +2707,14 @@ public class MainWindow extends JFrame {
 	        backgroundColor = Color.WHITE;
         }
 	    theField.setBackground(backgroundColor);
+    }
+
+    //  We're loading a new data model, which can only be valid since we don't save invalid ones.
+    //  So, clear any field validity warnings in the table, by setting the validity to True
+    //  and resetting the field colour.
+
+    private void clearFieldValidityWarnings() {
+        this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
 
 }

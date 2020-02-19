@@ -7,6 +7,9 @@ import java.beans.PropertyChangeSupport;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -721,6 +724,24 @@ public class DataModel  implements Serializable {
             this.setGivenEndTime(LocalTime.parse(this.givenEndTimeAsString, timeFormatter));
         }
 
+    }
+
+    //  Try to create a data model by reading xml encoding from file with given name
+    //  If it fails (missing file or invalid contents) return null
+
+    public static DataModel tryLoadFromFile(String fullPath) {
+        //todo tryLoadFromFile
+        System.out.println("tryLoadFromFile: " + fullPath);
+        DataModel result = null;
+        byte[] encoded = new byte[0];
+        try {
+            encoded = Files.readAllBytes(Paths.get(fullPath));
+            String encodedData = new String(encoded, StandardCharsets.US_ASCII);
+            result = DataModel.newFromXml(encodedData);
+        } catch (IOException e) {
+            result = null;
+        }
+        return result;
     }
 }
 
