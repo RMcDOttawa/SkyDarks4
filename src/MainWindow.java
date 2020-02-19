@@ -831,12 +831,38 @@ public class MainWindow extends JFrame {
 
     private void beginSessionButtonActionPerformed() {
         System.out.println("beginSessionButtonActionPerformed");
+        this.restrictUiForSession(true);
         // TODO beginSessionButtonActionPerformed
+    }
+
+    //  While the acquisition sub-task is running, the UI is restricted so that the user can not
+    //  visit the other tabs, and the only button working in the Session tab is the Cancel button.
+    //  Enter or leave this state.
+
+    private void restrictUiForSession(boolean sessionRunning) {
+
+        // Tabs
+        for (int tabIndex = 0; tabIndex < this.mainTabFrame.getTabCount(); tabIndex++) {
+            if (tabIndex != CommonUtils.SESSION_TAB_INDEX) {
+                this.mainTabFrame.setEnabledAt(tabIndex, !sessionRunning);
+                if (sessionRunning) {
+                    this.mainTabFrame.setBackgroundAt(tabIndex, Color.gray);
+                } else {
+                    this.mainTabFrame.setBackgroundAt(tabIndex, Color.white);
+                }
+            }
+        }
+
+        //  Begin and Cancel buttons
+        this.beginSessionButton.setEnabled(!sessionRunning);
+        this.cancelSessionButton.setEnabled(sessionRunning);
     }
 
     private void cancelSessionButtonActionPerformed() {
         System.out.println("cancelSessionButtonActionPerformed");
         // TODO cancelSessionButtonActionPerformed
+        // De-restrict the user interface
+        this.restrictUiForSession(false);
     }
 
     private void serverAddressFocusLost() {
@@ -1121,10 +1147,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void thisWindowClosing(WindowEvent e) {
-        // TODO add your code here
-    }
-
     @SuppressWarnings({"Convert2MethodRef", "unchecked", "SpellCheckingInspection"})
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -1265,7 +1287,7 @@ public class MainWindow extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                thisWindowClosing(e);
+                thisWindowClosing();
             }
         });
         var contentPane = getContentPane();

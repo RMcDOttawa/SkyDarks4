@@ -15,7 +15,6 @@ import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
  * @author Richard McDonald
  */
 public class AddFramesetDialog extends JDialog {
-    private DataModel   dataModel;
     private FrameSet    frameSet;
     private boolean     numberOfFramesValid = true;
     private boolean     exposureValid = true;
@@ -32,10 +31,9 @@ public class AddFramesetDialog extends JDialog {
 
     //  This version of the constructor opens the dialog to create a new frame set
 
-    public AddFramesetDialog(Window owner, DataModel dataModel) {
+    public AddFramesetDialog(Window owner) {
         super(owner);
         initComponents();
-        this.dataModel = dataModel;
         this.frameSet = new FrameSet();
         this.loadFields();
         // When creating a new frame, we don't offer the "completed" fields
@@ -46,10 +44,9 @@ public class AddFramesetDialog extends JDialog {
     //  This version of the constructor, called with an existing frame set,
     //  opens the dialog to edit that frame set
 
-    public AddFramesetDialog(Window owner, DataModel dataModel, FrameSet frameSetToEdit) {
+    public AddFramesetDialog(Window owner, FrameSet frameSetToEdit) {
         super(owner);
         initComponents();
-        this.dataModel = dataModel;
         //  We keep a copy, not the original, so the field updates don't change the original.
         //  This protects the ability to click Cancel and have nothing changed.
         this.frameSet = frameSetToEdit.copy();
