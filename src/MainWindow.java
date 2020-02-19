@@ -1,3 +1,7 @@
+import java.awt.desktop.QuitEvent;
+import java.awt.desktop.QuitHandler;
+import java.awt.desktop.QuitResponse;
+import java.awt.desktop.QuitStrategy;
 import java.awt.event.*;
 import java.beans.*;
 import javax.swing.*;
@@ -53,7 +57,31 @@ public class MainWindow extends JFrame {
 
     public MainWindow() {
         this.frameTableSelectionListener = new FrameTableSelectionListener(this);
+
+        //  Catch main Quit menu so we can check for unsaved data
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            desktop.setQuitStrategy(QuitStrategy.CLOSE_ALL_WINDOWS);
+            desktop.setQuitHandler(new QuitHandler()
+            {
+                @Override public void handleQuitRequestWith(QuitEvent evt, QuitResponse res) {
+                    quitMenuItemClicked(null);
+                }
+            });
+        }
+
         initComponents();
+    }
+
+    private void quitMenuItemClicked(Object o) {
+        //  If the acquisition subtask is running, stop it
+//        if (skyXThread != null) {
+//            skyXThread.interrupt();
+//            skyXThread = null;
+//        }
+        if (this.protectedSaveProceedNoCancel()) {
+            System.exit(0);
+        }
     }
 
     public void setDataModel(DataModel theModel) {
@@ -827,9 +855,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // todo Intercept Quit to do protected save
-    // todo Intercept Close to do protected save
-
     private void beginSessionButtonActionPerformed(ActionEvent e) {
         System.out.println("beginSessionButtonActionPerformed");
         // TODO beginSessionButtonActionPerformed
@@ -952,6 +977,28 @@ public class MainWindow extends JFrame {
                     // Discard selected - no need to save
                     break;
                 case 2:
+                    // Save selected - do a save then proceed
+                    this.saveMenuItemActionPerformed();
+            }
+        }
+        return proceed;
+    }
+
+    private boolean protectedSaveProceedNoCancel() {
+        boolean proceed = true;
+        if (this.isDirty()) {
+            Object[] options = { "Discard", "Save"};
+            int result = JOptionPane.showOptionDialog(null,
+                    "Your frame set plan has unsaved changes. "
+                            + "Save these or discard them?", "Warning",
+                    JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
+                    null, options, options[1]);
+
+            switch (result) {
+                case 0:
+                    // Discard selected - no need to save
+                    break;
+                case 1:
                     // Save selected - do a save then proceed
                     this.saveMenuItemActionPerformed();
             }
