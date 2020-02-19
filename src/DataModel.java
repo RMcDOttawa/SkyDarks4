@@ -677,10 +677,17 @@ public class DataModel  implements Serializable {
     //  See serialize above to see what that's about.
 
     public static DataModel newFromXml(String serialized) {
-        InputSource inputSource = new InputSource(new StringReader(serialized));
-        XMLDecoder decoder = new XMLDecoder(inputSource);
-        Object decodedObject = decoder.readObject();
         DataModel newModel = null;
+        Object decodedObject = null;
+        InputSource inputSource = new InputSource(new StringReader(serialized));
+        XMLDecoder decoder = null;
+        try {
+            decoder = new XMLDecoder(inputSource);
+            decodedObject = decoder.readObject();
+        } catch (Exception e) {
+            // An exception means the input string was corrupted.
+            // Just drop out and leave the model as null
+        }
         if (decodedObject instanceof DataModel) {
             newModel = (DataModel) decodedObject;
             newModel.restoreDatesAndTimes();
@@ -730,8 +737,6 @@ public class DataModel  implements Serializable {
     //  If it fails (missing file or invalid contents) return null
 
     public static DataModel tryLoadFromFile(String fullPath) {
-        //todo tryLoadFromFile
-        System.out.println("tryLoadFromFile: " + fullPath);
         DataModel result = null;
         byte[] encoded = new byte[0];
         try {

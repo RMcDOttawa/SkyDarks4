@@ -59,7 +59,7 @@ public class pySkyDarks4 {
             resultModel = DataModel.tryLoadFromFile(args[0]);
             if (resultModel == null) {
                 JOptionPane.showMessageDialog(null,
-                        "File provided is not a valid data file.\nCreating an empty file instead.");
+                        "File provided does not exist or is not a valid\ndata file. Creating an empty file instead.");
                 resultModel = DataModel.newInstance();
                 resultName = CommonUtils.UNSAVED_WINDOW_TITLE;
             } else {

@@ -1038,8 +1038,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  todo open file if passed in as application argument
-
     //  User has selected the "Save As" menu item.  Prompt for a new name and location
     //  for the file, then write out serialized data model.
 
