@@ -1,9 +1,5 @@
-import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.BiConsumer;
 
 public class CommonUtils {
     public static final double   SECONDS_IN_DAY = 24.0 * 60 * 60;

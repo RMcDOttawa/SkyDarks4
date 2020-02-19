@@ -68,7 +68,7 @@ public class FrameSet implements Serializable {
         return newFrameSet;
     }
 
-    // Make a copy of ourself, return as a new frame set
+    // Make a copy of ourselves, return as a new frame set
     
     public FrameSet copy() {
         FrameSet newFrameSet = new FrameSet();

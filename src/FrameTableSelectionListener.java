@@ -1,5 +1,3 @@
-import com.sun.tools.javac.Main;
-
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -7,7 +5,7 @@ import javax.swing.event.ListSelectionListener;
 //  This is used to tell the main window to enable and disable certain controls.
 
 public class FrameTableSelectionListener  implements ListSelectionListener {
-    private MainWindow parent = null;
+    private MainWindow parent;
 
     public FrameTableSelectionListener(MainWindow theParent) {
         this.parent = theParent;

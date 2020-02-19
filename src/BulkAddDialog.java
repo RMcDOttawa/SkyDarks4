@@ -1,14 +1,15 @@
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-
-import net.miginfocom.swing.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 /*
  * Created by JFormDesigner on Sun Feb 16 13:17:42 EST 2020
  */
@@ -22,9 +23,8 @@ public class BulkAddDialog extends JDialog {
     private static double SECONDS_IN_DAY = 24.0 * 60 * 60;
 
 	private boolean     saveClicked = false;
-	private MainWindow  parent;
 
-	private int         numBiasValue = 0;
+    private int         numBiasValue = 0;
 	private boolean     numBiasValid = true;
 	private int         numDarksValue = 0;
 	private boolean     numDarksValid = true;
@@ -40,8 +40,7 @@ public class BulkAddDialog extends JDialog {
 
 	public BulkAddDialog(MainWindow owner) {
 		super(owner);
-		this.parent = owner;
-		initComponents();
+        initComponents();
 		enableSaveButton();
 
 		//  Catch Paste into the exposure times field so we can enable the Save button and ensure only clean pastes happen
@@ -59,12 +58,10 @@ public class BulkAddDialog extends JDialog {
                 exposureLengths.paste();
                 this.validateExposureLengths(pasteableString, exposureLengths);
                 this.enableSaveButton();
-            } else {
-//                System.out.println("String paste flavour not available");
             }
 
         } catch (Exception e) {
-            System.err.println(e);
+            System.err.println("Exception: " + e.getMessage());
         }
     }
 
@@ -120,42 +117,42 @@ public class BulkAddDialog extends JDialog {
     }
 
     private void biasBinned1x1ActionPerformed() {
-		this.biasBinningSelected[1-1] = biasBinned1x1.isSelected();
+		this.biasBinningSelected[0] = biasBinned1x1.isSelected();
 		this.enableSaveButton();
 	}
 
     private void biasBinned2x2ActionPerformed() {
-        this.biasBinningSelected[2-1] = biasBinned2x2.isSelected();
+        this.biasBinningSelected[1] = biasBinned2x2.isSelected();
 		this.enableSaveButton();
 	}
 
     private void biasBinned3x3ActionPerformed() {
-        this.biasBinningSelected[3-1] = biasBinned3x3.isSelected();
+        this.biasBinningSelected[2] = biasBinned3x3.isSelected();
 		this.enableSaveButton();
     }
 
     private void biasBinned4x4ActionPerformed() {
-        this.biasBinningSelected[4-1] = biasBinned4x4.isSelected();
+        this.biasBinningSelected[3] = biasBinned4x4.isSelected();
 		this.enableSaveButton();
 	}
 
     private void darkBinned1x1ActionPerformed() {
-        this.darkBinningSelected[1-1] = darkBinned1x1.isSelected();
+        this.darkBinningSelected[0] = darkBinned1x1.isSelected();
 		this.enableSaveButton();
     }
 
     private void darkBinned2x2ActionPerformed() {
-        this.darkBinningSelected[2-1] = darkBinned2x2.isSelected();
+        this.darkBinningSelected[1] = darkBinned2x2.isSelected();
 		this.enableSaveButton();
     }
 
     private void darkBinned3x3ActionPerformed() {
-        this.darkBinningSelected[3-1] = darkBinned3x3.isSelected();
+        this.darkBinningSelected[2] = darkBinned3x3.isSelected();
 		this.enableSaveButton();
 	}
 
     private void darkBinned4x4ActionPerformed() {
-        this.darkBinningSelected[4-1] = darkBinned4x4.isSelected();
+        this.darkBinningSelected[3] = darkBinned4x4.isSelected();
 		this.enableSaveButton();
 	}
 

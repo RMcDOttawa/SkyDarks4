@@ -1,19 +1,23 @@
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.TimePicker;
+import net.miginfocom.swing.MigLayout;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
+import org.jdesktop.beansbinding.ELProperty;
+
+import javax.swing.*;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.table.JTableHeader;
+import java.awt.*;
 import java.awt.desktop.QuitEvent;
-import java.awt.desktop.QuitHandler;
 import java.awt.desktop.QuitResponse;
 import java.awt.desktop.QuitStrategy;
 import java.awt.event.*;
-import java.beans.*;
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import javax.swing.table.JTableHeader;
-
-import com.github.lgooddatepicker.components.DatePicker;
-import com.github.lgooddatepicker.components.TimePicker;
-import net.miginfocom.swing.*;
-
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,12 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TimeZone;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.jdesktop.beansbinding.*;
-import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
-import org.jdesktop.beansbinding.BeanProperty;
 
 /*
  * Created by JFormDesigner on Wed Feb 12 19:55:56 EST 2020
@@ -42,9 +40,6 @@ import org.jdesktop.beansbinding.BeanProperty;
  */
 public class MainWindow extends JFrame {
     private DataModel dataModel;
-    public DataModel getDataModel() {
-        return dataModel;
-    }
     private String filePath = "";  // Set when file is saved
 
     private HashMap<JTextField,Boolean> textFieldValidity = new HashMap<>();
@@ -62,18 +57,13 @@ public class MainWindow extends JFrame {
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
             desktop.setQuitStrategy(QuitStrategy.CLOSE_ALL_WINDOWS);
-            desktop.setQuitHandler(new QuitHandler()
-            {
-                @Override public void handleQuitRequestWith(QuitEvent evt, QuitResponse res) {
-                    quitMenuItemClicked(null);
-                }
-            });
+            desktop.setQuitHandler((QuitEvent evt, QuitResponse res) -> quitMenuItemClicked());
         }
 
         initComponents();
     }
 
-    private void quitMenuItemClicked(Object o) {
+    private void quitMenuItemClicked() {
         //  If the acquisition subtask is running, stop it
 //        if (skyXThread != null) {
 //            skyXThread.interrupt();
@@ -82,10 +72,6 @@ public class MainWindow extends JFrame {
         if (this.protectedSaveProceedNoCancel()) {
             System.exit(0);
         }
-    }
-
-    public void setDataModel(DataModel theModel) {
-        this.dataModel = theModel;
     }
 
     public void setFilePath(String thePath) {
@@ -124,7 +110,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void startDateNowButtonActionPerformed(ActionEvent e) {
+    private void startDateNowButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.NOW) {
             this.makeDirty();
             this.dataModel.setStartDateType(StartDate.NOW);
@@ -132,7 +118,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startDateTodayButtonActionPerformed(ActionEvent e) {
+    private void startDateTodayButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.TODAY) {
             this.makeDirty();
             this.dataModel.setStartDateType(StartDate.TODAY);
@@ -140,7 +126,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startDateGivenButtonActionPerformed(ActionEvent e) {
+    private void startDateGivenButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.GIVEN_DATE) {
             this.makeDirty();
             this.dataModel.setStartDateType(StartDate.GIVEN_DATE);
@@ -148,7 +134,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startSunsetButtonActionPerformed(ActionEvent e) {
+    private void startSunsetButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.SUNSET) {
             this.makeDirty();
             this.dataModel.setStartTimeType(StartTime.SUNSET);
@@ -156,7 +142,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startCivilButtonActionPerformed(ActionEvent e) {
+    private void startCivilButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.CIVIL_DUSK) {
             this.makeDirty();
             this.dataModel.setStartTimeType(StartTime.CIVIL_DUSK);
@@ -164,7 +150,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startNauticalButtonActionPerformed(ActionEvent e) {
+    private void startNauticalButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.NAUTICAL_DUSK) {
             this.makeDirty();
             this.dataModel.setStartTimeType(StartTime.NAUTICAL_DUSK);
@@ -172,7 +158,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startAstronomicalButtonActionPerformed(ActionEvent e) {
+    private void startAstronomicalButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.ASTRONOMICAL_DUSK) {
             this.makeDirty();
             this.dataModel.setStartTimeType(StartTime.ASTRONOMICAL_DUSK);
@@ -180,7 +166,7 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startGivenTimeButtonActionPerformed(ActionEvent e) {
+    private void startGivenTimeButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.GIVEN_TIME) {
             this.makeDirty();
             this.dataModel.setStartTimeType(StartTime.GIVEN_TIME);
@@ -188,11 +174,8 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
-    private void startDatePickerPropertyChange(PropertyChangeEvent e) {
-        if (this.dataModel == null) {
-//            System.out.println("State change before data model set, ignoring");
-            ;
-        } else {
+    private void startDatePickerPropertyChange() {
+        if (this.dataModel != null) {
             LocalDate newDate = startDatePicker.getDate();
             if (newDate != this.dataModel.getGivenStartDate()) {
                 this.makeDirty();
@@ -202,11 +185,8 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void startTimePickerPropertyChange(PropertyChangeEvent e) {
-        if (this.dataModel == null) {
-//            System.out.println("State change before data model set, ignoring");
-            ;
-        } else {
+    private void startTimePickerPropertyChange() {
+        if (this.dataModel != null) {
             LocalTime newTime = startTimePicker.getTime();
             if (newTime != this.dataModel.getGivenStartTime()) {
                 this.makeDirty();
@@ -216,7 +196,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void endDateDoneButtonActionPerformed(ActionEvent e) {
+    private void endDateDoneButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.WHEN_DONE) {
             this.makeDirty();
             this.dataModel.setEndDateType(EndDate.WHEN_DONE);
@@ -224,7 +204,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endDateTodayButtonActionPerformed(ActionEvent e) {
+    private void endDateTodayButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.TODAY_TOMORROW) {
             this.makeDirty();
             this.dataModel.setEndDateType(EndDate.TODAY_TOMORROW);
@@ -232,7 +212,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endDateGivenButtonActionPerformed(ActionEvent e) {
+    private void endDateGivenButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.GIVEN_DATE) {
             this.makeDirty();
             this.dataModel.setEndDateType(EndDate.GIVEN_DATE);
@@ -240,11 +220,8 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endDatePickerPropertyChange(PropertyChangeEvent e) {
-        if (this.dataModel == null) {
-//            System.out.println("State change before data model set, ignoring");
-            ;
-        } else {
+    private void endDatePickerPropertyChange() {
+        if (this.dataModel != null) {
             LocalDate newDate = endDatePicker.getDate();
             if (newDate != this.dataModel.getGivenEndDate()) {
                 this.makeDirty();
@@ -254,7 +231,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void endSunriseButtonActionPerformed(ActionEvent e) {
+    private void endSunriseButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.SUNRISE) {
             this.makeDirty();
             this.dataModel.setEndTimeType(EndTime.SUNRISE);
@@ -262,7 +239,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endCivilButtonActionPerformed(ActionEvent e) {
+    private void endCivilButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.CIVIL_DAWN) {
             this.makeDirty();
             this.dataModel.setEndTimeType(EndTime.CIVIL_DAWN);
@@ -270,7 +247,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endNauticalButtonActionPerformed(ActionEvent e) {
+    private void endNauticalButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.NAUTICAL_DAWN) {
             this.makeDirty();
             this.dataModel.setEndTimeType(EndTime.NAUTICAL_DAWN);
@@ -278,7 +255,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endAstronomicalButtonActionPerformed(ActionEvent e) {
+    private void endAstronomicalButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.ASTRONOMICAL_DAWN) {
             this.makeDirty();
             this.dataModel.setEndTimeType(EndTime.ASTRONOMICAL_DAWN);
@@ -286,7 +263,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endGivenTimeButtonActionPerformed(ActionEvent e) {
+    private void endGivenTimeButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.GIVEN_TIME) {
             this.makeDirty();
             this.dataModel.setEndTimeType(EndTime.GIVEN_TIME);
@@ -294,11 +271,8 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
-    private void endTimePickerPropertyChange(PropertyChangeEvent e) {
-        if (this.dataModel == null) {
-//            System.out.println("State change before data model set, ignoring");
-            ;
-        } else {
+    private void endTimePickerPropertyChange() {
+        if (this.dataModel != null) {
             LocalTime newTime = endTimePicker.getTime();
             if (newTime != this.dataModel.getGivenEndTime()) {
                 this.makeDirty();
@@ -308,7 +282,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void locationNameActionPerformed(ActionEvent e) {
+    private void locationNameActionPerformed() {
         String newName = locationName.getText().trim();
         if (!newName.equals(this.dataModel.getLocationName())) {
             this.makeDirty();
@@ -320,7 +294,7 @@ public class MainWindow extends JFrame {
     // compare what was typed against the list of all possible names from
     // the time zone class.
 
-    private void timeZoneNameActionPerformed(ActionEvent e) {
+    private void timeZoneNameActionPerformed() {
         String oldTimeZone = this.dataModel.getTimeZone();
         String proposedTimeZone = timeZoneName.getText().trim();
         boolean valid = false;
@@ -349,7 +323,7 @@ public class MainWindow extends JFrame {
         return valid;
     }
 
-    private void latitudeActionPerformed(ActionEvent e) {
+    private void latitudeActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(latitude.getText(),
                 -90.0, +90.0);
         if (validation.left) {
@@ -362,7 +336,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(latitude, validation.left);
     }
 
-    private void longitudeActionPerformed(ActionEvent e) {
+    private void longitudeActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(longitude.getText(),
                 -180.0, +180.0);
         if (validation.left) {
@@ -375,7 +349,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(longitude, validation.left);
     }
 
-    private void warmUpCheckboxActionPerformed(ActionEvent e) {
+    private void warmUpCheckboxActionPerformed() {
         boolean checkBoxState = warmUpCheckbox.isSelected();
         if (this.dataModel.getWarmUpWhenDone() != checkBoxState) {
             this.makeDirty();
@@ -383,7 +357,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void disconnectCheckboxActionPerformed(ActionEvent e) {
+    private void disconnectCheckboxActionPerformed() {
         boolean checkBoxState = disconnectCheckbox.isSelected();
         if (this.dataModel.getDisconnectWhenDone() != checkBoxState) {
             this.makeDirty();
@@ -391,7 +365,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void warmUpSecondsActionPerformed(ActionEvent e) {
+    private void warmUpSecondsActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(warmUpSeconds.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
@@ -404,7 +378,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(warmUpSeconds, validation.left);
     }
 
-    private void temperatureRegulatedCheckboxActionPerformed(ActionEvent e) {
+    private void temperatureRegulatedCheckboxActionPerformed() {
         boolean checkBoxState = temperatureRegulatedCheckbox.isSelected();
         if (this.dataModel.getTemperatureRegulated() != checkBoxState) {
             this.makeDirty();
@@ -412,7 +386,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void targetTemperatureActionPerformed(ActionEvent e) {
+    private void targetTemperatureActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(targetTemperature.getText(),
                 CommonUtils.ABSOLUTE_ZERO, CommonUtils.WATER_BOILS);
         if (validation.left) {
@@ -425,7 +399,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(targetTemperature, validation.left);
     }
 
-    private void temperatureWithinActionPerformed(ActionEvent e) {
+    private void temperatureWithinActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(temperatureWithin.getText(),
                 0.0, 100.0);
         if (validation.left) {
@@ -438,7 +412,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(temperatureWithin, validation.left);
     }
 
-    private void coolingCheckIntervalActionPerformed(ActionEvent e) {
+    private void coolingCheckIntervalActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingCheckInterval.getText(),
                 1, 60*60*24);
         if (validation.left) {
@@ -451,7 +425,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingCheckInterval, validation.left);
     }
 
-    private void coolingTimeoutActionPerformed(ActionEvent e) {
+    private void coolingTimeoutActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingTimeout.getText(),
                 1, 60*60*24);
         if (validation.left) {
@@ -464,7 +438,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingTimeout, validation.left);
     }
 
-    private void coolingRetryCountActionPerformed(ActionEvent e) {
+    private void coolingRetryCountActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingRetryCount.getText(),
                 0, 100);
         if (validation.left) {
@@ -477,7 +451,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingRetryCount, validation.left);
     }
 
-    private void coolingRetryDelayActionPerformed(ActionEvent e) {
+    private void coolingRetryDelayActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingRetryDelay.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
@@ -490,7 +464,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingRetryDelay, validation.left);
     }
 
-    private void abortOnTempRiseCheckboxActionPerformed(ActionEvent e) {
+    private void abortOnTempRiseCheckboxActionPerformed() {
         boolean boxState = abortOnTempRiseCheckbox.isSelected();
         if (this.dataModel.getTemperatureAbortOnRise() != boxState) {
             this.makeDirty();
@@ -498,7 +472,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void abortOnTempRiseThresholdActionPerformed(ActionEvent e) {
+    private void abortOnTempRiseThresholdActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(abortOnTempRiseThreshold.getText(),
                 0.1, CommonUtils.WATER_BOILS);
         if (validation.left) {
@@ -515,7 +489,7 @@ public class MainWindow extends JFrame {
     //  It might be an IP address or a host name, allow both.
     //  It can also be blank.
 
-    private void serverAddressActionPerformed(ActionEvent e) {
+    private void serverAddressActionPerformed() {
         String proposedAddress = serverAddress.getText().trim();
         boolean valid;
         if (proposedAddress.length() == 0) {
@@ -533,7 +507,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(serverAddress, valid);
     }
 
-    private void portNumberActionPerformed(ActionEvent e) {
+    private void portNumberActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(portNumber.getText(),
                 0, 65535);
         if (validation.left) {
@@ -546,7 +520,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(portNumber, validation.left);
     }
 
-    private void sendWOLcheckboxActionPerformed(ActionEvent e) {
+    private void sendWOLcheckboxActionPerformed() {
         boolean checkBoxState = sendWOLcheckbox.isSelected();
         if (this.dataModel.getSendWakeOnLanBeforeStarting() != checkBoxState) {
             this.makeDirty();
@@ -554,7 +528,7 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void wolSecondsBeforeActionPerformed(ActionEvent e) {
+    private void wolSecondsBeforeActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(wolSecondsBefore.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
@@ -567,7 +541,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolSecondsBefore, validation.left);
     }
 
-    private void wolMacAddressActionPerformed(ActionEvent e) {
+    private void wolMacAddressActionPerformed() {
         String proposedMacAddress = wolMacAddress.getText().trim();
         byte[] macAddressBytes = RmNetUtils.parseMacAddress(proposedMacAddress);
         boolean valid = macAddressBytes != null;
@@ -578,7 +552,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolMacAddress, valid);
     }
 
-    private void wolBroadcastAddressActionPerformed(ActionEvent e) {
+    private void wolBroadcastAddressActionPerformed() {
         String proposedBroadcastAddress = wolBroadcastAddress.getText().trim();
         boolean valid = RmNetUtils.validateIpAddress(proposedBroadcastAddress);
         if (valid && !proposedBroadcastAddress.equals(this.dataModel.getWolBroadcastAddress())) {
@@ -588,7 +562,7 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolBroadcastAddress, valid);
     }
 
-    private void autosaveCheckboxActionPerformed(ActionEvent e) {
+    private void autosaveCheckboxActionPerformed() {
         boolean checkBoxState = autosaveCheckbox.isSelected();
         if (this.dataModel.getAutoSaveAfterEachFrame() != checkBoxState) {
             this.makeDirty();
@@ -630,7 +604,7 @@ public class MainWindow extends JFrame {
         this.moveDownButton.setEnabled(enableMoveDown);
     }
 
-    private void testConnectionButtonActionPerformed(ActionEvent e) {
+    private void testConnectionButtonActionPerformed() {
         System.out.println("testConnectionButtonActionPerformed");
         String addressString = this.dataModel.getNetAddress().trim();
         int port = this.dataModel.getPortNumber();
@@ -646,7 +620,7 @@ public class MainWindow extends JFrame {
     //  in the packet, to attempt to wake the server.  This is done immediately, and is
     //  primarily for testing.  The delayed wake-on-lan feature is implemented in the session thread.
 
-    private void sendWOLbuttonActionPerformed(ActionEvent e) {
+    private void sendWOLbuttonActionPerformed() {
         String addressString = wolBroadcastAddress.getText().trim(); // Could be IP or host name
         String macAddressString = wolMacAddress.getText().trim();
 
@@ -675,8 +649,8 @@ public class MainWindow extends JFrame {
     // window in which they can specify the parameters of a frameset to be added.  The new
     // frameset will go above the selected row or, if nothing selected, at the end of the list
 
-    private void addFramesetButtonActionPerformed(ActionEvent e) {
-        AddFramesetDialog addDialog = new AddFramesetDialog(this, this.dataModel);
+    private void addFramesetButtonActionPerformed() {
+        AddFramesetDialog addDialog = new AddFramesetDialog(this);
         addDialog.setVisible(true);
         if (addDialog.getSaveClicked()) {
             FrameSet newFrameSet = addDialog.getFrameSet();
@@ -700,7 +674,7 @@ public class MainWindow extends JFrame {
 
     // 1 or more rows in the frame set table are selected, and the delete button has been clicked.
     // We delete those rows from the table model and tell the table it needs to be updated
-    private void deleteFramesetButtonActionPerformed(ActionEvent e) {
+    private void deleteFramesetButtonActionPerformed() {
         int[] selectedRowIndices = this.framesetTable.getSelectedRows();
 
         //  Process the list in descending order so the indices don't change
@@ -716,14 +690,14 @@ public class MainWindow extends JFrame {
     // With one row selected, user has clicked "Edit".  Open a dialog to allow them to change
     // the frame set.  We use the same dialog as "Add".
 
-    private void editFramesetButtonActionPerformed(ActionEvent e) {
+    private void editFramesetButtonActionPerformed() {
         //  There has to be exactly one row selected or the button would have been disabled.
         //  Get the frameset from that row.
         int selectedRowIndex = this.framesetTable.getSelectedRow();
         FrameSet frameSetToEdit = this.dataModel.getSavedFrameSets().get(selectedRowIndex);
 
         //  Open and run edit dialog
-        AddFramesetDialog editDialog = new AddFramesetDialog(this, this.dataModel, frameSetToEdit);
+        AddFramesetDialog editDialog = new AddFramesetDialog(this, frameSetToEdit);
         editDialog.setVisible(true);
         if (editDialog.getSaveClicked()) {
             FrameSet changedFrameSet = editDialog.getFrameSet();
@@ -740,7 +714,7 @@ public class MainWindow extends JFrame {
         if ((mouseEvent.getClickCount() == 2) && (mouseEvent.getButton() == MouseEvent.BUTTON1)) {
             int[] selectedRows = this.framesetTable.getSelectedRows();
             if (selectedRows.length == 1) {
-                this.editFramesetButtonActionPerformed(null);
+                this.editFramesetButtonActionPerformed();
             }
         }
     }
@@ -749,7 +723,7 @@ public class MainWindow extends JFrame {
     //  set of bias and dark frames quickly. If they click "OK" we will then insert all those
     //  frames into the plan.
 
-    private void bulkAddButtonActionPerformed(ActionEvent e) {
+    private void bulkAddButtonActionPerformed() {
         System.out.println("bulkAddButtonActionPerformed");
         //  Open the bulk-add dialog and wait for the user to close the window when done
         BulkAddDialog bulkAddDialog = new BulkAddDialog(this);
@@ -787,9 +761,9 @@ public class MainWindow extends JFrame {
     //  in-progress acquisition plan, so we'll do an "are you sure" dialog.  Then, if they are sure,
     //  set the Completed count to all the framesets in the plan back to zero.
 
-    private void resetCompletedButtonActionPerformed(ActionEvent e) {
+    private void resetCompletedButtonActionPerformed() {
         //  Set up and display dialog asking the user if they want to save first
-        Integer response = JOptionPane.showConfirmDialog(this,
+        int response = JOptionPane.showConfirmDialog(this,
                 "This will reset ALL the Completed counts in the plan,\ncausing ALL "
                 + "the frame sets to be re-acquired.\nAre you sure you want to do this?",
                 "Confirm Reset",
@@ -805,7 +779,7 @@ public class MainWindow extends JFrame {
     //      1 or more rows are selected
     //      the first row is not selected
     //  Move every selected row up one position
-    private void moveUpButtonActionPerformed(ActionEvent e) {
+    private void moveUpButtonActionPerformed() {
         int[] selectedRows = this.framesetTable.getSelectedRows();
         assert(selectedRows.length > 0);    // Row(s) are selected
         assert(selectedRows[0] != 0);       // First row not selected
@@ -832,7 +806,7 @@ public class MainWindow extends JFrame {
     //      1 or more rows are selected
     //      the last row is not selected
     //  Move every selected row down one position
-    private void moveDownButtonActionPerformed(ActionEvent e) {
+    private void moveDownButtonActionPerformed() {
         int[] selectedRows = this.framesetTable.getSelectedRows();
         //  Process the rows in reverse order so we don't have to constantly adjust indices
         ArrayUtils.reverse(selectedRows);
@@ -855,82 +829,82 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void beginSessionButtonActionPerformed(ActionEvent e) {
+    private void beginSessionButtonActionPerformed() {
         System.out.println("beginSessionButtonActionPerformed");
         // TODO beginSessionButtonActionPerformed
     }
 
-    private void cancelSessionButtonActionPerformed(ActionEvent e) {
+    private void cancelSessionButtonActionPerformed() {
         System.out.println("cancelSessionButtonActionPerformed");
         // TODO cancelSessionButtonActionPerformed
     }
 
-    private void serverAddressFocusLost(FocusEvent e) {
-        this.serverAddressActionPerformed(null);
+    private void serverAddressFocusLost() {
+        this.serverAddressActionPerformed();
     }
 
-    private void locationNameFocusLost(FocusEvent e) {
-        locationNameActionPerformed(null);
+    private void locationNameFocusLost() {
+        locationNameActionPerformed();
     }
 
-    private void timeZoneNameFocusLost(FocusEvent e) {
-        timeZoneNameActionPerformed(null);
+    private void timeZoneNameFocusLost() {
+        timeZoneNameActionPerformed();
     }
 
-    private void latitudeFocusLost(FocusEvent e) {
-        latitudeActionPerformed(null);
+    private void latitudeFocusLost() {
+        latitudeActionPerformed();
     }
 
-    private void longitudeFocusLost(FocusEvent e) {
-        longitudeActionPerformed(null);
+    private void longitudeFocusLost() {
+        longitudeActionPerformed();
     }
 
-    private void targetTemperatureFocusLost(FocusEvent e) {
-        targetTemperatureActionPerformed(null);
+    private void targetTemperatureFocusLost() {
+        targetTemperatureActionPerformed();
     }
 
-    private void temperatureWithinFocusLost(FocusEvent e) {
-        temperatureWithinActionPerformed(null);
+    private void temperatureWithinFocusLost() {
+        temperatureWithinActionPerformed();
     }
 
-    private void coolingCheckIntervalFocusLost(FocusEvent e) {
-        coolingCheckIntervalActionPerformed(null);
+    private void coolingCheckIntervalFocusLost() {
+        coolingCheckIntervalActionPerformed();
     }
 
-    private void coolingTimeoutFocusLost(FocusEvent e) {
-        coolingTimeoutActionPerformed(null);
+    private void coolingTimeoutFocusLost() {
+        coolingTimeoutActionPerformed();
     }
 
-    private void coolingRetryCountFocusLost(FocusEvent e) {
-        coolingRetryCountActionPerformed(null);
+    private void coolingRetryCountFocusLost() {
+        coolingRetryCountActionPerformed();
     }
 
-    private void coolingRetryDelayFocusLost(FocusEvent e) {
-        coolingRetryDelayActionPerformed(null);
+    private void coolingRetryDelayFocusLost() {
+        coolingRetryDelayActionPerformed();
     }
 
-    private void abortOnTempRiseThresholdFocusLost(FocusEvent e) {
-        abortOnTempRiseThresholdActionPerformed(null);
+    private void abortOnTempRiseThresholdFocusLost() {
+        abortOnTempRiseThresholdActionPerformed();
     }
 
-    private void portNumberFocusLost(FocusEvent e) {
-        portNumberActionPerformed(null);
+    private void portNumberFocusLost() {
+        portNumberActionPerformed();
     }
 
-    private void wolSecondsBeforeFocusLost(FocusEvent e) {
-        wolSecondsBeforeActionPerformed(null);
+    private void wolSecondsBeforeFocusLost() {
+        wolSecondsBeforeActionPerformed();
     }
 
-    private void wolMacAddressFocusLost(FocusEvent e) {
-        wolMacAddressActionPerformed(null);
+    private void wolMacAddressFocusLost() {
+        wolMacAddressActionPerformed();
     }
 
-    private void wolBroadcastAddressFocusLost(FocusEvent e) {
-        wolBroadcastAddressActionPerformed(null);
+    private void wolBroadcastAddressFocusLost() {
+        wolBroadcastAddressActionPerformed();
     }
 
-    private void warmUpSecondsFocusLost(FocusEvent e) {
-        this.warmUpSecondsActionPerformed(null);
+    private void warmUpSecondsFocusLost() {
+        this.warmUpSecondsActionPerformed();
     }
 
     //  OPEN menu has been invoked.
@@ -985,7 +959,6 @@ public class MainWindow extends JFrame {
     }
 
     private boolean protectedSaveProceedNoCancel() {
-        boolean proceed = true;
         if (this.isDirty()) {
             Object[] options = { "Discard", "Save"};
             int result = JOptionPane.showOptionDialog(null,
@@ -1003,15 +976,14 @@ public class MainWindow extends JFrame {
                     this.saveMenuItemActionPerformed();
             }
         }
-        return proceed;
+        return true;
     }
 
     //  Given full path name of an existing file, read it, decode it, and change over to that data model
 
     private void readFromFile(String fullPath) {
-        byte[] encoded = new byte[0];
         try {
-            encoded = Files.readAllBytes(Paths.get(fullPath));
+            byte[] encoded = Files.readAllBytes(Paths.get(fullPath));
             String encodedData = new String(encoded, StandardCharsets.US_ASCII);
             DataModel newDataModel = DataModel.newFromXml(encodedData);
             if (newDataModel != null) {
@@ -1101,8 +1073,16 @@ public class MainWindow extends JFrame {
             writer.close();
 
             //  Content is now in temporary file.   Delete original file name and rename temporary.
-            fileToSave.delete();
-            tempFile.renameTo(fileToSave);
+            boolean deleteResult = fileToSave.delete();
+            if (deleteResult) {
+                if (!tempFile.renameTo(fileToSave)) {
+                    JOptionPane.showMessageDialog(null,
+                            "Unable to rename temporary file after writing.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Unable to replace previous version of file.");
+            }
 
             // Set title of main window
             this.setTitle(justFileName);
@@ -1134,13 +1114,18 @@ public class MainWindow extends JFrame {
     // User has clicked the system close button on the window.
     //  Do an "unsaved data protection" then exit the program
 
-    private void thisWindowClosing(WindowEvent e) {
+    private void thisWindowClosing() {
         if (protectedSaveProceed()) {
             this.setVisible(false);
             System.exit(0);
         }
     }
-    
+
+    private void thisWindowClosing(WindowEvent e) {
+        // TODO add your code here
+    }
+
+    @SuppressWarnings({"Convert2MethodRef", "unchecked", "SpellCheckingInspection"})
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -1378,26 +1363,26 @@ public class MainWindow extends JFrame {
                     //---- startDateNowButton ----
                     startDateNowButton.setText("Now");
                     startDateNowButton.setToolTipText("Start acquisition as soon as Proceed is clicked (on Run Session tab)");
-                    startDateNowButton.addActionListener(e -> startDateNowButtonActionPerformed(e));
+                    startDateNowButton.addActionListener(e -> startDateNowButtonActionPerformed());
                     panel6.add(startDateNowButton, "cell 1 2 2 1");
 
                     //---- startDateTodayButton ----
                     startDateTodayButton.setText("Today");
                     startDateTodayButton.setToolTipText("Start later today, at the time given below.");
-                    startDateTodayButton.addActionListener(e -> startDateTodayButtonActionPerformed(e));
+                    startDateTodayButton.addActionListener(e -> startDateTodayButtonActionPerformed());
                     panel6.add(startDateTodayButton, "cell 1 3 2 1");
 
                     //---- startDateGivenButton ----
                     startDateGivenButton.setText("This Date:");
                     startDateGivenButton.setMinimumSize(new Dimension(48, 23));
                     startDateGivenButton.setToolTipText("Start on this future date, at the time given below.");
-                    startDateGivenButton.addActionListener(e -> startDateGivenButtonActionPerformed(e));
+                    startDateGivenButton.addActionListener(e -> startDateGivenButtonActionPerformed());
                     panel6.add(startDateGivenButton, "cell 1 4");
 
                     //---- startDatePicker ----
                     startDatePicker.setSettings(null);
                     startDatePicker.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
-                    startDatePicker.addPropertyChangeListener(e -> startDatePickerPropertyChange(e));
+                    startDatePicker.addPropertyChangeListener(e -> startDatePickerPropertyChange());
                     panel6.add(startDatePicker, "cell 2 4");
 
                     //---- label4 ----
@@ -1407,36 +1392,36 @@ public class MainWindow extends JFrame {
                     //---- startSunsetButton ----
                     startSunsetButton.setText("Sunset");
                     startSunsetButton.setToolTipText("Start at sunset on the specified day.");
-                    startSunsetButton.addActionListener(e -> startSunsetButtonActionPerformed(e));
+                    startSunsetButton.addActionListener(e -> startSunsetButtonActionPerformed());
                     panel6.add(startSunsetButton, "cell 1 5 2 1");
 
                     //---- startCivilButton ----
                     startCivilButton.setText("Civil Dusk");
                     startCivilButton.setToolTipText("Start at civil dusk on the specified day.");
-                    startCivilButton.addActionListener(e -> startCivilButtonActionPerformed(e));
+                    startCivilButton.addActionListener(e -> startCivilButtonActionPerformed());
                     panel6.add(startCivilButton, "cell 1 6 2 1");
 
                     //---- startNauticalButton ----
                     startNauticalButton.setText("Nautical Dusk");
                     startNauticalButton.setToolTipText("Start at nautical dusk on the specified day.");
-                    startNauticalButton.addActionListener(e -> startNauticalButtonActionPerformed(e));
+                    startNauticalButton.addActionListener(e -> startNauticalButtonActionPerformed());
                     panel6.add(startNauticalButton, "cell 1 7 2 1");
 
                     //---- startAstronomicalButton ----
                     startAstronomicalButton.setText("Astronomical Dusk");
                     startAstronomicalButton.setToolTipText("Start at astronomical dusk on the specified day.");
-                    startAstronomicalButton.addActionListener(e -> startAstronomicalButtonActionPerformed(e));
+                    startAstronomicalButton.addActionListener(e -> startAstronomicalButtonActionPerformed());
                     panel6.add(startAstronomicalButton, "cell 1 8 2 1");
 
                     //---- startGivenTimeButton ----
                     startGivenTimeButton.setText("This Time:");
                     startGivenTimeButton.setMinimumSize(new Dimension(48, 23));
                     startGivenTimeButton.setToolTipText("Start at the given time on the specified day.");
-                    startGivenTimeButton.addActionListener(e -> startGivenTimeButtonActionPerformed(e));
+                    startGivenTimeButton.addActionListener(e -> startGivenTimeButtonActionPerformed());
                     panel6.add(startGivenTimeButton, "cell 1 9");
 
                     //---- startTimePicker ----
-                    startTimePicker.addPropertyChangeListener(e -> startTimePickerPropertyChange(e));
+                    startTimePicker.addPropertyChangeListener(e -> startTimePickerPropertyChange());
                     panel6.add(startTimePicker, "cell 2 9");
 
                     //---- startTimeDisplay ----
@@ -1479,23 +1464,23 @@ public class MainWindow extends JFrame {
                     //---- endDateDoneButton ----
                     endDateDoneButton.setText("When Done");
                     endDateDoneButton.setToolTipText("Run until all frames are acquired, no matter how long that takes.");
-                    endDateDoneButton.addActionListener(e -> endDateDoneButtonActionPerformed(e));
+                    endDateDoneButton.addActionListener(e -> endDateDoneButtonActionPerformed());
                     panel5.add(endDateDoneButton, "cell 1 2 2 1");
 
                     //---- endDateTodayButton ----
                     endDateTodayButton.setText("Today / Tomorrow");
                     endDateTodayButton.setToolTipText("Stop today or tomorrow at the time specified below. (Tomorrow if that time has passed today.)");
-                    endDateTodayButton.addActionListener(e -> endDateTodayButtonActionPerformed(e));
+                    endDateTodayButton.addActionListener(e -> endDateTodayButtonActionPerformed());
                     panel5.add(endDateTodayButton, "cell 1 3 2 1");
 
                     //---- endDateGivenButton ----
                     endDateGivenButton.setText("This Date:");
                     endDateGivenButton.setToolTipText("Stop on this future date, at the time specified below.");
-                    endDateGivenButton.addActionListener(e -> endDateGivenButtonActionPerformed(e));
+                    endDateGivenButton.addActionListener(e -> endDateGivenButtonActionPerformed());
                     panel5.add(endDateGivenButton, "cell 1 4");
 
                     //---- endDatePicker ----
-                    endDatePicker.addPropertyChangeListener(e -> endDatePickerPropertyChange(e));
+                    endDatePicker.addPropertyChangeListener(e -> endDatePickerPropertyChange());
                     panel5.add(endDatePicker, "cell 2 4");
 
                     //---- label7 ----
@@ -1505,35 +1490,35 @@ public class MainWindow extends JFrame {
                     //---- endSunriseButton ----
                     endSunriseButton.setText("Sunrise");
                     endSunriseButton.setToolTipText("Stop at sunrise on the date given above.");
-                    endSunriseButton.addActionListener(e -> endSunriseButtonActionPerformed(e));
+                    endSunriseButton.addActionListener(e -> endSunriseButtonActionPerformed());
                     panel5.add(endSunriseButton, "cell 1 5 2 1");
 
                     //---- endCivilButton ----
                     endCivilButton.setText("Civil Dawn");
                     endCivilButton.setToolTipText("Stop at civil dawn on the date given above.");
-                    endCivilButton.addActionListener(e -> endCivilButtonActionPerformed(e));
+                    endCivilButton.addActionListener(e -> endCivilButtonActionPerformed());
                     panel5.add(endCivilButton, "cell 1 6 2 1");
 
                     //---- endNauticalButton ----
                     endNauticalButton.setText("Nautical Dawn");
                     endNauticalButton.setToolTipText("Stop at nautical dawn on the date given above.");
-                    endNauticalButton.addActionListener(e -> endNauticalButtonActionPerformed(e));
+                    endNauticalButton.addActionListener(e -> endNauticalButtonActionPerformed());
                     panel5.add(endNauticalButton, "cell 1 7 2 1");
 
                     //---- endAstronomicalButton ----
                     endAstronomicalButton.setText("Astronomical Dawn");
                     endAstronomicalButton.setToolTipText("Stop at astronomical dawn on the date given above.");
-                    endAstronomicalButton.addActionListener(e -> endAstronomicalButtonActionPerformed(e));
+                    endAstronomicalButton.addActionListener(e -> endAstronomicalButtonActionPerformed());
                     panel5.add(endAstronomicalButton, "cell 1 8 2 1");
 
                     //---- endGivenTimeButton ----
                     endGivenTimeButton.setText("This Time:");
                     endGivenTimeButton.setToolTipText("Stop at the given time on the date given above.");
-                    endGivenTimeButton.addActionListener(e -> endGivenTimeButtonActionPerformed(e));
+                    endGivenTimeButton.addActionListener(e -> endGivenTimeButtonActionPerformed());
                     panel5.add(endGivenTimeButton, "cell 1 9");
 
                     //---- endTimePicker ----
-                    endTimePicker.addPropertyChangeListener(e -> endTimePickerPropertyChange(e));
+                    endTimePicker.addPropertyChangeListener(e -> endTimePickerPropertyChange());
                     panel5.add(endTimePicker, "cell 2 9");
 
                     //---- endTimeDisplay ----
@@ -1569,11 +1554,11 @@ public class MainWindow extends JFrame {
 
                     //---- locationName ----
                     locationName.setToolTipText("Arbitrary name for this site");
-                    locationName.addActionListener(e -> locationNameActionPerformed(e));
+                    locationName.addActionListener(e -> locationNameActionPerformed());
                     locationName.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            locationNameFocusLost(e);
+                            locationNameFocusLost();
                         }
                     });
                     panel3.add(locationName, "cell 1 2");
@@ -1584,11 +1569,11 @@ public class MainWindow extends JFrame {
 
                     //---- timeZoneName ----
                     timeZoneName.setToolTipText("Time zone identifier. Standard abbreviation, or Continent/City, or offset from GMT as Etc/GMT-5. Search \"java TimeZone class\" to see all the valid values.");
-                    timeZoneName.addActionListener(e -> timeZoneNameActionPerformed(e));
+                    timeZoneName.addActionListener(e -> timeZoneNameActionPerformed());
                     timeZoneName.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            timeZoneNameFocusLost(e);
+                            timeZoneNameFocusLost();
                         }
                     });
                     panel3.add(timeZoneName, "cell 1 3");
@@ -1599,11 +1584,11 @@ public class MainWindow extends JFrame {
 
                     //---- latitude ----
                     latitude.setToolTipText("Latitude of observing site.");
-                    latitude.addActionListener(e -> latitudeActionPerformed(e));
+                    latitude.addActionListener(e -> latitudeActionPerformed());
                     latitude.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            latitudeFocusLost(e);
+                            latitudeFocusLost();
                         }
                     });
                     panel3.add(latitude, "cell 1 4");
@@ -1614,11 +1599,11 @@ public class MainWindow extends JFrame {
 
                     //---- longitude ----
                     longitude.setToolTipText("Longitude of observing site.");
-                    longitude.addActionListener(e -> longitudeActionPerformed(e));
+                    longitude.addActionListener(e -> longitudeActionPerformed());
                     longitude.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            longitudeFocusLost(e);
+                            longitudeFocusLost();
                         }
                     });
                     panel3.add(longitude, "cell 1 5");
@@ -1650,16 +1635,16 @@ public class MainWindow extends JFrame {
                     //---- warmUpCheckbox ----
                     warmUpCheckbox.setText("Warm up CCD for ");
                     warmUpCheckbox.setToolTipText("When finished, turn off CCD cooling so it can warm up gently.");
-                    warmUpCheckbox.addActionListener(e -> warmUpCheckboxActionPerformed(e));
+                    warmUpCheckbox.addActionListener(e -> warmUpCheckboxActionPerformed());
                     panel4.add(warmUpCheckbox, "cell 0 2");
 
                     //---- warmUpSeconds ----
                     warmUpSeconds.setToolTipText("How long to leave CCD warming up before disconnecting.");
-                    warmUpSeconds.addActionListener(e -> warmUpSecondsActionPerformed(e));
+                    warmUpSeconds.addActionListener(e -> warmUpSecondsActionPerformed());
                     warmUpSeconds.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            warmUpSecondsFocusLost(e);
+                            warmUpSecondsFocusLost();
                         }
                     });
                     panel4.add(warmUpSeconds, "cell 1 2");
@@ -1671,7 +1656,7 @@ public class MainWindow extends JFrame {
                     //---- disconnectCheckbox ----
                     disconnectCheckbox.setText("Disconnect Camera (after warmup)");
                     disconnectCheckbox.setToolTipText("Disconnect camera when done.");
-                    disconnectCheckbox.addActionListener(e -> disconnectCheckboxActionPerformed(e));
+                    disconnectCheckbox.addActionListener(e -> disconnectCheckboxActionPerformed());
                     panel4.add(disconnectCheckbox, "cell 0 3 3 1");
 
                     //---- vSpacer6 ----
@@ -1722,7 +1707,7 @@ public class MainWindow extends JFrame {
                     //---- temperatureRegulatedCheckbox ----
                     temperatureRegulatedCheckbox.setText("Camera is temperature-regulated");
                     temperatureRegulatedCheckbox.setToolTipText("Camera is temperature-controlled and should be set as specified below.");
-                    temperatureRegulatedCheckbox.addActionListener(e -> temperatureRegulatedCheckboxActionPerformed(e));
+                    temperatureRegulatedCheckbox.addActionListener(e -> temperatureRegulatedCheckboxActionPerformed());
                     panel1.add(temperatureRegulatedCheckbox, "cell 2 1 3 1");
 
                     //---- label16 ----
@@ -1732,11 +1717,11 @@ public class MainWindow extends JFrame {
                     //---- targetTemperature ----
                     targetTemperature.setMinimumSize(new Dimension(100, 26));
                     targetTemperature.setToolTipText("Target temperature setpoint for camera.");
-                    targetTemperature.addActionListener(e -> targetTemperatureActionPerformed(e));
+                    targetTemperature.addActionListener(e -> targetTemperatureActionPerformed());
                     targetTemperature.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            targetTemperatureFocusLost(e);
+                            targetTemperatureFocusLost();
                         }
                     });
                     panel1.add(targetTemperature, "cell 3 2");
@@ -1751,11 +1736,11 @@ public class MainWindow extends JFrame {
 
                     //---- temperatureWithin ----
                     temperatureWithin.setToolTipText("How close to target is good enough to begin session?");
-                    temperatureWithin.addActionListener(e -> temperatureWithinActionPerformed(e));
+                    temperatureWithin.addActionListener(e -> temperatureWithinActionPerformed());
                     temperatureWithin.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            temperatureWithinFocusLost(e);
+                            temperatureWithinFocusLost();
                         }
                     });
                     panel1.add(temperatureWithin, "cell 3 3");
@@ -1770,11 +1755,11 @@ public class MainWindow extends JFrame {
 
                     //---- coolingCheckInterval ----
                     coolingCheckInterval.setToolTipText("While cooling, check camera temperature this often.");
-                    coolingCheckInterval.addActionListener(e -> coolingCheckIntervalActionPerformed(e));
+                    coolingCheckInterval.addActionListener(e -> coolingCheckIntervalActionPerformed());
                     coolingCheckInterval.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            coolingCheckIntervalFocusLost(e);
+                            coolingCheckIntervalFocusLost();
                         }
                     });
                     panel1.add(coolingCheckInterval, "cell 3 4");
@@ -1789,11 +1774,11 @@ public class MainWindow extends JFrame {
 
                     //---- coolingTimeout ----
                     coolingTimeout.setToolTipText("If camera doesn't reach target temperature in this time, assume it never will.");
-                    coolingTimeout.addActionListener(e -> coolingTimeoutActionPerformed(e));
+                    coolingTimeout.addActionListener(e -> coolingTimeoutActionPerformed());
                     coolingTimeout.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            coolingTimeoutFocusLost(e);
+                            coolingTimeoutFocusLost();
                         }
                     });
                     panel1.add(coolingTimeout, "cell 3 5");
@@ -1808,11 +1793,11 @@ public class MainWindow extends JFrame {
 
                     //---- coolingRetryCount ----
                     coolingRetryCount.setToolTipText("If camera fails to reach target temperature, wait a bit and retry this many times.");
-                    coolingRetryCount.addActionListener(e -> coolingRetryCountActionPerformed(e));
+                    coolingRetryCount.addActionListener(e -> coolingRetryCountActionPerformed());
                     coolingRetryCount.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            coolingRetryCountFocusLost(e);
+                            coolingRetryCountFocusLost();
                         }
                     });
                     panel1.add(coolingRetryCount, "cell 3 6");
@@ -1827,11 +1812,11 @@ public class MainWindow extends JFrame {
 
                     //---- coolingRetryDelay ----
                     coolingRetryDelay.setToolTipText("How long to wait after a failed cooling attempt.");
-                    coolingRetryDelay.addActionListener(e -> coolingRetryDelayActionPerformed(e));
+                    coolingRetryDelay.addActionListener(e -> coolingRetryDelayActionPerformed());
                     coolingRetryDelay.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            coolingRetryDelayFocusLost(e);
+                            coolingRetryDelayFocusLost();
                         }
                     });
                     panel1.add(coolingRetryDelay, "cell 3 7");
@@ -1843,16 +1828,16 @@ public class MainWindow extends JFrame {
                     //---- abortOnTempRiseCheckbox ----
                     abortOnTempRiseCheckbox.setText("Abort if Temp Rises: ");
                     abortOnTempRiseCheckbox.setToolTipText("If temperature rises above target durring acquisition, abort the session.");
-                    abortOnTempRiseCheckbox.addActionListener(e -> abortOnTempRiseCheckboxActionPerformed(e));
+                    abortOnTempRiseCheckbox.addActionListener(e -> abortOnTempRiseCheckboxActionPerformed());
                     panel1.add(abortOnTempRiseCheckbox, "cell 2 8");
 
                     //---- abortOnTempRiseThreshold ----
                     abortOnTempRiseThreshold.setToolTipText("How much temperature needs to rise to abort session.");
-                    abortOnTempRiseThreshold.addActionListener(e -> abortOnTempRiseThresholdActionPerformed(e));
+                    abortOnTempRiseThreshold.addActionListener(e -> abortOnTempRiseThresholdActionPerformed());
                     abortOnTempRiseThreshold.addFocusListener(new FocusAdapter() {
                         @Override
                         public void focusLost(FocusEvent e) {
-                            abortOnTempRiseThresholdFocusLost(e);
+                            abortOnTempRiseThresholdFocusLost();
                         }
                     });
                     panel1.add(abortOnTempRiseThreshold, "cell 3 8");
@@ -1905,7 +1890,7 @@ public class MainWindow extends JFrame {
                 //---- sendWOLcheckbox ----
                 sendWOLcheckbox.setText("Send Wake on LAN packet before starting.");
                 sendWOLcheckbox.setToolTipText("Wake the server some time before starting acquisition.");
-                sendWOLcheckbox.addActionListener(e -> sendWOLcheckboxActionPerformed(e));
+                sendWOLcheckbox.addActionListener(e -> sendWOLcheckboxActionPerformed());
                 serverTab.add(sendWOLcheckbox, "cell 3 4 2 1");
 
                 //---- label30 ----
@@ -1917,10 +1902,10 @@ public class MainWindow extends JFrame {
                 serverAddress.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        serverAddressFocusLost(e);
+                        serverAddressFocusLost();
                     }
                 });
-                serverAddress.addActionListener(e -> serverAddressActionPerformed(e));
+                serverAddress.addActionListener(e -> serverAddressActionPerformed());
                 serverTab.add(serverAddress, "cell 1 5");
 
                 //---- label34 ----
@@ -1929,11 +1914,11 @@ public class MainWindow extends JFrame {
 
                 //---- wolSecondsBefore ----
                 wolSecondsBefore.setToolTipText("How long before acquisition to send the wakeup command.");
-                wolSecondsBefore.addActionListener(e -> wolSecondsBeforeActionPerformed(e));
+                wolSecondsBefore.addActionListener(e -> wolSecondsBeforeActionPerformed());
                 wolSecondsBefore.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        wolSecondsBeforeFocusLost(e);
+                        wolSecondsBeforeFocusLost();
                     }
                 });
                 serverTab.add(wolSecondsBefore, "cell 4 5");
@@ -1944,11 +1929,11 @@ public class MainWindow extends JFrame {
 
                 //---- portNumber ----
                 portNumber.setToolTipText("Port number where TheSkyX is listening.");
-                portNumber.addActionListener(e -> portNumberActionPerformed(e));
+                portNumber.addActionListener(e -> portNumberActionPerformed());
                 portNumber.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        portNumberFocusLost(e);
+                        portNumberFocusLost();
                     }
                 });
                 serverTab.add(portNumber, "cell 1 6");
@@ -1959,11 +1944,11 @@ public class MainWindow extends JFrame {
 
                 //---- wolMacAddress ----
                 wolMacAddress.setToolTipText("MAC address of computer where TheSkyX runs.");
-                wolMacAddress.addActionListener(e -> wolMacAddressActionPerformed(e));
+                wolMacAddress.addActionListener(e -> wolMacAddressActionPerformed());
                 wolMacAddress.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        wolMacAddressFocusLost(e);
+                        wolMacAddressFocusLost();
                     }
                 });
                 serverTab.add(wolMacAddress, "cell 4 6");
@@ -1974,11 +1959,11 @@ public class MainWindow extends JFrame {
 
                 //---- wolBroadcastAddress ----
                 wolBroadcastAddress.setToolTipText("Address to broadcast wakeup to whole LAN. Use 255.255.255.255 except in very special circumstances.");
-                wolBroadcastAddress.addActionListener(e -> wolBroadcastAddressActionPerformed(e));
+                wolBroadcastAddress.addActionListener(e -> wolBroadcastAddressActionPerformed());
                 wolBroadcastAddress.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        wolBroadcastAddressFocusLost(e);
+                        wolBroadcastAddressFocusLost();
                     }
                 });
                 serverTab.add(wolBroadcastAddress, "cell 4 7");
@@ -1987,7 +1972,7 @@ public class MainWindow extends JFrame {
                 testConnectionButton.setText("Test Connection");
                 testConnectionButton.setMinimumSize(new Dimension(100, 29));
                 testConnectionButton.setToolTipText("Try to connect to TheSkyX to see if it works.");
-                testConnectionButton.addActionListener(e -> testConnectionButtonActionPerformed(e));
+                testConnectionButton.addActionListener(e -> testConnectionButtonActionPerformed());
                 serverTab.add(testConnectionButton, "cell 0 9,alignx left,growx 0");
 
                 //---- testConnectionMessage ----
@@ -1997,7 +1982,7 @@ public class MainWindow extends JFrame {
                 //---- sendWOLbutton ----
                 sendWOLbutton.setText("Send WOL Now");
                 sendWOLbutton.setToolTipText("Send the Wakeup command now.");
-                sendWOLbutton.addActionListener(e -> sendWOLbuttonActionPerformed(e));
+                sendWOLbutton.addActionListener(e -> sendWOLbuttonActionPerformed());
                 serverTab.add(sendWOLbutton, "cell 3 9,alignx left,growx 0");
 
                 //---- wolTestMessage ----
@@ -2027,42 +2012,42 @@ public class MainWindow extends JFrame {
                 //---- addFramesetButton ----
                 addFramesetButton.setText("+");
                 addFramesetButton.setToolTipText("Add a new frame set above the selected row or to the end of the table.");
-                addFramesetButton.addActionListener(e -> addFramesetButtonActionPerformed(e));
+                addFramesetButton.addActionListener(e -> addFramesetButtonActionPerformed());
 
                 //---- deleteFramesetButton ----
                 deleteFramesetButton.setText("-");
                 deleteFramesetButton.setToolTipText("Remove the selected frame set(s) from the table");
-                deleteFramesetButton.addActionListener(e -> deleteFramesetButtonActionPerformed(e));
+                deleteFramesetButton.addActionListener(e -> deleteFramesetButtonActionPerformed());
 
                 //---- editFramesetButton ----
                 editFramesetButton.setText("Edit");
                 editFramesetButton.setToolTipText("Edit the specification of the selected frame set.");
-                editFramesetButton.addActionListener(e -> editFramesetButtonActionPerformed(e));
+                editFramesetButton.addActionListener(e -> editFramesetButtonActionPerformed());
 
                 //---- bulkAddButton ----
                 bulkAddButton.setText("Bulk Add");
                 bulkAddButton.setToolTipText("Rapidly add multiple frame sets in a standard pattern.");
-                bulkAddButton.addActionListener(e -> bulkAddButtonActionPerformed(e));
+                bulkAddButton.addActionListener(e -> bulkAddButtonActionPerformed());
 
                 //---- resetCompletedButton ----
                 resetCompletedButton.setText("Reset Completed");
                 resetCompletedButton.setToolTipText("Set all the \"Completed\" counts back to zero, causing all frame sets to be re-acquired.");
-                resetCompletedButton.addActionListener(e -> resetCompletedButtonActionPerformed(e));
+                resetCompletedButton.addActionListener(e -> resetCompletedButtonActionPerformed());
 
                 //---- moveUpButton ----
                 moveUpButton.setText("Up");
                 moveUpButton.setToolTipText("Move the selected frame set(s) up one row.");
-                moveUpButton.addActionListener(e -> moveUpButtonActionPerformed(e));
+                moveUpButton.addActionListener(e -> moveUpButtonActionPerformed());
 
                 //---- moveDownButton ----
                 moveDownButton.setText("Down");
                 moveDownButton.setToolTipText("Move the selected frame set(s) down one row.");
-                moveDownButton.addActionListener(e -> moveDownButtonActionPerformed(e));
+                moveDownButton.addActionListener(e -> moveDownButtonActionPerformed());
 
                 //---- autosaveCheckbox ----
                 autosaveCheckbox.setText("Auto-save after each completed frame");
                 autosaveCheckbox.setToolTipText("During acquisition, save this plan after each acquired frame.");
-                autosaveCheckbox.addActionListener(e -> autosaveCheckboxActionPerformed(e));
+                autosaveCheckbox.addActionListener(e -> autosaveCheckboxActionPerformed());
 
                 //---- label40 ----
                 label40.setText("Frame Sets to be Acquired");
@@ -2221,14 +2206,14 @@ public class MainWindow extends JFrame {
                 beginSessionButton.setText("Begin Session");
                 beginSessionButton.setMinimumSize(new Dimension(100, 29));
                 beginSessionButton.setToolTipText("Begin the acquisition session.");
-                beginSessionButton.addActionListener(e -> beginSessionButtonActionPerformed(e));
+                beginSessionButton.addActionListener(e -> beginSessionButtonActionPerformed());
                 runSessionTab.add(beginSessionButton, "cell 0 5");
 
                 //---- cancelSessionButton ----
                 cancelSessionButton.setText("Cancel Session");
                 cancelSessionButton.setToolTipText("Cancel the acquisition session that is in progress.");
                 cancelSessionButton.setEnabled(false);
-                cancelSessionButton.addActionListener(e -> cancelSessionButtonActionPerformed(e));
+                cancelSessionButton.addActionListener(e -> cancelSessionButtonActionPerformed());
                 runSessionTab.add(cancelSessionButton, "cell 3 5,alignx trailing,growx 0");
 
                 //---- label45 ----
@@ -2741,9 +2726,9 @@ public class MainWindow extends JFrame {
     private void recordTextFieldValidity(JTextField theField, boolean isValid) {
 	    //  Record validity in map
         if (this.textFieldValidity.containsKey(theField)) {
-            this.textFieldValidity.replace(theField, Boolean.valueOf(isValid));
+            this.textFieldValidity.replace(theField, isValid);
         } else {
-            this.textFieldValidity.put(theField, Boolean.valueOf(isValid));
+            this.textFieldValidity.put(theField, isValid);
         }
 
         //  Set background colour

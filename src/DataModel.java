@@ -2,7 +2,6 @@ import luckycatlabs.Location;
 import luckycatlabs.SunriseSunsetCalculator;
 import org.xml.sax.InputSource;
 
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -19,6 +18,8 @@ import java.util.Calendar;
 
 public class DataModel  implements Serializable {
     //  Version control of the data model, to allow backward-compatibility of saved files
+
+    @SuppressWarnings("unused")
     private Integer modelVersion = 1;
 
     //  Location of the site (for calculating sun times)
@@ -58,7 +59,7 @@ public class DataModel  implements Serializable {
 
     private Boolean sendWakeOnLanBeforeStarting = true;         // Send a WOL command?
     private Integer sendWolSecondsBefore = 15 * 60;             // Send WOL this many seconds before start
-    private String wolMacAddress = "74-27-ea-5a-7c-66";         // MAC address to receive WOL command
+    private String wolMacAddress = "E4:54:E8:D4:11:36";         // MAC address to receive WOL command
     private String wolBroadcastAddress = "255.255.255.255";     //  Hits entire current sublan (rarely changed)
 
     //  Network address information
@@ -68,7 +69,7 @@ public class DataModel  implements Serializable {
     //  Info about temperature regulation for the run
 
     private Boolean temperatureRegulated = true;                //  Use camera temperature regulation
-    private Double temperatureTarget = 0.0;                     //  Camera setpoint target temperature
+    private Double temperatureTarget = 0.0;                     //  Camera set point target temperature
     private Double temperatureWithin = 0.1;                     //  Start when temp at target within this much
     private Integer temperatureSettleSeconds = 60;              //  Check temp every this often while cooling
     private Integer maxCoolingWaitTime = 30 * 60;               //  Try cooling for this long in one attempt
@@ -81,7 +82,7 @@ public class DataModel  implements Serializable {
 
     //  The list of FrameSets that drives the table in the UI .
 
-    private ArrayList<FrameSet> savedFrameSets = new ArrayList<FrameSet>(100);
+    private ArrayList<FrameSet> savedFrameSets = new ArrayList<>(100);
 
     //  Information dealing with saving the model to a file or reading from a file
 
@@ -91,24 +92,8 @@ public class DataModel  implements Serializable {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
-
 
     // Getters and Setters
-
-    public Integer getModelVersion() {
-        return modelVersion;
-    }
-
-    public void setModelVersion(Integer modelVersion) {
-        this.modelVersion = modelVersion;
-    }
 
     public String getLocationName() {
         return locationName;
@@ -230,34 +215,42 @@ public class DataModel  implements Serializable {
         changeSupport.firePropertyChange("givenEndTime", oldGivenEndTime, newGivenEndTime);
     }
 
+    @SuppressWarnings("unused")
     public String getGivenStartDateAsString() {
         return givenStartDateAsString;
     }
 
+    @SuppressWarnings("unused")
     public void setGivenStartDateAsString(String givenStartDateAsString) {
         this.givenStartDateAsString = givenStartDateAsString;
     }
 
+    @SuppressWarnings("unused")
     public String getGivenStartTimeAsString() {
         return givenStartTimeAsString;
     }
 
+    @SuppressWarnings("unused")
     public void setGivenStartTimeAsString(String givenStartTimeAsString) {
         this.givenStartTimeAsString = givenStartTimeAsString;
     }
 
+    @SuppressWarnings("unused")
     public String getGivenEndDateAsString() {
         return givenEndDateAsString;
     }
 
+    @SuppressWarnings("unused")
     public void setGivenEndDateAsString(String givenEndDateAsString) {
         this.givenEndDateAsString = givenEndDateAsString;
     }
 
+    @SuppressWarnings("unused")
     public String getGivenEndTimeAsString() {
         return givenEndTimeAsString;
     }
 
+    @SuppressWarnings("unused")
     public void setGivenEndTimeAsString(String givenEndTimeAsString) {
         this.givenEndTimeAsString = givenEndTimeAsString;
     }
@@ -464,6 +457,7 @@ public class DataModel  implements Serializable {
         return savedFrameSets;
     }
 
+    @SuppressWarnings("unused")
     public void setSavedFrameSets(ArrayList<FrameSet> savedFrameSets) {
         this.savedFrameSets = savedFrameSets;
     }
@@ -484,29 +478,32 @@ public class DataModel  implements Serializable {
 
     private DataModel () {}
 
+    private static final boolean CREATE_TESTING_FRAMESETS = false;
+
     public static DataModel newInstance() {
         DataModel newModel = new DataModel();
 
-//        Uncomment the following lines to insert some initial framesets into the data model for testing.
+//        Optionally insert some initial framesets into the data model for testing.
 //        In production, we don't insert any, so the user is presented with an initial empty list.
+        if (CREATE_TESTING_FRAMESETS) {
+            FrameSet f1 = FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 1, 0);
+            FrameSet f2 = FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 2, 0);
+            FrameSet f3 = FrameSet.of(12, FrameType.DARK_FRAME, 10.0, 1, 0);
+            FrameSet f4 = FrameSet.of(14, FrameType.DARK_FRAME, 20.0, 2, 0);
+            FrameSet f5 = FrameSet.of(16, FrameType.DARK_FRAME, 30.0, 3, 0);
 
-//        FrameSet f1 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 1, 0);
-//        FrameSet f2 =  FrameSet.of(10, FrameType.BIAS_FRAME, 0.0, 2, 0);
-//        FrameSet f3 =  FrameSet.of(12, FrameType.DARK_FRAME, 10.0, 1, 0);
-//        FrameSet f4 =  FrameSet.of(14, FrameType.DARK_FRAME, 20.0, 2, 0);
-//        FrameSet f5 =  FrameSet.of(16, FrameType.DARK_FRAME, 30.0, 3, 0);
-////
-//        newModel.getSavedFrameSets().add(f1);
-//        newModel.getSavedFrameSets().add(f2);
-//        newModel.getSavedFrameSets().add(f3);
-//        newModel.getSavedFrameSets().add(f4);
-//        newModel.getSavedFrameSets().add(f5);
+            newModel.getSavedFrameSets().add(f1);
+            newModel.getSavedFrameSets().add(f2);
+            newModel.getSavedFrameSets().add(f3);
+            newModel.getSavedFrameSets().add(f4);
+            newModel.getSavedFrameSets().add(f5);
+        }
 
         return newModel;
     }
 
-    //  Get start time, one of the 4 dusks or the given time
-    //  Dusks are only available if lat/long are known
+    //  Get start time, one of the 4 dusk categories or the given time
+    //  Dusk categories are only available if lat/long are known
     public LocalTime appropriateStartTime() {
         LocalTime result = null;
         LocalDate startDate = LocalDate.now();  // Date right now
@@ -597,6 +594,7 @@ public class DataModel  implements Serializable {
             int theMonth = localDate.getMonthValue() - 1;
             int theDay = localDate.getDayOfMonth();
             //assuming start of day
+            //noinspection MagicConstant
             calendar.set(theYear, theMonth, theDay);
         }
 //        System.out.println("Local date " + localDate + " converted to calendar " + calendar);
@@ -605,7 +603,7 @@ public class DataModel  implements Serializable {
 
     public String serialize() {
         // LocalDate and LocalTime values don't serialize well, and are causing errors.
-        // So, we temporarily set them to null and conver them to serializable strings
+        // So, we temporarily set them to null and convert them to serializable strings
         this.setDateAndTimeStrings();
         LocalDate saveStartDate = this.givenStartDate;
         LocalDate saveEndDate = this.givenEndDate;
@@ -672,15 +670,15 @@ public class DataModel  implements Serializable {
 
     }
 
-    //  Create a new instance of datamodel by decoding the provided xml string
-    //  This includes translating the encoded start and end dates and times back to localdates
+    //  Create a new instance of data model by decoding the provided xml string
+    //  This includes translating the encoded start and end dates and times back to local dates
     //  See serialize above to see what that's about.
 
     public static DataModel newFromXml(String serialized) {
         DataModel newModel = null;
         Object decodedObject = null;
         InputSource inputSource = new InputSource(new StringReader(serialized));
-        XMLDecoder decoder = null;
+        XMLDecoder decoder;
         try {
             decoder = new XMLDecoder(inputSource);
             decodedObject = decoder.readObject();
@@ -695,8 +693,8 @@ public class DataModel  implements Serializable {
         return newModel;
     }
 
-    //  Before the datamodel was encoded to XML and saved to a file, we saved the LocalDate and LocalTime
-    //  attributes in string format and then nulled the objects, because they don't serialize well.
+    //  Before the data model was encoded to XML and saved to a file, we saved the LocalDate and LocalTime
+    //  attributes in string format and then set the objects to null, because they don't serialize well.
     //  Now we restore those objects from the saved strings.
 
     private void restoreDatesAndTimes() {
@@ -737,10 +735,9 @@ public class DataModel  implements Serializable {
     //  If it fails (missing file or invalid contents) return null
 
     public static DataModel tryLoadFromFile(String fullPath) {
-        DataModel result = null;
-        byte[] encoded = new byte[0];
+        DataModel result;
         try {
-            encoded = Files.readAllBytes(Paths.get(fullPath));
+            byte[] encoded = Files.readAllBytes(Paths.get(fullPath));
             String encodedData = new String(encoded, StandardCharsets.US_ASCII);
             result = DataModel.newFromXml(encodedData);
         } catch (IOException e) {
