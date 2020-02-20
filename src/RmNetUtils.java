@@ -95,7 +95,7 @@ public class RmNetUtils {
 
     //  Send WOL magic packet to given broadcast range with given MAC.  Return success indicator
 
-    public static boolean sendWakeOnLan(byte[] broadcastAddressBytes, byte[] macAddressBytes) {
+    public static void sendWakeOnLan(byte[] broadcastAddressBytes, byte[] macAddressBytes) throws IOException {
         boolean success = true;
 //        System.out.println("SendWakeOnLan(" + formatBytesToDecimalString(broadcastAddressBytes, ".")
 //                + "," + formatBytesToHexString(macAddressBytes, ":") + ") STUB");
@@ -110,17 +110,12 @@ public class RmNetUtils {
             System.arraycopy(macAddressBytes, 0, magicPacket, i, macAddressBytes.length);
         }
 
-        try {
-            InetAddress address = InetAddress.getByAddress(broadcastAddressBytes);
-            DatagramPacket packet = new DatagramPacket(magicPacket, magicPacket.length, address, 9);
-            DatagramSocket socket = new DatagramSocket();
+        InetAddress address = InetAddress.getByAddress(broadcastAddressBytes);
+        DatagramPacket packet = new DatagramPacket(magicPacket, magicPacket.length, address, 9);
+        DatagramSocket socket = new DatagramSocket();
 //            System.out.println("  Packet: " + packet + ", socket: " + socket);
-            socket.send(packet);
-            socket.close();
-        } catch (IOException e) {
-            success = false;
-        }
-        return success;
+        socket.send(packet);
+        socket.close();
     }
 
     public static String formatBytesToHexString(byte[] bytes, String separator) {

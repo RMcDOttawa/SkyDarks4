@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TimeZone;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /*
@@ -57,6 +56,10 @@ public class MainWindow extends JFrame {
     private SkyXSessionThread skyXSessionRunnable;
     private Thread skyXThread;
     private DefaultListModel<String> consoleListModel;
+
+    // Lock used to serialize UI updates coming from the sub-thread.
+    // Includes console messages, progress bar updates, highlighting and updating the session plan table.
+    // All those events are locked with the same lock, so the UI updates happen atomically and in sequence
 
     private ReentrantLock consoleLock = null;
 
@@ -640,12 +643,13 @@ public class MainWindow extends JFrame {
             byte[] macAddressBytes = RmNetUtils.parseMacAddress(macAddressString);
             if (macAddressBytes != null) {
                 //  Have a valid Mac address
-                if (RmNetUtils.sendWakeOnLan(broadcastAddressBytes, macAddressBytes)) {
+                try {
+                    RmNetUtils.sendWakeOnLan(broadcastAddressBytes, macAddressBytes);
                     LocalTime timeNow = LocalTime.now();
                     wolTestMessage.setText("Sent "
                             + LocalTime.of(timeNow.getHour(), timeNow.getMinute(), timeNow.getSecond()).toString());
-                } else {
-                    wolTestMessage.setText("Error on Send");
+                } catch (IOException ioEx) {
+                    wolTestMessage.setText(ioEx.getMessage());
                 }
             } else {
                 wolTestMessage.setText("Bad MAC address");
@@ -853,12 +857,12 @@ public class MainWindow extends JFrame {
     //  list model, which we will initialize to an empty list here.
 
     private void initializeConsoleList() {
-        this.consoleListModel = new DefaultListModel<String> ();
+        this.consoleListModel = new DefaultListModel<>();
         this.lvConsole.setModel(this.consoleListModel);
     }
 
     //  Add a line to the console pane in the session pane, and scroll to keep it visible
-    //  We'll do a thread-lock on this code since requests will be coming from the subthread and
+    //  We'll do a thread-lock on this code since requests will be coming from the sub-thread and
     //  we want to ensure we don't try to run the code more than once in parallel.
 
     private static final String INDENTATION_BLANKS = "    ";
@@ -879,6 +883,51 @@ public class MainWindow extends JFrame {
             this.consoleLock.unlock();
         }
     }
+
+    //  Also called from the processing thread, this set of methods displays a progress bar on the
+    //  UI.
+
+    //  Initialize progress bar to given max value, and set it visible.
+
+    public void startProgressBar(int minValue, int maxValue) {
+        this.consoleLock.lock();
+        try {
+            this.progressBar.setMinimum(minValue);
+            this.progressBar.setMaximum(maxValue);
+            this.progressBar.setVisible(true);
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
+    //  Update the progress bar with the given value of progress toward the established maximum
+
+    public void updateProgressBar(int progressValue) {
+        this.consoleLock.lock();
+        try {
+            this.progressBar.setValue(progressValue);
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
+    //  End the progress bar, setting it back to invisible
+
+    public void stopProgressBar() {
+        this.consoleLock.lock();
+        try {
+            this.progressBar.setVisible(false);
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
 
     //  While the acquisition sub-task is running, the UI is restricted so that the user can not
     //  visit the other tabs, and the only button working in the Session tab is the Cancel button.
@@ -935,7 +984,7 @@ public class MainWindow extends JFrame {
 
         //  Start date and time - see above rules
 
-        LocalDateTime startDateTime = null;
+        LocalDateTime startDateTime;
         switch (this.dataModel.getStartDateType()) {
             case NOW:
                 startNow = true;
@@ -943,7 +992,6 @@ public class MainWindow extends JFrame {
                 startTime = rightNow;
                 break;
             case TODAY:
-                startNow = false;
                 startDate = today;
                 startTime = this.dataModel.appropriateStartTime();
                 break;
@@ -975,7 +1023,6 @@ public class MainWindow extends JFrame {
                 endTime = LocalTime.MAX;
                 break;
             case TODAY_TOMORROW:
-                stopWhenDone = false;
                 endTime = this.dataModel.appropriateEndTime();
                 if ((endTime != null) && (endTime.isAfter(startTime))) {
                     endDate = LocalDate.now();
@@ -991,6 +1038,7 @@ public class MainWindow extends JFrame {
                 endTime = this.dataModel.appropriateEndTime();
                 break;
         }
+        assert endTime != null;
         LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
         return SessionTimeBlock.of(startNow, startDateTime, stopWhenDone, endDateTime);
@@ -1298,7 +1346,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    @SuppressWarnings({"Convert2MethodRef", "unchecked", "SpellCheckingInspection"})
+    private void createUIComponents() {
+        // TODO: add custom component creation code here
+    }
+
+    @SuppressWarnings({"Convert2MethodRef", "SpellCheckingInspection"})
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -1424,10 +1476,10 @@ public class MainWindow extends JFrame {
         label32 = new JLabel();
         label41 = new JLabel();
         scrollPane2 = new JScrollPane();
-        lvConsole = new JList();
+        lvConsole = new JList<>();
         scrollPane3 = new JScrollPane();
         sessionFramesetTable = new JTable();
-        progressBar1 = new JProgressBar();
+        progressBar = new JProgressBar();
         beginSessionButton = new JButton();
         cancelSessionButton = new JButton();
         label45 = new JLabel();
@@ -2373,7 +2425,10 @@ public class MainWindow extends JFrame {
                     scrollPane3.setViewportView(sessionFramesetTable);
                 }
                 runSessionTab.add(scrollPane3, "cell 7 3 3 1,align left top,grow 0 0");
-                runSessionTab.add(progressBar1, "cell 0 4 10 1");
+
+                //---- progressBar ----
+                progressBar.setVisible(false);
+                runSessionTab.add(progressBar, "cell 0 4 10 1");
 
                 //---- beginSessionButton ----
                 beginSessionButton.setText("Begin Session");
@@ -2643,10 +2698,10 @@ public class MainWindow extends JFrame {
     private JLabel label32;
     private JLabel label41;
     private JScrollPane scrollPane2;
-    private JList lvConsole;
+    private JList<String> lvConsole;
     private JScrollPane scrollPane3;
     private JTable sessionFramesetTable;
-    private JProgressBar progressBar1;
+    private JProgressBar progressBar;
     private JButton beginSessionButton;
     private JButton cancelSessionButton;
     private JLabel label45;

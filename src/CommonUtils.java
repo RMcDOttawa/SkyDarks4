@@ -2,6 +2,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class CommonUtils {
+    public static final int     SECONDS_IN_HOUR = 60 * 60;
+    public static final int     SECONDS_IN_MINUTE = 60;
     public static final double  SECONDS_IN_DAY = 24.0 * 60 * 60;
     public static final int     INT_SECONDS_IN_DAY = 24 * 60 * 60;
     public static final double  WATER_BOILS = 100.0;

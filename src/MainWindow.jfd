@@ -844,6 +844,9 @@ new FormModel {
 							"focusable": false
 							"toolTipText": "Messages on progress of the session."
 							"prototypeCellValue": "10:30 AM THis is a typical line in the console log."
+							auxiliary() {
+								"JavaCodeGenerator.typeParameters": "String"
+							}
 						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 3 6 1,aligny top,grow 100 0"
@@ -861,7 +864,8 @@ new FormModel {
 						"value": "cell 7 3 3 1,align left top,grow 0 0"
 					} )
 					add( new FormComponent( "javax.swing.JProgressBar" ) {
-						name: "progressBar1"
+						name: "progressBar"
+						"visible": false
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 4 10 1"
 					} )
