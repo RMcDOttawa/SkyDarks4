@@ -884,6 +884,23 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  Receive the server's camera autosave path from the server and display it in the UI
+
+    public void displayAutosavePath(String autosavePath) {
+        this.consoleLock.lock();
+        try {
+            //  Turn off the italic font
+            Font pathLabelFont = this.autosavePath.getFont();
+            this.autosavePath.setFont(pathLabelFont.deriveFont(Font.PLAIN));
+            //  Set the path display
+            this.autosavePath.setText("<html>" + autosavePath + "</html>");
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
     //  Also called from the processing thread, this set of methods displays a progress bar on the
     //  UI.
 
@@ -1466,7 +1483,7 @@ public class MainWindow extends JFrame {
         runSessionTab = new JPanel();
         label44 = new JLabel();
         label42 = new JLabel();
-        label43 = new JLabel();
+        autosavePath = new JLabel();
         label32 = new JLabel();
         label41 = new JLabel();
         scrollPane2 = new JScrollPane();
@@ -2363,7 +2380,7 @@ public class MainWindow extends JFrame {
                     "[fill]",
                     // rows
                     "[]" +
-                    "[]" +
+                    "[27]" +
                     "[]" +
                     "[grow]" +
                     "[]" +
@@ -2379,11 +2396,15 @@ public class MainWindow extends JFrame {
                 label42.setText("Camera Autosave Path: ");
                 runSessionTab.add(label42, "cell 0 1");
 
-                //---- label43 ----
-                label43.setText("(Displayed when connected)");
-                label43.setFont(new Font("Lucida Grande", Font.ITALIC, 13));
-                label43.setToolTipText("The path on the server where TheSkyX will be auto-saving acquired images.");
-                runSessionTab.add(label43, "cell 1 1 2 1");
+                //---- autosavePath ----
+                autosavePath.setText("(Displayed when connected)");
+                autosavePath.setFont(new Font("Lucida Grande", Font.ITALIC, 10));
+                autosavePath.setToolTipText("The path on the server where TheSkyX will be auto-saving acquired images.");
+                autosavePath.setMinimumSize(new Dimension(560, 30));
+                autosavePath.setMaximumSize(new Dimension(560, 30));
+                autosavePath.setHorizontalAlignment(SwingConstants.LEFT);
+                autosavePath.setPreferredSize(new Dimension(560, 30));
+                runSessionTab.add(autosavePath, "cell 2 1 7 1");
 
                 //---- label32 ----
                 label32.setText("Console Log:");
@@ -2693,7 +2714,7 @@ public class MainWindow extends JFrame {
     private JPanel runSessionTab;
     private JLabel label44;
     private JLabel label42;
-    private JLabel label43;
+    private JLabel autosavePath;
     private JLabel label32;
     private JLabel label41;
     private JScrollPane scrollPane2;

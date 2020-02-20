@@ -796,7 +796,7 @@ new FormModel {
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "hidemode 3"
 					"$columnConstraints": "[grow,fill][fill][115,grow,fill][grow,fill][fill][fill][fill][grow,fill][fill][fill]"
-					"$rowConstraints": "[][][][grow][][]"
+					"$rowConstraints": "[][27][][grow][][]"
 				} ) {
 					name: "runSessionTab"
 					add( new FormComponent( "javax.swing.JLabel" ) {
@@ -814,12 +814,16 @@ new FormModel {
 						"value": "cell 0 1"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label43"
+						name: "autosavePath"
 						"text": "(Displayed when connected)"
-						"font": new java.awt.Font( "Lucida Grande", 2, 13 )
+						"font": new java.awt.Font( "Lucida Grande", 2, 10 )
 						"toolTipText": "The path on the server where TheSkyX will be auto-saving acquired images."
+						"minimumSize": new java.awt.Dimension( 560, 30 )
+						"maximumSize": new java.awt.Dimension( 560, 30 )
+						"horizontalAlignment": 2
+						"preferredSize": new java.awt.Dimension( 560, 30 )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 1 1 2 1"
+						"value": "cell 2 1 7 1"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label32"

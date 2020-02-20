@@ -37,7 +37,6 @@ public class SkyXSessionThread implements Runnable {
             simulateWork();
             // todo Optional warmup
             // todo Optional disconnect
-            server.closeSocket();
         }
         catch (IOException ioEx) {
             String theMessage = ioEx.getMessage();
@@ -141,9 +140,11 @@ public class SkyXSessionThread implements Runnable {
     //  As a test of server connectivity and to provide some feedback to the user, we will
     //  ask the server for the path set in it's autosave parameter, and display that in the interface
 
-    private void displayCameraPath(TheSkyXServer server) {
-        // todo displayCameraPath
-        System.out.println("displayCameraPath");
+    private void displayCameraPath(TheSkyXServer server) throws IOException {
+        String autosavePath = server.getCameraAutosavePath();
+        if (autosavePath != null) {
+            this.parent.displayAutosavePath(autosavePath);
+        }
     }
 
     // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
