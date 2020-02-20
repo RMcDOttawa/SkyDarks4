@@ -39,6 +39,10 @@ public class AddFramesetDialog extends JDialog {
         // When creating a new frame, we don't offer the "completed" fields
         this.completedLabel.setVisible(false);
         this.numberCompleted.setVisible(false);
+
+        //  Set Save button as default for this dialog
+        JRootPane root = this.saveButton.getRootPane();
+        root.setDefaultButton(this.saveButton);
     }
 
     //  This version of the constructor, called with an existing frame set,

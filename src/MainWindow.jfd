@@ -838,7 +838,7 @@ new FormModel {
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane2"
 						add( new FormComponent( "javax.swing.JList" ) {
-							name: "list1"
+							name: "lvConsole"
 							"selectionMode": 0
 							"visibleRowCount": 22
 							"focusable": false

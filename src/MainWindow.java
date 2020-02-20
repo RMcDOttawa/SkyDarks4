@@ -2,6 +2,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.TimePicker;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -23,11 +24,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TimeZone;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /*
  * Created by JFormDesigner on Wed Feb 12 19:55:56 EST 2020
@@ -49,6 +54,11 @@ public class MainWindow extends JFrame {
     private FrameTableSelectionListener frameTableSelectionListener;
 
     private boolean documentDirtyFlag = false;
+    private SkyXSessionThread skyXSessionRunnable;
+    private Thread skyXThread;
+    private DefaultListModel<String> consoleListModel;
+
+    private ReentrantLock consoleLock = null;
 
     public MainWindow() {
         this.frameTableSelectionListener = new FrameTableSelectionListener(this);
@@ -830,9 +840,44 @@ public class MainWindow extends JFrame {
     }
 
     private void beginSessionButtonActionPerformed() {
-        System.out.println("beginSessionButtonActionPerformed");
         this.restrictUiForSession(true);
-        // TODO beginSessionButtonActionPerformed
+        SessionTimeBlock timeBlock = getStartAndEndTimes();
+
+        initializeConsoleList();
+        spawnProcessingTask(timeBlock, this.sessionFrameTableModel);
+    }
+
+
+
+    //  The session console is a JList displaying console lines.  The list is fed by a
+    //  list model, which we will initialize to an empty list here.
+
+    private void initializeConsoleList() {
+        this.consoleListModel = new DefaultListModel<String> ();
+        this.lvConsole.setModel(this.consoleListModel);
+    }
+
+    //  Add a line to the console pane in the session pane, and scroll to keep it visible
+    //  We'll do a thread-lock on this code since requests will be coming from the subthread and
+    //  we want to ensure we don't try to run the code more than once in parallel.
+
+    private static final String INDENTATION_BLANKS = "    ";
+
+    public void console(String message, int messageLevel) {
+//        System.out.println("Console: " + message + "," + messageLevel);
+        this.consoleLock.lock();
+        try {
+            assert (messageLevel > 0);
+            String time = LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss"));
+            String indentation = (messageLevel == 1) ? "" : StringUtils.repeat(INDENTATION_BLANKS, messageLevel - 1);
+            this.consoleListModel.addElement(time + ": " + indentation + message);
+            //  Ensure the line we just added is visible, scrolling if necessary
+            this.lvConsole.ensureIndexIsVisible(this.consoleListModel.getSize() - 1);
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
     }
 
     //  While the acquisition sub-task is running, the UI is restricted so that the user can not
@@ -860,10 +905,116 @@ public class MainWindow extends JFrame {
 
     private void cancelSessionButtonActionPerformed() {
         System.out.println("cancelSessionButtonActionPerformed");
-        // TODO cancelSessionButtonActionPerformed
-        // De-restrict the user interface
-        this.restrictUiForSession(false);
+        //  Send an Interrupt signal to the thread
+        if (this.skyXThread != null) {
+            console("Session cancelled.", 1);
+            this.skyXThread.interrupt();
+        }
+        this.skyXThread = null;
+        this.skyXSessionRunnable = null;
     }
+
+    //  Get details of start and stop times.
+    //  Start Time
+    //      If "now", record that as boolean flag.
+    //      Otherwise, use the specified date and time.
+    //      If "today' and the time has passed, treat this as "now"
+    //  Stop Time
+    //      If "when done", record that as boolean flag.
+    //      Otherwise, use specified date and time.
+    //      If date & time is  earlier than the start date & time, advance one day
+
+    private SessionTimeBlock getStartAndEndTimes() {
+//        System.out.println("getStartAndEndTimes");
+
+        boolean startNow = false;
+        LocalDate today = LocalDate.now();
+        LocalTime rightNow = LocalTime.now();
+        LocalDate startDate = null;
+        LocalTime startTime = null;
+
+        //  Start date and time - see above rules
+
+        LocalDateTime startDateTime = null;
+        switch (this.dataModel.getStartDateType()) {
+            case NOW:
+                startNow = true;
+                startDate = today;
+                startTime = rightNow;
+                break;
+            case TODAY:
+                startNow = false;
+                startDate = today;
+                startTime = this.dataModel.appropriateStartTime();
+                break;
+            case GIVEN_DATE:
+                startNow = false;
+                startDate = this.dataModel.getGivenStartDate();
+                startTime = this.dataModel.appropriateStartTime();
+                break;
+        }
+        if (!startNow) {
+            if ((startDate == today) && (startTime.isBefore(LocalTime.now()))) {
+                //  We've missed the start time.  Just start now
+                startNow = true;
+                startDate = today;
+                startTime = rightNow;
+            }
+        }
+        startDateTime = LocalDateTime.of(startDate, startTime);
+
+        //  Get end date and time - see above rules
+
+        boolean stopWhenDone = false;
+        LocalDate endDate = null;
+        LocalTime endTime = null;
+        switch (this.dataModel.getEndDateType()) {
+            case WHEN_DONE:
+                stopWhenDone = true;
+                endDate = LocalDate.MAX;
+                endTime = LocalTime.MAX;
+                break;
+            case TODAY_TOMORROW:
+                stopWhenDone = false;
+                endTime = this.dataModel.appropriateEndTime();
+                if ((endTime != null) && (endTime.isAfter(startTime))) {
+                    endDate = LocalDate.now();
+                } else {
+                    //  The stated time (often morning) has already passed, so we
+                    //  assume they meant *tomorrow* morning
+                    endDate = today.plusDays(1);
+                }
+                break;
+            case GIVEN_DATE:
+                stopWhenDone = false;
+                endDate = this.dataModel.getGivenEndDate();
+                endTime = this.dataModel.appropriateEndTime();
+                break;
+        }
+        LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
+
+        return SessionTimeBlock.of(startNow, startDateTime, stopWhenDone, endDateTime);
+    }
+
+    //  Start the separate thread that manages the file acquisition.  This is run as a separate
+    //  thread so that the user interface, managed from here, remains responsive.
+
+    private void spawnProcessingTask(SessionTimeBlock timeBlock, 
+                                     SessionFrameTableModel sessionTableModel) {
+        this.consoleLock = new ReentrantLock();
+        console(timeBlock.toString(), 1);
+        this.skyXSessionRunnable = new SkyXSessionThread(this, this.dataModel, timeBlock, sessionTableModel);
+        this.skyXThread = new Thread(skyXSessionRunnable);
+        this.skyXThread.start();
+    }
+
+    //  The processing sub-thread tells us when it is done via message to this method
+
+    public void skyXSessionThreadEnded() {
+        this.console("Session ended.", 1);
+        this.restrictUiForSession(false);
+        this.consoleLock = null;
+   }
 
     private void serverAddressFocusLost() {
         this.serverAddressActionPerformed();
@@ -1273,7 +1424,7 @@ public class MainWindow extends JFrame {
         label32 = new JLabel();
         label41 = new JLabel();
         scrollPane2 = new JScrollPane();
-        list1 = new JList();
+        lvConsole = new JList();
         scrollPane3 = new JScrollPane();
         sessionFramesetTable = new JTable();
         progressBar1 = new JProgressBar();
@@ -2201,13 +2352,13 @@ public class MainWindow extends JFrame {
                 //======== scrollPane2 ========
                 {
 
-                    //---- list1 ----
-                    list1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                    list1.setVisibleRowCount(22);
-                    list1.setFocusable(false);
-                    list1.setToolTipText("Messages on progress of the session.");
-                    list1.setPrototypeCellValue("10:30 AM THis is a typical line in the console log.");
-                    scrollPane2.setViewportView(list1);
+                    //---- lvConsole ----
+                    lvConsole.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    lvConsole.setVisibleRowCount(22);
+                    lvConsole.setFocusable(false);
+                    lvConsole.setToolTipText("Messages on progress of the session.");
+                    lvConsole.setPrototypeCellValue("10:30 AM THis is a typical line in the console log.");
+                    scrollPane2.setViewportView(lvConsole);
                 }
                 runSessionTab.add(scrollPane2, "cell 0 3 6 1,aligny top,grow 100 0");
 
@@ -2492,7 +2643,7 @@ public class MainWindow extends JFrame {
     private JLabel label32;
     private JLabel label41;
     private JScrollPane scrollPane2;
-    private JList list1;
+    private JList lvConsole;
     private JScrollPane scrollPane3;
     private JTable sessionFramesetTable;
     private JProgressBar progressBar1;
@@ -2768,5 +2919,4 @@ public class MainWindow extends JFrame {
     private void clearFieldValidityWarnings() {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
-
 }
