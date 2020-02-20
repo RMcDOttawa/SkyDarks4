@@ -19,10 +19,16 @@ public class SkyXSessionThread implements Runnable {
     @Override
     public void run() {
         try {
+            //  Wait for start, and wake server if desired
             this.waitForStartTime(this.sessionTimeBlock.isStartNow(), this.sessionTimeBlock.getStartDateTime(),
                     this.dataModel.getSendWakeOnLanBeforeStarting(), this.dataModel.getSendWolSecondsBefore());
             this.optionalWakeOnLan(this.dataModel);
-            // todo Connect to server, display camera path
+
+            //  Set up server, display autosave path
+            this.console("Connecting to server.", 1);
+            TheSkyXServer server = new TheSkyXServer(this.dataModel.getNetAddress(), this.dataModel.getPortNumber());
+            this.displayCameraPath(server);
+
             // todo Connect to camera
             // todo Start cooling camera
             // todo Measure download times
@@ -31,9 +37,14 @@ public class SkyXSessionThread implements Runnable {
             simulateWork();
             // todo Optional warmup
             // todo Optional disconnect
+            server.closeSocket();
         }
         catch (IOException ioEx) {
-            this.console("IO Error from server: " + ioEx.getMessage(), 1);
+            String theMessage = ioEx.getMessage();
+            if (!theMessage.endsWith(".")) {
+                theMessage += ".";
+            }
+            this.console("Server Error: " + theMessage, 1);
         }
         catch (InterruptedException intEx) {
             //  Thread has been interrupted by user clicking Cancel
@@ -125,6 +136,14 @@ public class SkyXSessionThread implements Runnable {
                 }
             }
         }
+    }
+
+    //  As a test of server connectivity and to provide some feedback to the user, we will
+    //  ask the server for the path set in it's autosave parameter, and display that in the interface
+
+    private void displayCameraPath(TheSkyXServer server) {
+        // todo displayCameraPath
+        System.out.println("displayCameraPath");
     }
 
     // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"

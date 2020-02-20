@@ -837,13 +837,18 @@ new FormModel {
 					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "scrollPane2"
+						"horizontalScrollBarPolicy": 32
+						"verticalScrollBarPolicy": 22
+						"autoscrolls": true
+						"componentOrientation": sfield java.awt.ComponentOrientation LEFT_TO_RIGHT
+						"focusable": false
 						add( new FormComponent( "javax.swing.JList" ) {
 							name: "lvConsole"
 							"selectionMode": 0
 							"visibleRowCount": 22
 							"focusable": false
 							"toolTipText": "Messages on progress of the session."
-							"prototypeCellValue": "10:30 AM THis is a typical line in the console log."
+							"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 							auxiliary() {
 								"JavaCodeGenerator.typeParameters": "String"
 							}

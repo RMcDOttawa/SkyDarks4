@@ -1299,14 +1299,9 @@ public class MainWindow extends JFrame {
 
             //  Content is now in temporary file.   Delete original file name and rename temporary.
             boolean deleteResult = fileToSave.delete();
-            if (deleteResult) {
-                if (!tempFile.renameTo(fileToSave)) {
-                    JOptionPane.showMessageDialog(null,
-                            "Unable to rename temporary file after writing.");
-                }
-            } else {
+            if (!tempFile.renameTo(fileToSave)) {
                 JOptionPane.showMessageDialog(null,
-                        "Unable to replace previous version of file.");
+                        "Unable to rename temporary file after writing.");
             }
 
             // Set title of main window
@@ -1347,7 +1342,6 @@ public class MainWindow extends JFrame {
     }
 
     private void createUIComponents() {
-        // TODO: add custom component creation code here
     }
 
     @SuppressWarnings({"Convert2MethodRef", "SpellCheckingInspection"})
@@ -2403,13 +2397,18 @@ public class MainWindow extends JFrame {
 
                 //======== scrollPane2 ========
                 {
+                    scrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+                    scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                    scrollPane2.setAutoscrolls(true);
+                    scrollPane2.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                    scrollPane2.setFocusable(false);
 
                     //---- lvConsole ----
                     lvConsole.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
                     lvConsole.setVisibleRowCount(22);
                     lvConsole.setFocusable(false);
                     lvConsole.setToolTipText("Messages on progress of the session.");
-                    lvConsole.setPrototypeCellValue("10:30 AM THis is a typical line in the console log.");
+                    lvConsole.setPreferredSize(null);
                     scrollPane2.setViewportView(lvConsole);
                 }
                 runSessionTab.add(scrollPane2, "cell 0 3 6 1,aligny top,grow 100 0");
