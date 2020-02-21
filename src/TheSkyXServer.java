@@ -55,7 +55,7 @@ public class TheSkyXServer {
     //  Send given command packet to server, retrieve server response
 
     String sendCommandPacket(String commandPacket) throws IOException {
-        System.out.println("Send command: " + commandPacket);
+//        System.out.println("Send command: " + commandPacket);
 
         //  Create socket and connect
         Socket socket = new Socket();
@@ -186,5 +186,10 @@ public class TheSkyXServer {
         else if (returnedTextUpper.contains("TYPEERROR:"))
             result = 3;
         return result;
+    }
+
+    public void abortImageInProgress() throws IOException {
+        String command = "ccdsoftCamera.Abort();";
+        this.sendCommandNoReturn(command);
     }
 }

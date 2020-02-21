@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "7.0.0.6.255" Java: "11.0.5" encoding: "UTF-8"
+JFDML JFormDesigner: "7.0.1.0.272" Java: "11.0.5" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -714,7 +714,7 @@ new FormModel {
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 					"$horizontalGroup": "par l {seq {par l {comp scrollPane1::t:::x, seq {par l {seq l {space :9:9:p, comp autosaveCheckbox::::589:x}, seq {space :p:156:p, comp hSpacer1:::p::p, space :1:1:p, comp editFramesetButton:::p::p, space :96:96:p, comp hSpacer2:::p::p, space :1:1:p, comp resetCompletedButton:::p::p, space :1:1:p, comp hSpacer3:::p::p}, seq {space :p:237:p, comp bulkAddButton:::p::p}, seq {space :p:80:p, comp deleteFramesetButton:::p::p}, seq {space :p:10:p, comp addFramesetButton:::p::p}}, space :::p, comp moveUpButton:::p::p, space :::p, comp moveDownButton:::p::p, space :p:1:p}, comp label40::l::767:x}, space :::p}}"
-					"$verticalGroup": "par l {seq {space :p:27:p, comp label40:::p::p, space :::p, comp scrollPane1::::405:x, par l {seq {space :p:4:p, par l {comp editFramesetButton:::p::p, comp resetCompletedButton:::p::p, par b {comp moveDownButton::b:p::p, comp moveUpButton::b:p::p}, comp bulkAddButton:::p::p, comp deleteFramesetButton:::p::p, comp addFramesetButton:::p::p, seq {space :8:8:p, par l {comp hSpacer1:::p:12:p, comp hSpacer2:::p:12:p, comp hSpacer3:::p:12:p}}}}, seq {space :p:30:p, comp autosaveCheckbox:::p::p}}, space :p:12:p}}"
+					"$verticalGroup": "par l {seq {space :p:27:p, comp label40:::p::p, space :::p, comp scrollPane1::::395:x, par l {seq {space :p:4:p, par l {comp editFramesetButton:::p::p, comp resetCompletedButton:::p::p, par b {comp moveDownButton::b:p::p, comp moveUpButton::b:p::p}, comp bulkAddButton:::p::p, comp deleteFramesetButton:::p::p, comp addFramesetButton:::p::p, seq {space :8:8:p, par l {comp hSpacer1:::p:12:p, comp hSpacer2:::p:12:p, comp hSpacer3:::p:12:p}}}}, seq {space :p:30:p, comp autosaveCheckbox:::p::p}}, space :p:12:p}}"
 				} ) {
 					name: "framesPlanTab"
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
@@ -795,7 +795,7 @@ new FormModel {
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "hidemode 3"
-					"$columnConstraints": "[grow,fill][fill][115,grow,fill][grow,fill][fill][fill][fill][grow,fill][fill][fill]"
+					"$columnConstraints": "[grow,fill][fill][115,grow,fill][grow,fill][fill][52,fill][grow,fill][fill][fill]"
 					"$rowConstraints": "[][27][][grow][][]"
 				} ) {
 					name: "runSessionTab"
@@ -805,7 +805,7 @@ new FormModel {
 						"horizontalAlignment": 0
 						"font": new java.awt.Font( "Lucida Grande", 0, 24 )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 0 8 1"
+						"value": "cell 0 0 7 1"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label42"
@@ -821,7 +821,7 @@ new FormModel {
 						"horizontalAlignment": 2
 						"preferredSize": new java.awt.Dimension( 560, 30 )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 2 1 7 1,width 500:800:800,height 30:30:50"
+						"value": "cell 2 1 6 1,width 500:800:800,height 30:30:50"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label32"
@@ -835,7 +835,7 @@ new FormModel {
 						"text": "Images Being Acquired:"
 						"font": new java.awt.Font( "Lucida Grande", 0, 18 )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 7 2"
+						"value": "cell 6 2"
 					} )
 					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 						name: "consoleScrollPane"
@@ -872,7 +872,7 @@ new FormModel {
 							"maximumSize": new java.awt.Dimension( 32767, 32767 )
 						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 7 3 3 1,align left top,grow 0 0"
+						"value": "cell 6 3 3 1,align left top,grow 0 0"
 					} )
 					add( new FormComponent( "javax.swing.JProgressBar" ) {
 						name: "progressBar"
@@ -900,9 +900,9 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "coolingMessage"
-						"text": "Cooler power xx%, temperature xxx."
+						"text": "During acquisition, camera temperature displayed here."
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 7 5 2 1,alignx right,growx 0"
+						"value": "cell 6 5 2 1,alignx right,growx 0"
 					} )
 				}, new FormLayoutConstraints( null ) {
 					"title": "Run Session"
@@ -945,7 +945,7 @@ new FormModel {
 			}
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 775, 610 )
+			"size": new java.awt.Dimension( 775, 600 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "startDayRadioGroup"

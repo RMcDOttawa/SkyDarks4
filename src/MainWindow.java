@@ -907,7 +907,7 @@ public class MainWindow extends JFrame {
     public void reportCoolingStatus(double temperature, double coolerPower) {
         this.consoleLock.lock();
         try {
-            this.coolingMessage.setText(String.format("Cooler power %.1f, temperature %.1f", coolerPower, temperature));
+            this.coolingMessage.setText(String.format("Cooler power %.0f%%, temperature %.1f", coolerPower, temperature));
         }
         finally {
             //  Use try-finally to ensure unlock happens even if some kind of exception occurs
@@ -1314,7 +1314,6 @@ public class MainWindow extends JFrame {
             if (!fullPath.endsWith(("." + CommonUtils.DATA_FILE_SUFFIX))) {
                 fullPath += "." + CommonUtils.DATA_FILE_SUFFIX;
             }
-            System.out.println("Output path: " + fullPath);
             File newFile = new File(fullPath);
             this.writeToFile(newFile);
         }
@@ -2374,7 +2373,7 @@ public class MainWindow extends JFrame {
                             .addGap(27, 27, 27)
                             .addComponent(label40)
                             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
+                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
                             .addGroup(framesPlanTabLayout.createParallelGroup()
                                 .addGroup(framesPlanTabLayout.createSequentialGroup()
                                     .addGap(4, 4, 4)
@@ -2411,8 +2410,7 @@ public class MainWindow extends JFrame {
                     "[115,grow,fill]" +
                     "[grow,fill]" +
                     "[fill]" +
-                    "[fill]" +
-                    "[fill]" +
+                    "[52,fill]" +
                     "[grow,fill]" +
                     "[fill]" +
                     "[fill]",
@@ -2428,7 +2426,7 @@ public class MainWindow extends JFrame {
                 label44.setText("Acquisition Session");
                 label44.setHorizontalAlignment(SwingConstants.CENTER);
                 label44.setFont(new Font("Lucida Grande", Font.PLAIN, 24));
-                runSessionTab.add(label44, "cell 0 0 8 1");
+                runSessionTab.add(label44, "cell 0 0 7 1");
 
                 //---- label42 ----
                 label42.setText("Camera Autosave Path: ");
@@ -2440,7 +2438,7 @@ public class MainWindow extends JFrame {
                 autosavePath.setToolTipText("The path on the server where TheSkyX will be auto-saving acquired images.");
                 autosavePath.setHorizontalAlignment(SwingConstants.LEFT);
                 autosavePath.setPreferredSize(new Dimension(560, 30));
-                runSessionTab.add(autosavePath, "cell 2 1 7 1,width 500:800:800,height 30:30:50");
+                runSessionTab.add(autosavePath, "cell 2 1 6 1,width 500:800:800,height 30:30:50");
 
                 //---- label32 ----
                 label32.setText("Console Log:");
@@ -2450,7 +2448,7 @@ public class MainWindow extends JFrame {
                 //---- label41 ----
                 label41.setText("Images Being Acquired:");
                 label41.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
-                runSessionTab.add(label41, "cell 7 2");
+                runSessionTab.add(label41, "cell 6 2");
 
                 //======== consoleScrollPane ========
                 {
@@ -2489,7 +2487,7 @@ public class MainWindow extends JFrame {
                     sessionFramesetTable.setMaximumSize(new Dimension(32767, 32767));
                     scrollPane3.setViewportView(sessionFramesetTable);
                 }
-                runSessionTab.add(scrollPane3, "cell 7 3 3 1,align left top,grow 0 0");
+                runSessionTab.add(scrollPane3, "cell 6 3 3 1,align left top,grow 0 0");
 
                 //---- progressBar ----
                 progressBar.setVisible(false);
@@ -2510,8 +2508,8 @@ public class MainWindow extends JFrame {
                 runSessionTab.add(cancelSessionButton, "cell 3 5,alignx trailing,growx 0");
 
                 //---- coolingMessage ----
-                coolingMessage.setText("Cooler power xx%, temperature xxx.");
-                runSessionTab.add(coolingMessage, "cell 7 5 2 1,alignx right,growx 0");
+                coolingMessage.setText("During acquisition, camera temperature displayed here.");
+                runSessionTab.add(coolingMessage, "cell 6 5 2 1,alignx right,growx 0");
             }
             mainTabFrame.addTab("Run Session", null, runSessionTab, "Console to start and monitor the acquisition process");
         }
@@ -2913,7 +2911,7 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
 
         //  Cooler Power message should initially be empty.
-        this.coolingMessage.setText(" ");
+//        this.coolingMessage.setText(" ");
 	}
 
 	//  The Begin button on the session tab is enabled only if the session is ready to run.
@@ -3037,3 +3035,5 @@ public class MainWindow extends JFrame {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
 }
+
+// todo make frame table narrower and console wider

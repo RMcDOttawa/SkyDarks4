@@ -31,6 +31,7 @@ public class SkyXSessionThread implements Runnable {
 
     @Override
     public void run() {
+        TheSkyXServer server = null;
         try {
             //  Wait for start, and wake server if desired
             this.waitForStartTime(this.sessionTimeBlock.isStartNow(), this.sessionTimeBlock.getStartDateTime(),
@@ -39,7 +40,7 @@ public class SkyXSessionThread implements Runnable {
 
             //  Set up server, display autosave path
             this.console("Connecting to server.", 1);
-            TheSkyXServer server = new TheSkyXServer(this.dataModel.getNetAddress(), this.dataModel.getPortNumber());
+            server = new TheSkyXServer(this.dataModel.getNetAddress(), this.dataModel.getPortNumber());
             this.displayCameraPath(server);
 
             //  Connect to camera and start it cooling
@@ -49,9 +50,13 @@ public class SkyXSessionThread implements Runnable {
             // While the camera is cooling, measure download times for the binnings we'll be using
             this.measureDownloadTimes(server);
 
-            // todo Wait for cooling target
-            // todo Acquire frames until done or time
-            simulateWork();
+            // We're out of things to do until the camera reaches its target temperature
+            // Wait for it.  Note that it can fail - if ambient is higher than the cooler can handle
+            if (this.waitForCoolingTarget(server)) {
+                // todo Acquire frames until done or time
+                this.startCoolingMonitor(server);
+                simulateWork();
+            }
             // todo Optional warmup
             // todo Optional disconnect
         }
@@ -64,13 +69,14 @@ public class SkyXSessionThread implements Runnable {
         }
         catch (InterruptedException intEx) {
             //  Thread has been interrupted by user clicking Cancel
-            this.cleanUpFromCancel();
+            this.cleanUpFromCancel(server);
         }
         finally {
             this.stopCoolingMonitor();
             this.parent.skyXSessionThreadEnded();
         }
     }
+
 
     // For all fo the binning values we'll be using, take a bias frame and time it.
     //  Since bias frames are zero-length, any time that passes is the download time for the
@@ -80,6 +86,7 @@ public class SkyXSessionThread implements Runnable {
     private void measureDownloadTimes(TheSkyXServer server) throws IOException {
         //  Create empty table
         this.downloadTimes = new HashMap<>(4);
+        this.console("Measuring download times.", 1);
 
         //  Loop through all planned framesets.  For any binning not already in table, time it
         ArrayList<FrameSet> frameSets = this.sessionTableModel.getSessionFramesets();
@@ -101,6 +108,7 @@ public class SkyXSessionThread implements Runnable {
         LocalDateTime timeAfter = LocalDateTime.now();
         Duration timeTaken = Duration.between(timeAfter, timeBefore).abs();
         double downloadSeconds = timeTaken.getSeconds();
+        this.console(String.format("Binned %d x %d: %.1f seconds.", binning, binning, downloadSeconds), 2);
         return downloadSeconds;
     }
 
@@ -114,15 +122,27 @@ public class SkyXSessionThread implements Runnable {
     //  User clicked Cancel and interrupted the thread.  We don't know exactly what we were doing
     //  at the time. Clean up any operations such as camera exposures in progress.
 
-    private void cleanUpFromCancel() {
+    private void cleanUpFromCancel(TheSkyXServer server) {
         // todo cleanUpFromCancel
         System.out.println("cleanUpFromCancel");
+
+        // Abort any camera operation in progress
+        if (server != null) {
+            try {
+                server.abortImageInProgress();
+            } catch (IOException e) {
+                // Stop any exception here so we don't get into a cancellation loop
+            }
+        }
+
+        // If cooling monitor timer is running, stop it.
         if (this.coolingMonitorTimer != null) {
             this.stopCoolingMonitor();
         }
     }
 
     private void simulateWork() throws InterruptedException {
+        this.console("Simulating work.", 1);
         for (int i = 0; i < 50; i++) {
             Thread.sleep((int)(0.5 * 1000));
             this.console("Session " + i, 2);
@@ -224,7 +244,6 @@ public class SkyXSessionThread implements Runnable {
             server.setCameraCooling(true, temperatureTarget);
             this.console("Start cooling camera to target " + temperatureTarget + ".", 1);
             // Tell the UI we have started cooling so it can start displaying temperature
-            this.startCoolingMonitor(server);
         }
     }
 
@@ -235,8 +254,8 @@ public class SkyXSessionThread implements Runnable {
         this.coolingMonitorTask = new CoolingMonitorTask(this, server);
         this.coolingMonitorTimer = new Timer();
         this.coolingMonitorTimer.scheduleAtFixedRate(this.coolingMonitorTask,
-                this.COOLING_MONITOR_INTERVAL * 1000,
-                this.COOLING_MONITOR_INTERVAL * 1000);
+                COOLING_MONITOR_INTERVAL * 1000,
+                COOLING_MONITOR_INTERVAL * 1000);
     }
 
     //  this method is called by the cooling monitor.  Get temp and power and pass to UI
@@ -249,7 +268,6 @@ public class SkyXSessionThread implements Runnable {
             this.parent.reportCoolingStatus(temperature, coolerPower);
         } catch (IOException e) {
             // Ignore this exception
-            ;
         }
     }
 
@@ -263,6 +281,90 @@ public class SkyXSessionThread implements Runnable {
             this.coolingMonitorTask = null;
         }
         this.parent.hideCoolingStatus();
+    }
+
+    //  Assuming the camera is temperature-regulated, wait for the cooling target temperature to be
+    //  reached.  This can fail - if the ambient temperature is so high that it is beyond the ability
+    //  of the camera's cooler to lower the temperature to the target.  If this happens, we can optionally
+    //  give the cooler a rest and then try again. The idea is that the ambient temperature is falling
+    //  as night goes on, so a later attempt may succeed.  Note that the very first cooling attempt will
+    //  be given a little more time than what is specified, since the camera has been cooling while we
+    //  measured the download times.  This matters only if it times out, which is rare, so we're not
+    //  worrying about it.
+
+    private boolean waitForCoolingTarget(TheSkyXServer server) throws InterruptedException, IOException {
+        boolean success = true;
+        if (this.dataModel.getTemperatureRegulated()) {
+            this.console(String.format("Waiting for camera to cool to target of %.1f",
+                    this.dataModel.getTemperatureTarget()), 1);
+            int totalAttempts = 1 + this.dataModel.getTemperatureFailRetryCount();
+            while (totalAttempts > 0) {
+                totalAttempts -= 1;
+                success = this.oneCoolingAttempt(server);
+                if (success) {
+                    break;
+                } else {
+                    // Failed to cool to target.  Turn off cooling.
+                    this.stopCooling(server);
+                    //  If more attempts are remaining, wait then try again
+                    if (totalAttempts > 0) {
+                        this.console("Cooling failed to reach target temp "
+                                + this.dataModel.getTemperatureTarget() + ".", 1);
+                        this.console("Waiting " + this.casualFormatInterval(this.dataModel.getTemperatureFailRetryDelaySeconds())
+                                + " before next attempt.", 2);
+                        this.sleepWithProgressBar(this.dataModel.getTemperatureFailRetryDelaySeconds());
+                        this.startCoolingCamera(server, true, this.dataModel.getTemperatureTarget());
+                    }
+                }
+            }
+            if (!success) {
+                this.console("Failed to cool to target temperature in "
+                + this.dataModel.getTemperatureFailRetryCount() + " tries.", 1);
+            }
+        }
+        return success;
+    }
+
+    //  Turn off the camera's cooler circuit
+
+    private void stopCooling(TheSkyXServer server) throws IOException {
+        server.setCameraCooling(false, 0.0);
+    }
+
+    //  Make one attempt to cool to the target.  The cooling is already underway.  At given intervals
+    //  we will get the temperature from the camera, and consider cooling done if we are within a
+    //  certain distance of the target.  We'll run a progress bar against the total time we're allowed
+    //  to wait.  If we don't reach the temperature in that limit, we return false so the caller can
+    //  decide whether to try again.
+
+    private boolean oneCoolingAttempt(TheSkyXServer server) throws InterruptedException, IOException {
+        boolean success = false;
+
+        int maxSecondsToWait = this.dataModel.getMaxCoolingWaitTime();
+        this.parent.startProgressBar(0, maxSecondsToWait);
+        int totalTimeWaited = 0;
+        int waitInterval = this.dataModel.getTemperatureSettleSeconds();
+        while (totalTimeWaited < maxSecondsToWait) {
+            //  Wait a brief while before next temperature check
+            Thread.sleep(waitInterval * 1000);
+            //  Update progress bar to reflect that we've waited
+            totalTimeWaited += waitInterval;
+            parent.updateProgressBar(totalTimeWaited);
+            ImmutablePair<Double, Double> tempAndPower = server.getCameraTemperatureAndPower();
+            double currentTemperature = tempAndPower.left;
+            double coolerPower = tempAndPower.right;
+            this.console(String.format("Camera temperature %.1f, cooler power %.0f%%", currentTemperature, coolerPower), 2);
+            double temperatureDifference = Math.abs(currentTemperature - this.dataModel.getTemperatureTarget());
+            if (temperatureDifference <= this.dataModel.getTemperatureWithin()) {
+                success = true;
+                break;
+            }
+        }
+        this.parent.stopProgressBar();
+        if (success) {
+            this.console("Target temperature reached.", 1);
+        }
+        return success;
     }
 
     // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
