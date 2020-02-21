@@ -1,5 +1,7 @@
 //  Class for sending Javascript command strings to the server running TheSkyX
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -53,6 +55,7 @@ public class TheSkyXServer {
     //  Send given command packet to server, retrieve server response
 
     String sendCommandPacket(String commandPacket) throws IOException {
+        System.out.println("Send command: " + commandPacket);
 
         //  Create socket and connect
         Socket socket = new Socket();
@@ -83,7 +86,6 @@ public class TheSkyXServer {
     }
 
     private void sendCommandNoReturn(String commandToSend) throws IOException {
-        System.out.println("Send command: " + commandToSend);
         String commandPacket =  "/* Java Script */"
                 + "/* Socket Start Packet */"
                 + commandToSend
@@ -116,5 +118,22 @@ public class TheSkyXServer {
 
     public static String boolToJS(boolean theBool) {
         return theBool ? "true" : "false";
+    }
+
+    //  Get and return the camera's temperature and the cooler's power level (as percent)
+
+    public ImmutablePair<Double, Double> getCameraTemperatureAndPower()
+            throws IOException, NumberFormatException, ArrayIndexOutOfBoundsException {
+        String commandWithReturn = "var temp=ccdsoftCamera.Temperature;"
+                + "var power=ccdsoftCamera.ThermalElectricCoolerPower;"
+                + "var Out;"
+                + "Out=temp+\",\"+power+\"\\n\";";
+        String returnValue = this.sendCommandWithReturn(commandWithReturn);
+        Double temperature = 0.0;
+        Double power = 0.0;
+        String[] parts = returnValue.split(",");
+        temperature = Double.parseDouble(parts[0]);
+        power = Double.parseDouble(parts[1]);
+        return ImmutablePair.of(temperature, power);
     }
 }

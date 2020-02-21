@@ -901,6 +901,31 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  A periodic timer in the session thread has just updated us on the state of the cooled camera.
+    //  Display this info in a UI field
+
+    public void reportCoolingStatus(double temperature, double coolerPower) {
+        this.consoleLock.lock();
+        try {
+            this.coolingMessage.setText(String.format("Cooler power %.1f, temperature %.1f", coolerPower, temperature));
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
+    public void hideCoolingStatus() {
+        this.consoleLock.lock();
+        try {
+            this.coolingMessage.setText(" ");
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
+    }
+
     //  Also called from the processing thread, this set of methods displays a progress bar on the
     //  UI.
 

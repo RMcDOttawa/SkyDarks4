@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -69,7 +71,9 @@ public class SkyXSessionThread implements Runnable {
     private void cleanUpFromCancel() {
         // todo cleanUpFromCancel
         System.out.println("cleanUpFromCancel");
-        // todo stop cooling monitor
+        if (this.coolingMonitorTimer != null) {
+            this.stopCoolingMonitor();
+        }
     }
 
     private void simulateWork() throws InterruptedException {
@@ -174,15 +178,15 @@ public class SkyXSessionThread implements Runnable {
             server.setCameraCooling(true, temperatureTarget);
             this.console("Start cooling camera to target " + temperatureTarget + ".", 1);
             // Tell the UI we have started cooling so it can start displaying temperature
-            this.startCoolingMonitor();
+            this.startCoolingMonitor(server);
         }
     }
 
     //  Set up a periodic timer that will prompt us to get the camera power and temperature
     //  and pass them up to the main window for displaying in the UI.
 
-    private void startCoolingMonitor() {
-        this.coolingMonitorTask = new CoolingMonitorTask(this);
+    private void startCoolingMonitor(TheSkyXServer server) {
+        this.coolingMonitorTask = new CoolingMonitorTask(this, server);
         this.coolingMonitorTimer = new Timer();
         this.coolingMonitorTimer.scheduleAtFixedRate(this.coolingMonitorTask,
                 this.COOLING_MONITOR_INTERVAL * 1000,
@@ -191,9 +195,16 @@ public class SkyXSessionThread implements Runnable {
 
     //  this method is called by the cooling monitor.  Get temp and power and pass to UI
 
-    public void fireCoolingMonitor() {
-        // todo fireCoolingMonitor
-        System.out.println("fireCoolingMonitor");
+    public void fireCoolingMonitor(TheSkyXServer server) {
+        try {
+            ImmutablePair<Double, Double> temperatureInfo = server.getCameraTemperatureAndPower();
+            double temperature = temperatureInfo.left;
+            double coolerPower = temperatureInfo.right;
+            this.parent.reportCoolingStatus(temperature, coolerPower);
+        } catch (IOException e) {
+            // Ignore this exception
+            ;
+        }
     }
 
     private void stopCoolingMonitor() {
@@ -201,7 +212,7 @@ public class SkyXSessionThread implements Runnable {
         this.coolingMonitorTask.cancel();
         this.coolingMonitorTask = null;
         this.coolingMonitorTimer = null;
-        // todo Tell UI to turn off cooling message
+        this.parent.hideCoolingStatus();
     }
 
     // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
