@@ -704,7 +704,7 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "wolTestMessage"
-						"text": "message"
+						"text": "   "
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 4 9"
 					} )

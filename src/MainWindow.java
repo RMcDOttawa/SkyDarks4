@@ -2222,7 +2222,7 @@ public class MainWindow extends JFrame {
                 serverTab.add(sendWOLbutton, "cell 3 9,alignx left,growx 0");
 
                 //---- wolTestMessage ----
-                wolTestMessage.setText("message");
+                wolTestMessage.setText("   ");
                 serverTab.add(wolTestMessage, "cell 4 9");
             }
             mainTabFrame.addTab("TheSkyX Server", null, serverTab, "Information for connecting to the TheSkyX server");
@@ -2995,3 +2995,7 @@ public class MainWindow extends JFrame {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
 }
+
+//todo Adjust size of autosave path display as window resizes
+
+// todo adjust #line height of console as window resizes

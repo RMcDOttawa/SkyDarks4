@@ -29,6 +29,8 @@ public class AddFramesetDialog extends JDialog {
         return this.frameSet;
     }
 
+
+
     //  This version of the constructor opens the dialog to create a new frame set
 
     public AddFramesetDialog(Window owner) {

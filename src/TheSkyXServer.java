@@ -17,7 +17,6 @@ public class TheSkyXServer {
     //  Constructor, taking address and port number, create socket for trial connection
     public TheSkyXServer(String serverAddress, Integer portNumber) throws IOException {
         super();
-        // todo TheSkyXServer constructor
         this.serverAddress = serverAddress;
         this.portNumber = portNumber;
         //  Trial connection
