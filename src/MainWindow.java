@@ -884,14 +884,6 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  We have started cooling the camera.  Set up a timer to periodically display the cooler power and temp
-
-    public void startedCooling() {
-        // todo startedCooling
-        System.out.println("startedCooling");
-    }
-
-
     //  Receive the server's camera autosave path from the server and display it in the UI
 
     public void displayAutosavePath(String autosavePath) {

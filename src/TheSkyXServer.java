@@ -6,9 +6,13 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class TheSkyXServer {
     private static final int SOCKET_TIMEOUT = 5 * 1000;
+
+    //  We use a lock for server commands since more than one task may be asking the server to act
+    private ReentrantLock serverLock = null;
 
     private String serverAddress;
     private int portNumber;
@@ -17,6 +21,7 @@ public class TheSkyXServer {
     //  Constructor, taking address and port number, create socket for trial connection
     public TheSkyXServer(String serverAddress, Integer portNumber) throws IOException {
         super();
+        this.serverLock = new ReentrantLock();
         this.serverAddress = serverAddress;
         this.portNumber = portNumber;
         //  Trial connection
@@ -85,8 +90,16 @@ public class TheSkyXServer {
                 + "var Out;"
                 + "Out=\"0\\n\";"
                 + "/* Socket End Packet */";
-        this.sendCommandPacket(commandPacket);
-   }
+        try {
+            this.serverLock.lock();
+            this.sendCommandPacket(commandPacket);
+        } catch (IOException exception) {
+            throw exception;
+        } finally {
+            this.serverLock.unlock();
+        }
+
+    }
 
    // Turn camera cooling on or off.  If on, set temperature target;
     public void setCameraCooling(boolean coolingOn, Double temperatureTarget) throws IOException {

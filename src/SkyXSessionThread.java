@@ -2,8 +2,14 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Timer;
 
 public class SkyXSessionThread implements Runnable {
+
+    private static final int COOLING_MONITOR_INTERVAL = 5;
+    private CoolingMonitorTask coolingMonitorTask = null;
+    private Timer coolingMonitorTimer = null;
+
     MainWindow parent;
     DataModel   dataModel;
     SessionTimeBlock sessionTimeBlock;
@@ -51,7 +57,10 @@ public class SkyXSessionThread implements Runnable {
             //  Thread has been interrupted by user clicking Cancel
             this.cleanUpFromCancel();
         }
-        this.parent.skyXSessionThreadEnded();
+        finally {
+            this.stopCoolingMonitor();
+            this.parent.skyXSessionThreadEnded();
+        }
     }
 
     //  User clicked Cancel and interrupted the thread.  We don't know exactly what we were doing
@@ -60,6 +69,7 @@ public class SkyXSessionThread implements Runnable {
     private void cleanUpFromCancel() {
         // todo cleanUpFromCancel
         System.out.println("cleanUpFromCancel");
+        // todo stop cooling monitor
     }
 
     private void simulateWork() throws InterruptedException {
@@ -164,8 +174,34 @@ public class SkyXSessionThread implements Runnable {
             server.setCameraCooling(true, temperatureTarget);
             this.console("Start cooling camera to target " + temperatureTarget + ".", 1);
             // Tell the UI we have started cooling so it can start displaying temperature
-            this.parent.startedCooling();
+            this.startCoolingMonitor();
         }
+    }
+
+    //  Set up a periodic timer that will prompt us to get the camera power and temperature
+    //  and pass them up to the main window for displaying in the UI.
+
+    private void startCoolingMonitor() {
+        this.coolingMonitorTask = new CoolingMonitorTask(this);
+        this.coolingMonitorTimer = new Timer();
+        this.coolingMonitorTimer.scheduleAtFixedRate(this.coolingMonitorTask,
+                this.COOLING_MONITOR_INTERVAL * 1000,
+                this.COOLING_MONITOR_INTERVAL * 1000);
+    }
+
+    //  this method is called by the cooling monitor.  Get temp and power and pass to UI
+
+    public void fireCoolingMonitor() {
+        // todo fireCoolingMonitor
+        System.out.println("fireCoolingMonitor");
+    }
+
+    private void stopCoolingMonitor() {
+        this.coolingMonitorTimer.cancel();
+        this.coolingMonitorTask.cancel();
+        this.coolingMonitorTask = null;
+        this.coolingMonitorTimer = null;
+        // todo Tell UI to turn off cooling message
     }
 
     // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
@@ -242,5 +278,4 @@ public class SkyXSessionThread implements Runnable {
             interval = 10;
         return interval;
     }
-
 }
