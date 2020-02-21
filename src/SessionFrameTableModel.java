@@ -63,4 +63,8 @@ public class SessionFrameTableModel extends AbstractTableModel {
     public String getColumnName(int column) {
         return this.columnHeaders[column];
     }
+
+    public ArrayList<FrameSet> getSessionFramesets() {
+        return this.sessionFramesets;
+    }
 }

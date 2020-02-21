@@ -1,9 +1,12 @@
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Timer;
 
 public class SkyXSessionThread implements Runnable {
@@ -11,6 +14,8 @@ public class SkyXSessionThread implements Runnable {
     private static final int COOLING_MONITOR_INTERVAL = 5;
     private CoolingMonitorTask coolingMonitorTask = null;
     private Timer coolingMonitorTimer = null;
+
+    private HashMap<Integer, Double> downloadTimes = null;
 
     MainWindow parent;
     DataModel   dataModel;
@@ -41,7 +46,9 @@ public class SkyXSessionThread implements Runnable {
             this.connectToCamera(server);
             this.startCoolingCamera(server, this.dataModel.getTemperatureRegulated(), this.dataModel.getTemperatureTarget());
 
-            // todo Measure download times
+            // While the camera is cooling, measure download times for the binnings we'll be using
+            this.measureDownloadTimes(server);
+
             // todo Wait for cooling target
             // todo Acquire frames until done or time
             simulateWork();
@@ -63,6 +70,45 @@ public class SkyXSessionThread implements Runnable {
             this.stopCoolingMonitor();
             this.parent.skyXSessionThreadEnded();
         }
+    }
+
+    // For all fo the binning values we'll be using, take a bias frame and time it.
+    //  Since bias frames are zero-length, any time that passes is the download time for the
+    //  camera at that binning value.  Record these in a hashmap so we have them availble for
+    //  reference when estimating the time that actual exposures will take.
+
+    private void measureDownloadTimes(TheSkyXServer server) throws IOException {
+        //  Create empty table
+        this.downloadTimes = new HashMap<>(4);
+
+        //  Loop through all planned framesets.  For any binning not already in table, time it
+        ArrayList<FrameSet> frameSets = this.sessionTableModel.getSessionFramesets();
+        for (FrameSet frameSet : frameSets) {
+            Integer binning = frameSet.getBinning();
+            if (!this.downloadTimes.containsKey(binning)) {
+                // We don't have a time for this binning value.  Time it now.
+                Double downloadTime = this.timeDownload(server, binning);
+                this.downloadTimes.put(binning, downloadTime);
+            }
+        }
+    }
+
+    //  Time how long the camera download takes for a bias frame of given binning
+
+    private Double timeDownload(TheSkyXServer server, Integer binning) throws IOException {
+        LocalDateTime timeBefore = LocalDateTime.now();
+        this.exposeFrame(server, FrameType.BIAS_FRAME, 0.0, binning, false, false);
+        LocalDateTime timeAfter = LocalDateTime.now();
+        Duration timeTaken = Duration.between(timeAfter, timeBefore).abs();
+        double downloadSeconds = timeTaken.getSeconds();
+        return downloadSeconds;
+    }
+
+    private void exposeFrame(TheSkyXServer server, FrameType frameType, double exposureSeconds, Integer binning,
+                             boolean asynchronous, boolean autoSave) throws IOException {
+//        System.out.println("exposeFrame(" + frameType + "," + exposureSeconds + ","
+//                + binning + "," + asynchronous + "," + autoSave + ")");
+        server.exposeFrame(frameType, exposureSeconds, binning, asynchronous, autoSave);
     }
 
     //  User clicked Cancel and interrupted the thread.  We don't know exactly what we were doing
@@ -208,10 +254,14 @@ public class SkyXSessionThread implements Runnable {
     }
 
     private void stopCoolingMonitor() {
-        this.coolingMonitorTimer.cancel();
-        this.coolingMonitorTask.cancel();
-        this.coolingMonitorTask = null;
-        this.coolingMonitorTimer = null;
+        if (this.coolingMonitorTimer != null) {
+            this.coolingMonitorTimer.cancel();
+            this.coolingMonitorTimer = null;
+        }
+        if (this.coolingMonitorTask != null) {
+            this.coolingMonitorTask.cancel();
+            this.coolingMonitorTask = null;
+        }
         this.parent.hideCoolingStatus();
     }
 
