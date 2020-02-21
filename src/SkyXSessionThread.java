@@ -61,8 +61,8 @@ public class SkyXSessionThread implements Runnable {
     }
 
     private void simulateWork() throws InterruptedException {
-        for (int i = 0; i < 30; i++) {
-            Thread.sleep(2 * 1000);
+        for (int i = 0; i < 50; i++) {
+            Thread.sleep((int)(0.5 * 1000));
             this.console("Session " + i, 2);
         }
     }

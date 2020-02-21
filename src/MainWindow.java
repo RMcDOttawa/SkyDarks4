@@ -1358,7 +1358,22 @@ public class MainWindow extends JFrame {
         }
     }
 
-    private void createUIComponents() {
+    // The window, and hence the Console JList, has been resized.  We need to calculate the
+    //  number of rows that will fit in the new size and change the visibleRows property to the new value
+    //  in order for the console to continue to contain the maximum number of rows that will fit.
+    //  Also re-adjust scrolling to ensure last row is still visible.
+
+    private void lvConsoleComponentResized() {
+        JList consoleList = this.lvConsole;
+        JScrollPane scrollPane = this.consoleScrollPane;
+        double rowHeight = consoleList.getFixedCellHeight();  // Known by supplied prototype text
+        Dimension dimension = scrollPane.getViewport().getViewSize();
+        int numRowsThatFit = (int) Math.round(dimension.height / rowHeight);
+        consoleList.setVisibleRowCount(numRowsThatFit);
+        if (this.consoleListModel != null) {
+            int numRowsInConsole = this.consoleListModel.getSize();
+            consoleList.ensureIndexIsVisible(numRowsInConsole - 1);
+        }
     }
 
     @SuppressWarnings({"Convert2MethodRef", "SpellCheckingInspection"})
@@ -1486,7 +1501,7 @@ public class MainWindow extends JFrame {
         autosavePath = new JLabel();
         label32 = new JLabel();
         label41 = new JLabel();
-        scrollPane2 = new JScrollPane();
+        consoleScrollPane = new JScrollPane();
         lvConsole = new JList<>();
         scrollPane3 = new JScrollPane();
         sessionFramesetTable = new JTable();
@@ -2400,11 +2415,9 @@ public class MainWindow extends JFrame {
                 autosavePath.setText("(Displayed when connected)");
                 autosavePath.setFont(new Font("Lucida Grande", Font.ITALIC, 10));
                 autosavePath.setToolTipText("The path on the server where TheSkyX will be auto-saving acquired images.");
-                autosavePath.setMinimumSize(new Dimension(560, 30));
-                autosavePath.setMaximumSize(new Dimension(560, 30));
                 autosavePath.setHorizontalAlignment(SwingConstants.LEFT);
                 autosavePath.setPreferredSize(new Dimension(560, 30));
-                runSessionTab.add(autosavePath, "cell 2 1 7 1");
+                runSessionTab.add(autosavePath, "cell 2 1 7 1,width 500:800:800,height 30:30:50");
 
                 //---- label32 ----
                 label32.setText("Console Log:");
@@ -2416,23 +2429,31 @@ public class MainWindow extends JFrame {
                 label41.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
                 runSessionTab.add(label41, "cell 7 2");
 
-                //======== scrollPane2 ========
+                //======== consoleScrollPane ========
                 {
-                    scrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-                    scrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-                    scrollPane2.setAutoscrolls(true);
-                    scrollPane2.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-                    scrollPane2.setFocusable(false);
+                    consoleScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+                    consoleScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                    consoleScrollPane.setAutoscrolls(true);
+                    consoleScrollPane.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                    consoleScrollPane.setFocusable(false);
 
                     //---- lvConsole ----
                     lvConsole.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-                    lvConsole.setVisibleRowCount(22);
+                    lvConsole.setVisibleRowCount(40);
                     lvConsole.setFocusable(false);
                     lvConsole.setToolTipText("Messages on progress of the session.");
                     lvConsole.setPreferredSize(null);
-                    scrollPane2.setViewportView(lvConsole);
+                    lvConsole.setPrototypeCellValue("Prototype text with Ascenders, decsenders (like \"g\" and \"q\"), and digits like 1, 2, 34, 9.");
+                    lvConsole.setMaximumSize(new Dimension(32767, 56));
+                    lvConsole.addComponentListener(new ComponentAdapter() {
+                        @Override
+                        public void componentResized(ComponentEvent e) {
+                            lvConsoleComponentResized();
+                        }
+                    });
+                    consoleScrollPane.setViewportView(lvConsole);
                 }
-                runSessionTab.add(scrollPane2, "cell 0 3 6 1,aligny top,grow 100 0");
+                runSessionTab.add(consoleScrollPane, "cell 0 3 6 1,aligny top,grow 100 0");
 
                 //======== scrollPane3 ========
                 {
@@ -2442,6 +2463,7 @@ public class MainWindow extends JFrame {
                     sessionFramesetTable.setEnabled(false);
                     sessionFramesetTable.setFillsViewportHeight(true);
                     sessionFramesetTable.setToolTipText("The frames that will be acquired this session. The row we are actively working on is highlighted.");
+                    sessionFramesetTable.setMaximumSize(new Dimension(32767, 32767));
                     scrollPane3.setViewportView(sessionFramesetTable);
                 }
                 runSessionTab.add(scrollPane3, "cell 7 3 3 1,align left top,grow 0 0");
@@ -2717,7 +2739,7 @@ public class MainWindow extends JFrame {
     private JLabel autosavePath;
     private JLabel label32;
     private JLabel label41;
-    private JScrollPane scrollPane2;
+    private JScrollPane consoleScrollPane;
     private JList<String> lvConsole;
     private JScrollPane scrollPane3;
     private JTable sessionFramesetTable;
@@ -2995,7 +3017,3 @@ public class MainWindow extends JFrame {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
 }
-
-//todo Adjust size of autosave path display as window resizes
-
-// todo adjust #line height of console as window resizes
