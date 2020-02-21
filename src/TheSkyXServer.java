@@ -69,4 +69,39 @@ public class TheSkyXServer {
 
         return serverAnswer;
     }
+
+    //  Send "Connect to camera" command to server.  No response expected
+
+    public void connectToCamera() throws IOException {
+        String command = "ccdsoftCamera.Connect();";
+        this.sendCommandNoReturn(command);
+    }
+
+    private void sendCommandNoReturn(String commandToSend) throws IOException {
+        System.out.println("Send command: " + commandToSend);
+        String commandPacket =  "/* Java Script */"
+                + "/* Socket Start Packet */"
+                + commandToSend
+                + "var Out;"
+                + "Out=\"0\\n\";"
+                + "/* Socket End Packet */";
+        this.sendCommandPacket(commandPacket);
+   }
+
+   // Turn camera cooling on or off.  If on, set temperature target;
+    public void setCameraCooling(boolean coolingOn, Double temperatureTarget) throws IOException {
+        String command  = "";
+        if (coolingOn) {
+            command = "ccdsoftCamera.TemperatureSetPoint=" + temperatureTarget + ";";
+        }
+        command += "ccdsoftCamera.RegulateTemperature=" + boolToJS(coolingOn) + ";"
+                + "ccdsoftCamera.ShutDownTemperatureRegulationOnDisconnect=false;";
+        this.sendCommandNoReturn(command);
+    }
+
+    //  Convert a boolean to the text used by JavaScript
+
+    public static String boolToJS(boolean theBool) {
+        return theBool ? "true" : "false";
+    }
 }

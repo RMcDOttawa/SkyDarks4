@@ -899,17 +899,10 @@ new FormModel {
 						"value": "cell 3 5,alignx trailing,growx 0"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label45"
-						"text": "Cooler Power: "
+						name: "coolingMessage"
+						"text": "Cooler power xx%, temperature xxx."
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 7 5,alignx right,growx 0"
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label46"
-						"text": "100%"
-						"toolTipText": "The camera reports that its cooler is running at this power level."
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 8 5"
+						"value": "cell 7 5 2 1,alignx right,growx 0"
 					} )
 				}, new FormLayoutConstraints( null ) {
 					"title": "Run Session"

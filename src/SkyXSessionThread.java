@@ -29,8 +29,10 @@ public class SkyXSessionThread implements Runnable {
             TheSkyXServer server = new TheSkyXServer(this.dataModel.getNetAddress(), this.dataModel.getPortNumber());
             this.displayCameraPath(server);
 
-            // todo Connect to camera
-            // todo Start cooling camera
+            //  Connect to camera and start it cooling
+            this.connectToCamera(server);
+            this.startCoolingCamera(server, this.dataModel.getTemperatureRegulated(), this.dataModel.getTemperatureTarget());
+
             // todo Measure download times
             // todo Wait for cooling target
             // todo Acquire frames until done or time
@@ -144,6 +146,25 @@ public class SkyXSessionThread implements Runnable {
         String autosavePath = server.getCameraAutosavePath();
         if (autosavePath != null) {
             this.parent.displayAutosavePath(autosavePath);
+        }
+    }
+
+    //  Tell TheSkyX to establish a connection to the camera.
+
+    private void connectToCamera(TheSkyXServer server) throws IOException {
+        server.connectToCamera();
+    }
+
+    //  If the camera is temperature-regulated, turn on the cooler and start it cooling toward the
+    //  target.  Cooling is asynchronous - we'll do some other chores and them come back and check progress.
+
+    private void startCoolingCamera(TheSkyXServer server, Boolean temperatureRegulated, Double temperatureTarget) throws IOException {
+        if (temperatureRegulated) {
+            // Turn on camera cooling and set target
+            server.setCameraCooling(true, temperatureTarget);
+            this.console("Start cooling camera to target " + temperatureTarget + ".", 1);
+            // Tell the UI we have started cooling so it can start displaying temperature
+            this.parent.startedCooling();
         }
     }
 

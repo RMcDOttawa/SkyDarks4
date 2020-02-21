@@ -884,6 +884,14 @@ public class MainWindow extends JFrame {
         }
     }
 
+    //  We have started cooling the camera.  Set up a timer to periodically display the cooler power and temp
+
+    public void startedCooling() {
+        // todo startedCooling
+        System.out.println("startedCooling");
+    }
+
+
     //  Receive the server's camera autosave path from the server and display it in the UI
 
     public void displayAutosavePath(String autosavePath) {
@@ -970,7 +978,6 @@ public class MainWindow extends JFrame {
     }
 
     private void cancelSessionButtonActionPerformed() {
-        System.out.println("cancelSessionButtonActionPerformed");
         //  Send an Interrupt signal to the thread
         if (this.skyXThread != null) {
             console("Session cancelled.", 1);
@@ -1508,8 +1515,7 @@ public class MainWindow extends JFrame {
         progressBar = new JProgressBar();
         beginSessionButton = new JButton();
         cancelSessionButton = new JButton();
-        label45 = new JLabel();
-        label46 = new JLabel();
+        coolingMessage = new JLabel();
 
         //======== this ========
         setMinimumSize(new Dimension(800, 600));
@@ -2486,14 +2492,9 @@ public class MainWindow extends JFrame {
                 cancelSessionButton.addActionListener(e -> cancelSessionButtonActionPerformed());
                 runSessionTab.add(cancelSessionButton, "cell 3 5,alignx trailing,growx 0");
 
-                //---- label45 ----
-                label45.setText("Cooler Power: ");
-                runSessionTab.add(label45, "cell 7 5,alignx right,growx 0");
-
-                //---- label46 ----
-                label46.setText("100%");
-                label46.setToolTipText("The camera reports that its cooler is running at this power level.");
-                runSessionTab.add(label46, "cell 8 5");
+                //---- coolingMessage ----
+                coolingMessage.setText("Cooler power xx%, temperature xxx.");
+                runSessionTab.add(coolingMessage, "cell 7 5 2 1,alignx right,growx 0");
             }
             mainTabFrame.addTab("Run Session", null, runSessionTab, "Console to start and monitor the acquisition process");
         }
@@ -2746,8 +2747,7 @@ public class MainWindow extends JFrame {
     private JProgressBar progressBar;
     private JButton beginSessionButton;
     private JButton cancelSessionButton;
-    private JLabel label45;
-    private JLabel label46;
+    private JLabel coolingMessage;
     private BindingGroup bindingGroup;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
@@ -2894,6 +2894,9 @@ public class MainWindow extends JFrame {
 
         this.displayStartTime();
         this.displayEndTime();
+
+        //  Cooler Power message should initially be empty.
+        this.coolingMessage.setText(" ");
 	}
 
 	//  The Begin button on the session tab is enabled only if the session is ready to run.
