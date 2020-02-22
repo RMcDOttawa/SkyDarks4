@@ -55,7 +55,7 @@ public class SkyXSessionThread implements Runnable {
             if (this.waitForCoolingTarget(server)) {
                 this.startCoolingMonitor(server);
                 //  We're ready to actually acquire the frames in the plan
-                this.acquireFramesUntilEnd(server);
+                this.acquireFramesUntilEnd(server, this.sessionTimeBlock);
             }
             // todo Optional warmup
             // todo Optional disconnect
@@ -144,7 +144,7 @@ public class SkyXSessionThread implements Runnable {
     //  Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
     //  acquired, or when doing the next frame would exceed a specified end time.
 
-    private void acquireFramesUntilEnd(TheSkyXServer server) throws InterruptedException {
+    private void acquireFramesUntilEnd(TheSkyXServer server, SessionTimeBlock timeInfo) throws InterruptedException {
         ArrayList<FrameSet> sessionFramesets = this.sessionTableModel.getSessionFramesets();
         //  Loop this list by index, since we need the index for highlighting rows in the UI
         for (int rowIndex = 0; rowIndex < sessionFramesets.size(); rowIndex++) {
@@ -152,7 +152,7 @@ public class SkyXSessionThread implements Runnable {
             this.parent.startRowIndex(rowIndex);
             //  Process this frame set (which is the acquisition of many frames with identical specifications)
             FrameSet thisFrameSet = sessionFramesets.get(rowIndex);
-            boolean continueAcquisition = this.acquireOneFrameSet(server, thisFrameSet);
+            boolean continueAcquisition = this.acquireOneFrameSet(server, thisFrameSet, timeInfo);
             if (!continueAcquisition) break;
         }
     }
@@ -161,11 +161,68 @@ public class SkyXSessionThread implements Runnable {
     //  exceed the session's scheduled end time, or if the CCD temperature has risen unacceptably. Return
     //  an indicator that all is well and safe to continue.
 
-    private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet) throws InterruptedException {
+    private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet, SessionTimeBlock timeInfo) throws InterruptedException {
+        boolean okToContinue = true;
         // todo acquireOneFrameSet
         System.out.println("acquireOneFrameSet: " + thisFrameSet);
-        this.simulateWork();
-        return true;
+        // Some frames may have been acquired in a previous session. How many are needed now?
+        int numFramesNeeded = thisFrameSet.getNumberOfFrames() - thisFrameSet.getNumberComplete();
+        assert numFramesNeeded > 0; // Else it shouldn't be in the list
+        int binning = thisFrameSet.getBinning();
+        FrameType frameType = thisFrameSet.getFrameType();
+        double exposureSeconds = frameType == FrameType.BIAS_FRAME ? 0.0 : thisFrameSet.getExposureSeconds();
+        // Console message on what we're going to do
+        String message = String.format("Take %d %s frames %s, binned %d x %d",
+                numFramesNeeded, frameType.toString(),
+                frameType == FrameType.DARK_FRAME ? String.format(" of %f seconds", exposureSeconds) : "",
+                binning, binning);
+        this.console(message, 1);
+        // Loop to acquire frames until all taken, time exceeded, or temperature abort
+        for (int frameCount = 1; frameCount <= numFramesNeeded; frameCount++) {
+            //  Would doing this frame extend beyond the scheduled end time?
+            if (this.wouldExceedEndTime(exposureSeconds, timeInfo)) {
+                okToContinue = false;
+                break;
+            } else if (this.temperatureRisenTooMuch(server)) {
+                okToContinue = false;
+                break;
+            } else {
+                this.console(String.format("Acquiring frame %d of %d", frameCount, numFramesNeeded), 2);
+                this.acquireOneFrame(server, frameType, exposureSeconds, binning);
+            }
+        }
+        return okToContinue;
+    }
+
+    //  We're considering exposing a frame.  However, we need it to be completed before the scheduled
+    //  end time of our session.  If the frame exposure would extend beyone the end time we'll stop
+    //  (and presumably continue tomorrow night).
+
+    private boolean wouldExceedEndTime(double exposureSeconds, SessionTimeBlock timeInfo) {
+        boolean wouldExceed;
+        if (timeInfo.isStopWhenDone()) {
+            wouldExceed = false;  // No scheduled end time
+        } else {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime whenItWillEnd = now.plusSeconds((long) exposureSeconds);
+            wouldExceed = whenItWillEnd.isAfter(timeInfo.getStopDateTime());
+        }
+        if (wouldExceed) {
+            this.console("Next frame would extend past the session end time. Stopping now.", 2);
+        }
+        return wouldExceed;
+    }
+
+    private boolean temperatureRisenTooMuch(TheSkyXServer server) {
+        // todo temperatureRisenTooMuch
+        // including message
+        System.out.println("temperatureRisenTooMuch");
+        return false;
+    }
+
+    private void acquireOneFrame(TheSkyXServer server, FrameType frameType, double exposureSeconds, int binning) {
+        // todo acquireOneFrame
+        System.out.println("acquireOneFrame");
     }
 
     private void simulateWork() throws InterruptedException {
