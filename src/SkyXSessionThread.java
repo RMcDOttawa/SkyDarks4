@@ -65,7 +65,7 @@ public class SkyXSessionThread implements Runnable {
             if (!theMessage.endsWith(".")) {
                 theMessage += ".";
             }
-            this.console("Server Error: " + theMessage, 1);
+            this.console("Server Error: " + theMessage + ".", 1);
         }
         catch (InterruptedException intEx) {
             //  Thread has been interrupted by user clicking Cancel
@@ -144,7 +144,7 @@ public class SkyXSessionThread implements Runnable {
     //  Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
     //  acquired, or when doing the next frame would exceed a specified end time.
 
-    private void acquireFramesUntilEnd(TheSkyXServer server, SessionTimeBlock timeInfo) throws InterruptedException {
+    private void acquireFramesUntilEnd(TheSkyXServer server, SessionTimeBlock timeInfo) throws InterruptedException, IOException {
         ArrayList<FrameSet> sessionFramesets = this.sessionTableModel.getSessionFramesets();
         //  Loop this list by index, since we need the index for highlighting rows in the UI
         for (int rowIndex = 0; rowIndex < sessionFramesets.size(); rowIndex++) {
@@ -161,7 +161,7 @@ public class SkyXSessionThread implements Runnable {
     //  exceed the session's scheduled end time, or if the CCD temperature has risen unacceptably. Return
     //  an indicator that all is well and safe to continue.
 
-    private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet, SessionTimeBlock timeInfo) throws InterruptedException {
+    private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet, SessionTimeBlock timeInfo) throws InterruptedException, IOException {
         boolean okToContinue = true;
         // todo acquireOneFrameSet
         System.out.println("acquireOneFrameSet: " + thisFrameSet);
@@ -172,7 +172,7 @@ public class SkyXSessionThread implements Runnable {
         FrameType frameType = thisFrameSet.getFrameType();
         double exposureSeconds = frameType == FrameType.BIAS_FRAME ? 0.0 : thisFrameSet.getExposureSeconds();
         // Console message on what we're going to do
-        String message = String.format("Take %d %s frames %s, binned %d x %d",
+        String message = String.format("Take %d %s frames %s, binned %d x %d.",
                 numFramesNeeded, frameType.toString(),
                 frameType == FrameType.DARK_FRAME ? String.format(" of %f seconds", exposureSeconds) : "",
                 binning, binning);
@@ -187,7 +187,7 @@ public class SkyXSessionThread implements Runnable {
                 okToContinue = false;
                 break;
             } else {
-                this.console(String.format("Acquiring frame %d of %d", frameCount, numFramesNeeded), 2);
+                this.console(String.format("Acquiring frame %d of %d.", frameCount, numFramesNeeded), 2);
                 this.acquireOneFrame(server, frameType, exposureSeconds, binning);
             }
         }
@@ -213,11 +213,22 @@ public class SkyXSessionThread implements Runnable {
         return wouldExceed;
     }
 
-    private boolean temperatureRisenTooMuch(TheSkyXServer server) {
-        // todo temperatureRisenTooMuch
-        // including message
-        System.out.println("temperatureRisenTooMuch");
-        return false;
+    //  Before each frame we check the camera temperature.  Optionally, if it has risen more than a given
+    //  amount above the target (because ambient temp has overwhelmed the camera cooler) we abort the session
+
+    private boolean temperatureRisenTooMuch(TheSkyXServer server) throws IOException {
+        boolean risenTooMuch = false;
+        if (this.dataModel.getTemperatureRegulated() && this.dataModel.getTemperatureAbortOnRise()) {
+            ImmutablePair<Double, Double> temperatureInfo = server.getCameraTemperatureAndPower();
+            double temperature = temperatureInfo.left;
+            if (temperature - this.dataModel.getTemperatureTarget() > this.dataModel.getTemperatureAbortRiseLimit()) {
+                this.console(String.format("Camera temp %.1f exceeds target %.1f by more than %.1f.",
+                        temperature, this.dataModel.getTemperatureTarget(),
+                        this.dataModel.getTemperatureAbortRiseLimit()), 1);
+                risenTooMuch = true;
+            }
+        }
+        return risenTooMuch;
     }
 
     private void acquireOneFrame(TheSkyXServer server, FrameType frameType, double exposureSeconds, int binning) {
@@ -251,7 +262,7 @@ public class SkyXSessionThread implements Runnable {
 //                + ", " + sendWolSecondsBefore);
         int secondsToWait = this.calcSecondsToWait(startNow, startDateTime, sendWolBeforeStart, sendWolSecondsBefore);
         if (secondsToWait > 0) {
-            this.console("Waiting " + this.casualFormatInterval(secondsToWait), 1);
+            this.console("Waiting " + this.casualFormatInterval(secondsToWait) + ".", 1);
             this.sleepWithProgressBar(secondsToWait);
         }
     }
@@ -281,14 +292,14 @@ public class SkyXSessionThread implements Runnable {
 
     private void optionalWakeOnLan(DataModel dataModel) throws IOException, InterruptedException {
         if (dataModel.getSendWakeOnLanBeforeStarting()) {
-            this.console("Sending Wake-on-LAN", 1);
+            this.console("Sending Wake-on-LAN.", 1);
             byte[] broadcastAddress = RmNetUtils.parseIP4Address(dataModel.getWolBroadcastAddress());
             if (broadcastAddress.length == 0) {
-                this.console("Invalid or missing broadcast address", 2);
+                this.console("Invalid or missing broadcast address.", 2);
             } else {
                 byte[] macAddress = RmNetUtils.parseMacAddress(dataModel.getWolMacAddress());
                 if (macAddress.length == 0) {
-                    this.console("Invalid or missing MAC address", 2);
+                    this.console("Invalid or missing MAC address.", 2);
                 } else {
                     RmNetUtils.sendWakeOnLan(broadcastAddress, macAddress);
                     this.console("Wake on LAN packet sent.", 2);
@@ -379,7 +390,7 @@ public class SkyXSessionThread implements Runnable {
     private boolean waitForCoolingTarget(TheSkyXServer server) throws InterruptedException, IOException {
         boolean success = true;
         if (this.dataModel.getTemperatureRegulated()) {
-            this.console(String.format("Waiting for camera to cool to target of %.1f",
+            this.console(String.format("Waiting for camera to cool to target of %.1f.",
                     this.dataModel.getTemperatureTarget()), 1);
             int totalAttempts = 1 + this.dataModel.getTemperatureFailRetryCount();
             while (totalAttempts > 0) {
@@ -437,7 +448,7 @@ public class SkyXSessionThread implements Runnable {
             ImmutablePair<Double, Double> tempAndPower = server.getCameraTemperatureAndPower();
             double currentTemperature = tempAndPower.left;
             double coolerPower = tempAndPower.right;
-            this.console(String.format("Camera temperature %.1f, cooler power %.0f%%", currentTemperature, coolerPower), 2);
+            this.console(String.format("Camera temperature %.1f, cooler power %.0f%%.", currentTemperature, coolerPower), 2);
             double temperatureDifference = Math.abs(currentTemperature - this.dataModel.getTemperatureTarget());
             if (temperatureDifference <= this.dataModel.getTemperatureWithin()) {
                 success = true;
