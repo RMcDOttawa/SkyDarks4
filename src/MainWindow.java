@@ -3034,6 +3034,13 @@ public class MainWindow extends JFrame {
     private void clearFieldValidityWarnings() {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
+
+    //  We've been notified from the acquisition thread that it is starting a new frame set, and
+    //  given the row index in the session table.  Highlight that row to show where we are.
+    public void startRowIndex(int rowIndex) {
+	    // todo startRowIndex
+        System.out.println("startRowIndex: " + rowIndex);
+    }
 }
 
 // todo make frame table narrower and console wider

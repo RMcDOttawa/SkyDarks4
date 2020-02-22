@@ -53,9 +53,9 @@ public class SkyXSessionThread implements Runnable {
             // We're out of things to do until the camera reaches its target temperature
             // Wait for it.  Note that it can fail - if ambient is higher than the cooler can handle
             if (this.waitForCoolingTarget(server)) {
-                // todo Acquire frames until done or time
                 this.startCoolingMonitor(server);
-                simulateWork();
+                //  We're ready to actually acquire the frames in the plan
+                this.acquireFramesUntilEnd(server);
             }
             // todo Optional warmup
             // todo Optional disconnect
@@ -141,9 +141,38 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
+    //  Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
+    //  acquired, or when doing the next frame would exceed a specified end time.
+
+    private void acquireFramesUntilEnd(TheSkyXServer server) throws InterruptedException {
+        // todo acquireFramesUntilEnd
+        System.out.println("acquireFramesUntilEnd");
+        ArrayList<FrameSet> sessionFramesets = this.sessionTableModel.getSessionFramesets();
+        //  Loop this list by index, since we need the index for highlighting rows in the UI
+        for (int rowIndex = 0; rowIndex < sessionFramesets.size(); rowIndex++) {
+            //  Tell the UI we're working on this next frameset so it can highlight the line in the table
+            this.parent.startRowIndex(rowIndex);
+            //  Process this frame set (which is the acquisition of many frames with identical specifications)
+            FrameSet thisFrameSet = sessionFramesets.get(rowIndex);
+            boolean continueAcquisition = this.acquireOneFrameSet(server, thisFrameSet);
+            if (!continueAcquisition) break;
+        }
+    }
+
+    //  Acquire all the frames in the given frame set.  We might stop early if either the next frame would
+    //  exceed the session's scheduled end time, or if the CCD temperature has risen unacceptably. Return
+    //  an indicator that all is well and safe to continue.
+
+    private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet) throws InterruptedException {
+        // todo acquireOneFrameSet
+        System.out.println("acquireOneFrameSet: " + thisFrameSet);
+        this.simulateWork();
+        return true;
+    }
+
     private void simulateWork() throws InterruptedException {
         this.console("Simulating work.", 1);
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 15; i++) {
             Thread.sleep((int)(0.5 * 1000));
             this.console("Session " + i, 2);
         }

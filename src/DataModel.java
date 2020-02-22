@@ -273,7 +273,6 @@ public class DataModel  implements Serializable {
     public void setWarmUpWhenDone(Boolean newWarmUpWhenDone) {
         Boolean oldWarmUpWhenDone = this.warmUpWhenDone;
         this.warmUpWhenDone = newWarmUpWhenDone;
-        System.out.println("Broadcasting change to warmUpWhenDone from " + oldWarmUpWhenDone + " to " + newWarmUpWhenDone);
         changeSupport.firePropertyChange("warmUpWhenDone", oldWarmUpWhenDone, newWarmUpWhenDone);
     }
 
