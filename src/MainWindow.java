@@ -1101,6 +1101,7 @@ public class MainWindow extends JFrame {
 
     public void skyXSessionThreadEnded() {
         this.console("Session ended.", 1);
+        this.sessionFramesetTable.clearSelection();
         this.restrictUiForSession(false);
         this.consoleLock = null;
    }
@@ -3038,8 +3039,16 @@ public class MainWindow extends JFrame {
     //  We've been notified from the acquisition thread that it is starting a new frame set, and
     //  given the row index in the session table.  Highlight that row to show where we are.
     public void startRowIndex(int rowIndex) {
-	    // todo startRowIndex
-        System.out.println("startRowIndex: " + rowIndex);
+        assert (rowIndex >= 0) && (rowIndex < this.sessionFrameTableModel.getRowCount());
+        this.consoleLock.lock();
+        try {
+            this.sessionFramesetTable.clearSelection();
+            this.sessionFramesetTable.addRowSelectionInterval(rowIndex, rowIndex);
+        }
+        finally {
+            //  Use try-finally to ensure unlock happens even if some kind of exception occurs
+            this.consoleLock.unlock();
+        }
     }
 }
 

@@ -145,8 +145,6 @@ public class SkyXSessionThread implements Runnable {
     //  acquired, or when doing the next frame would exceed a specified end time.
 
     private void acquireFramesUntilEnd(TheSkyXServer server) throws InterruptedException {
-        // todo acquireFramesUntilEnd
-        System.out.println("acquireFramesUntilEnd");
         ArrayList<FrameSet> sessionFramesets = this.sessionTableModel.getSessionFramesets();
         //  Loop this list by index, since we need the index for highlighting rows in the UI
         for (int rowIndex = 0; rowIndex < sessionFramesets.size(); rowIndex++) {
