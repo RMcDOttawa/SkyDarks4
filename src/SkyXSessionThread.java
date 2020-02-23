@@ -24,6 +24,15 @@ public class SkyXSessionThread implements Runnable {
     SessionTimeBlock sessionTimeBlock;
     SessionFrameTableModel sessionTableModel;
 
+    /**
+     * Constructor for session thread object, runs as a separate thread and does all the actual communication
+     * with TheSkyX for acquiring the defined frames.
+     * @param parent                The main window that spawns the thread.  Callbacks to update the UI.
+     * @param dataModel             The data model describing the timing and work to be done
+     * @param timeBlock             All the start/stop time information summarized in one object
+     * @param sessionTableModel     The table model giving the framesets to be acquired (omits completed sets)
+     */
+
     public SkyXSessionThread(MainWindow parent, DataModel dataModel, SessionTimeBlock timeBlock, SessionFrameTableModel sessionTableModel) {
         this.parent = parent;
         this.dataModel = dataModel;
@@ -31,6 +40,14 @@ public class SkyXSessionThread implements Runnable {
         this.sessionTableModel = sessionTableModel;
     }
 
+    /**
+     * Main program of this thread, invoked automatically by the thread management service.
+     * Here we do all the work of acquiring the defined frame sets:
+     * - Wait for the appropriate start-up time
+     * - Cool the camera to the specified target temperature
+     * - Acquire frames until either all done or the specified end time
+     * - Warm up the camera and disconnect from it
+     */
     @Override
     public void run() {
         TheSkyXServer server = null;
@@ -49,7 +66,7 @@ public class SkyXSessionThread implements Runnable {
             this.connectToCamera(server);
             this.startCoolingCamera(server, this.dataModel.getTemperatureRegulated(), this.dataModel.getTemperatureTarget());
 
-            // While the camera is cooling, measure download times for the binnings we'll be using
+            // While the camera is cooling, measure download times for the binning settings we'll be using
             this.measureDownloadTimes(server);
 
             // We're out of things to do until the camera reaches its target temperature
@@ -95,8 +112,10 @@ public class SkyXSessionThread implements Runnable {
     }
 
     /**
-     * Optionally, turn off the camera cooling and wait a while so the chip can warm slowy.
-     * @param server - the TSX server object, ready to use
+     * Optionally, turn off the camera cooling and wait a while so the chip can warm slowly.
+     * @param server                    The TSX server object, ready to use
+     * @throws IOException              Error from communicating with the server
+     * @throws InterruptedException     Interrupted by user clicking the Cancel button
      */
     private void optionalWarmUp(TheSkyXServer server) throws IOException, InterruptedException {
         if (this.dataModel.getWarmUpWhenDone()) {
@@ -108,10 +127,15 @@ public class SkyXSessionThread implements Runnable {
     }
 
 
-    // For all fo the binning values we'll be using, take a bias frame and time it.
-    //  Since bias frames are zero-length, any time that passes is the download time for the
-    //  camera at that binning value.  Record these in a hashmap so we have them availble for
-    //  reference when estimating the time that actual exposures will take.
+    /**
+     * For all of the binning values we'll be using, take a bias frame and time it.
+     * Since bias frames are zero-length, any time that passes is the download time for the
+     * camera at that binning value.  Record these in a Hash Map dictionary so we have them available for
+     * reference when estimating the time that actual exposures will take.
+     * @param server                    The TSX server object, ready to use
+     * @throws IOException              Error from communicating with the server
+     */
+    //
 
     private void measureDownloadTimes(TheSkyXServer server) throws IOException {
         //  Create empty table
@@ -130,7 +154,13 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Time how long the camera download takes for a bias frame of given binning
+    /**
+     * Time how long the camera download takes for a bias frame of given binning
+     * @param server            The TSX server object, ready to use
+     * @param binning           Integer indicating if binned 1x1, 2x2, etc.
+     * @return                  Duration of the download, in seconds
+     * @throws IOException      Error from communicating with the server
+     */
 
     private Double timeDownload(TheSkyXServer server, Integer binning) throws IOException {
         LocalDateTime timeBefore = LocalDateTime.now();
@@ -142,15 +172,29 @@ public class SkyXSessionThread implements Runnable {
         return downloadSeconds;
     }
 
+    /**
+     * Ask the server to take one image with the given specifications
+     * @param server            The TSX server object, ready to use
+     * @param frameType         Dark or Bias frame
+     * @param exposureSeconds   Exposure time in seconds (for bias should be zero)
+     * @param binning           Integer indicating if binned 1x1, 2x2, etc.
+     * @param asynchronous      True if image should be asynchronous.  False if it should wait for completion.
+     * @param autoSave          Should TheSkyX auto-save the acquired image to its autosave location?
+     * @throws IOException      Error from communicating with the server
+     */
     private void exposeFrame(TheSkyXServer server, FrameType frameType, double exposureSeconds, Integer binning,
                              boolean asynchronous, boolean autoSave) throws IOException {
-//        System.out.println("exposeFrame(" + frameType + "," + exposureSeconds + ","
-//                + binning + "," + asynchronous + "," + autoSave + ")");
         server.exposeFrame(frameType, exposureSeconds, binning, asynchronous, autoSave);
     }
 
     //  User clicked Cancel and interrupted the thread.  We don't know exactly what we were doing
     //  at the time. Clean up any operations such as camera exposures in progress.
+
+    /**
+     * User clicked Cancel and interrupted the thread.  We don't know exactly what we were doing
+     * at the time. Clean up any operations such as camera exposures in progress.
+     * @param server            The TSX server object, ready to use
+     */
 
     private void cleanUpFromCancel(TheSkyXServer server) {
 
@@ -175,11 +219,19 @@ public class SkyXSessionThread implements Runnable {
     //  Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
     //  acquired, or when doing the next frame would exceed a specified end time.
 
+    /**
+     * Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
+     * acquired, or when doing the next frame would exceed a specified end time.
+     * @param server                    The TSX server object, ready to use
+     * @param timeInfo                  Info about session start and stop
+     * @throws InterruptedException     User clicked Cancel and interrupted the operation
+     * @throws IOException              I/O error from server communication
+     */
     private void acquireFramesUntilEnd(TheSkyXServer server, SessionTimeBlock timeInfo) throws InterruptedException, IOException {
         ArrayList<FrameSet> sessionFramesets = this.sessionTableModel.getSessionFramesets();
         //  Loop this list by index, since we need the index for highlighting rows in the UI
         for (int rowIndex = 0; rowIndex < sessionFramesets.size(); rowIndex++) {
-            //  Tell the UI we're working on this next frameset so it can highlight the line in the table
+            //  Tell the UI we're working on this next frame set so it can highlight the line in the table
             this.parent.startRowIndex(rowIndex);
             //  Process this frame set (which is the acquisition of many frames with identical specifications)
             FrameSet thisFrameSet = sessionFramesets.get(rowIndex);
@@ -188,10 +240,19 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Acquire all the frames in the given frame set.  We might stop early if either the next frame would
-    //  exceed the session's scheduled end time, or if the CCD temperature has risen unacceptably. Return
-    //  an indicator that all is well and safe to continue.
+    //
 
+    /**
+     * Acquire all the frames in the given frame set.  We might stop early if either the next frame would
+     * exceed the session's scheduled end time, or if the CCD temperature has risen unacceptably. Return
+     * an indicator that all is well and safe to continue.
+     * @param server                    The TSX server object, ready to use
+     * @param thisFrameSet              Object describing the frame set to be acquired
+     * @param timeInfo                  Info about session start and stop
+     * @return boolean                  Indication that it's still ok to keep going
+     * @throws InterruptedException     User clicked Cancel and interrupted the operation
+     * @throws IOException              I/O error from server communication
+     */
     private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet, SessionTimeBlock timeInfo) throws InterruptedException, IOException {
         boolean okToContinue = true;
         // Some frames may have been acquired in a previous session. How many are needed now?
@@ -223,10 +284,15 @@ public class SkyXSessionThread implements Runnable {
         return okToContinue;
     }
 
-    //  We're considering exposing a frame.  However, we need it to be completed before the scheduled
-    //  end time of our session.  If the frame exposure would extend beyone the end time we'll stop
-    //  (and presumably continue tomorrow night).
 
+    /**
+     * We're considering exposing a frame.  However, we need it to be completed before the scheduled
+     * end time of our session.  If the frame exposure would extend beyond the end time we'll stop
+     * (and presumably continue tomorrow night).
+     * @param exposureSeconds       Exposure time in seconds
+     * @param timeInfo              Information about session start and stop time and conditions
+     * @return boolean              Returns true if the proposed exposure would exceed end of session
+     */
     private boolean wouldExceedEndTime(double exposureSeconds, SessionTimeBlock timeInfo) {
         boolean wouldExceed;
         if (timeInfo.isStopWhenDone()) {
@@ -245,6 +311,14 @@ public class SkyXSessionThread implements Runnable {
     //  Before each frame we check the camera temperature.  Optionally, if it has risen more than a given
     //  amount above the target (because ambient temp has overwhelmed the camera cooler) we abort the session
 
+    /**
+     * Before each frame we check the camera temperature.  Optionally, if it has risen more than a given
+     * amount above the target (because ambient temp has overwhelmed the camera cooler) we abort the session.
+     * We issue a message about this if appropriate, so caller need only stop.
+     * @param server                    TheSkyX server object for communication
+     * @return boolean                  True indicates temperature has risen and we should abort
+     * @throws IOException              I/O error from server communication
+     */
     private boolean temperatureRisenTooMuch(TheSkyXServer server) throws IOException {
         boolean risenTooMuch = false;
         if (this.dataModel.getTemperatureRegulated() && this.dataModel.getTemperatureAbortOnRise()) {
@@ -266,6 +340,19 @@ public class SkyXSessionThread implements Runnable {
     //  so the UI doesn't freeze during the download.  1x1-binned frames take 20 seconds to download
     //  on my system, so the time is significant.
 
+    /**
+     * Acquire a single frame with the given specifications.
+     *
+     * To keep the UI responsive, we will start the acquisition asynchronously, then wait for it to
+     * complete.  The amount of time we wait will include the previously-measured download time
+     * so the UI doesn't freeze during the download.  1x1-binned frames take 20 seconds to download
+     * on my system, so the time is significant.
+     *
+     * @param server                    TheSkyX server object for communication
+     * @param frameSet                  Description of the frame set being acquired
+     * @throws IOException              I/O error from server communication
+     * @throws InterruptedException     User interrupted operation by clicking Cancel
+     */
     private void acquireOneFrame(TheSkyXServer server, FrameSet frameSet) throws IOException, InterruptedException {
 
         int totalExposureAndDownload = (int) Math.round(this.calcTotalAcquisitionTime(frameSet.getExposureSeconds(), frameSet.getBinning()));
@@ -287,21 +374,33 @@ public class SkyXSessionThread implements Runnable {
     //  Calculate how long an exposure of the given time and binning is likely to take.
     //  This is the exposure time plus the previously-measured download time for this binning.
 
+    /**
+     * Calculate how long an exposure of the given time and binning is likely to take.
+     * This is the exposure time plus the previously-measured download time for this binning.
+     * @param exposureSeconds       Proposed exposure time in seconds
+     * @param binning               Integer indicating binning 1x1, 2x2, etc
+     * @return                      Estimated time this will take (exposure + download)
+     */
     private double calcTotalAcquisitionTime(Double exposureSeconds, Integer binning) {
         double totalTimeEstimate = exposureSeconds;
         if (this.downloadTimes.containsKey(binning)) {
             totalTimeEstimate += this.downloadTimes.get(binning) + 0.5;
-            // 0.5 seconds is a bit more just to be sure.  It's not critical, as we'll re-sync
-            // by waiting for the camera after.  However, we'd prefer to avoid having to re-sync
-            // to reduce network traffic.  This little half-second extra, determined experimentally,
-            // isn't noticeable but seems to allow the bias frames to complete most of the time.
+            // 0.5 seconds is "a bit more" just to be sure.  It's not critical, as we'll re-sync
+            // by waiting for the camera anyway.  However, we'd prefer to avoid having to check
+            // in with the camera multiple times, to reduce network traffic.
+            // This little half-second extra, determined experimentally, isn't noticeable but
+            // seems to allow the bias frames to complete most of the time.
         }
         return totalTimeEstimate;
     }
 
-    //  The asynchronous exposure is probably complete since we waited.  Or nearly so.
-    //  Now we wait until it is truly complete, by polling the camera in a loop.
-
+    /**
+     * The asynchronous exposure is probably complete since we waited.  Or nearly so.
+     * Now we wait until it is truly complete, by polling the camera in a loop.
+     * @param server                    Object to communicate with TheSkyX
+     * @throws InterruptedException     User interrupted operation by clicking Cancel
+     * @throws IOException              I/O error communicating with server
+     */
     private void waitForExposureCompletion(TheSkyXServer server) throws InterruptedException, IOException {
         double totalSecondsWaiting = 0.0;
         boolean isComplete = server.exposureIsComplete();
@@ -315,6 +414,8 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
+/*
+    // For testing purposes, this loop takes some time and produces some console lines
     private void simulateWork() throws InterruptedException {
         this.console("Simulating work.", 1);
         for (int i = 0; i < 15; i++) {
@@ -322,7 +423,13 @@ public class SkyXSessionThread implements Runnable {
             this.console("Session " + i, 2);
         }
     }
+*/
 
+    /**
+     * Ask the UI main window to add a line to the console
+     * @param message           Message text to be added to console
+     * @param messageLevel      Indentation level of text (1 = outermost level)
+     */
     private void console (String message, int messageLevel) {
         parent.console(message, messageLevel);
     }
@@ -331,6 +438,16 @@ public class SkyXSessionThread implements Runnable {
     //  provided time descriptor.  If we're asked to send a Wake On Lan before starting, the wait time is
     //  reduced by the amount of time that is to follow the Wake On Lan packet.
 
+    /**
+     * Wait until an appropriate start time.  That's either now (no wait), or some future time given in the
+     * provided time descriptor.  If we're asked to send a Wake On Lan before starting, the wait time is
+     * reduced by the amount of time that is to follow the Wake On Lan packet.
+     * @param startNow                  Indicate if we should start immediately - no wait delay
+     * @param startDateTime             If we don't start immediately, then when do we start?
+     * @param sendWolBeforeStart        Should we send a Wake On Lan just before starting?
+     * @param sendWolSecondsBefore      How long (seconds) between sending Wake on Lan and starting?
+     * @throws InterruptedException     User interrupted operation by clicking Cancel
+     */
     private void waitForStartTime(boolean startNow,
                                   LocalDateTime startDateTime,
                                   boolean sendWolBeforeStart,
@@ -346,9 +463,15 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Calculate how long to wait, in seconds, to reach the desired starting time, less any lead
-    //  time needed to send a WOL and allow the server to start up.
-
+    /**
+     * Calculate how long to wait, in seconds, to reach the desired starting time, less any lead
+     * time needed to send a WOL and allow the server to start up.
+     * @param startNow                  Are we starting immediately, with no delay?
+     * @param startDateTime             If not immediate, when?
+     * @param sendWolBeforeStart        Are we sending Wake on Lan (WOL) before starting?
+     * @param sendWolSecondsBefore      How long to wait after WOL sent
+     * @return (double)                 Returns the number of seconds we should wait before start or WOL
+     */
     private int calcSecondsToWait(boolean startNow, LocalDateTime startDateTime, boolean sendWolBeforeStart, int sendWolSecondsBefore) {
 
         long waitTime = 0;
@@ -367,8 +490,12 @@ public class SkyXSessionThread implements Runnable {
         return (int) waitTime;
     }
 
-    //  Optionally send Wake On Lan packet to the server, then wait while it starts up
-
+    /**
+     * Optionally send Wake On Lan packet to the server, then wait while it starts up
+     * @param dataModel                 Data model describing this session
+     * @throws IOException              I/O error from server
+     * @throws InterruptedException     User clicked Cancel while we were waiting
+     */
     private void optionalWakeOnLan(DataModel dataModel) throws IOException, InterruptedException {
         if (dataModel.getSendWakeOnLanBeforeStarting()) {
             this.console("Sending Wake-on-LAN.", 1);
@@ -393,9 +520,12 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  As a test of server connectivity and to provide some feedback to the user, we will
-    //  ask the server for the path set in it's autosave parameter, and display that in the interface
-
+    /**
+     * As a test of server connectivity and to provide some feedback to the user, we will
+     * ask the server for the path set in it's autosave parameter, and display that in the interface
+     * @param server            Object providing communication socket
+     * @throws IOException      I/O error from server
+     */
     private void displayCameraPath(TheSkyXServer server) throws IOException {
         String autosavePath = server.getCameraAutosavePath();
         if (autosavePath != null) {
@@ -403,15 +533,23 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Tell TheSkyX to establish a connection to the camera.
-
+    /**
+     * Tell TheSkyX to establish a connection to the camera.
+     * @param server            Object providing communication socket
+     * @throws IOException      I/O error from server
+     */
     private void connectToCamera(TheSkyXServer server) throws IOException {
         server.connectToCamera();
     }
 
-    //  If the camera is temperature-regulated, turn on the cooler and start it cooling toward the
-    //  target.  Cooling is asynchronous - we'll do some other chores and them come back and check progress.
-
+    /**
+     * If the camera is temperature-regulated, turn on the cooler and start it cooling toward the
+     * target.  Cooling is asynchronous - we'll do some other chores and them come back and check progress.
+     * @param server                    Object providing communication socket
+     * @param temperatureRegulated      Is the camera temperature-regulated?
+     * @param temperatureTarget         If so, what target temperature do we want it to run at?
+     * @throws IOException              I/O error from server
+     */
     private void startCoolingCamera(TheSkyXServer server, Boolean temperatureRegulated, Double temperatureTarget) throws IOException {
         if (temperatureRegulated) {
             // Turn on camera cooling and set target
@@ -421,9 +559,11 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Set up a periodic timer that will prompt us to get the camera power and temperature
-    //  and pass them up to the main window for displaying in the UI.
-
+    /**
+     * Set up a periodic timer that will prompt us to get the camera power and temperature
+     * and pass them up to the main window for displaying in the UI.
+     * @param server                    Object providing communication socket
+     */
     private void startCoolingMonitor(TheSkyXServer server) {
         this.coolingMonitorTask = new CoolingMonitorTask(this, server);
         this.coolingMonitorTimer = new Timer();
@@ -432,8 +572,11 @@ public class SkyXSessionThread implements Runnable {
                 COOLING_MONITOR_INTERVAL_SECONDS * 1000);
     }
 
-    //  this method is called by the cooling monitor.  Get temp and power and pass to UI
 
+    /**
+     * this method is called by the cooling monitor.  Get temp and power and pass to UI
+     * @param server                    Object providing communication socket
+     */
     public void fireCoolingMonitor(TheSkyXServer server) {
         try {
             ImmutablePair<Double, Double> temperatureInfo = server.getCameraTemperatureAndPower();
@@ -445,6 +588,9 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
+    /**
+     * Turn off the cooling monitor timer and task so we stop updating it.
+     */
     private void stopCoolingMonitor() {
         if (this.coolingMonitorTimer != null) {
             this.coolingMonitorTimer.cancel();
@@ -457,15 +603,22 @@ public class SkyXSessionThread implements Runnable {
         this.parent.hideCoolingStatus();
     }
 
-    //  Assuming the camera is temperature-regulated, wait for the cooling target temperature to be
-    //  reached.  This can fail - if the ambient temperature is so high that it is beyond the ability
-    //  of the camera's cooler to lower the temperature to the target.  If this happens, we can optionally
-    //  give the cooler a rest and then try again. The idea is that the ambient temperature is falling
-    //  as night goes on, so a later attempt may succeed.  Note that the very first cooling attempt will
-    //  be given a little more time than what is specified, since the camera has been cooling while we
-    //  measured the download times.  This matters only if it times out, which is rare, so we're not
-    //  worrying about it.
+    //
 
+    /**
+     * Assuming the camera is temperature-regulated, wait for the cooling target temperature to be
+     * reached.  This can fail - if the ambient temperature is so high that it is beyond the ability
+     * of the camera's cooler to lower the temperature to the target.  If this happens, we can optionally
+     * give the cooler a rest and then try again. The idea is that the ambient temperature is falling
+     * as night goes on, so a later attempt may succeed.  Note that the very first cooling attempt will
+     * be given a little more time than what is specified, since the camera has been cooling while we
+     * measured the download times.  This matters only if it times out, which is rare, so we're not
+     * worrying about it.
+     * @param server                    Socket info for communicating to TheSkyX
+     * @return (boolean)                Indicates that we successfully reach target temperature
+     * @throws InterruptedException     User clicked Cancel while we were waiting
+     * @throws IOException              I/O error from server
+     */
     private boolean waitForCoolingTarget(TheSkyXServer server) throws InterruptedException, IOException {
         boolean success = true;
         if (this.dataModel.getTemperatureRegulated()) {
@@ -499,18 +652,28 @@ public class SkyXSessionThread implements Runnable {
         return success;
     }
 
-    //  Turn off the camera's cooler circuit
-
+    /**
+     * Turn off the camera's cooler circuit
+     * @param server                    Socket info for communicating to TheSkyX
+     * @throws IOException              I/O error from server
+     */
     private void stopCooling(TheSkyXServer server) throws IOException {
         server.setCameraCooling(false, 0.0);
     }
 
-    //  Make one attempt to cool to the target.  The cooling is already underway.  At given intervals
-    //  we will get the temperature from the camera, and consider cooling done if we are within a
-    //  certain distance of the target.  We'll run a progress bar against the total time we're allowed
-    //  to wait.  If we don't reach the temperature in that limit, we return false so the caller can
-    //  decide whether to try again.
+    //
 
+    /**
+     * Make one attempt to cool to the target.  The cooling is already underway.  At given intervals
+     * we will get the temperature from the camera, and consider cooling done if we are within a
+     * certain distance of the target.  We'll run a progress bar against the total time we're allowed
+     * to wait.  If we don't reach the temperature in that limit, we return false so the caller can
+     * decide whether to try again.
+     * @param server                    Socket info for communicating to TheSkyX
+     * @return (boolean)                Indicates if we successfully reached target temperature
+     * @throws InterruptedException     User clicked Cancel while we were waiting
+     * @throws IOException              I/O error from server
+     */
     private boolean oneCoolingAttempt(TheSkyXServer server) throws InterruptedException, IOException {
         boolean success = false;
 
@@ -541,8 +704,11 @@ public class SkyXSessionThread implements Runnable {
         return success;
     }
 
-    // Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
-
+    /**
+     * Format a time interval, given in seconds, to casual language such as "1 hour, 20 minutes"
+     * @param secondsToWait     Interval to be formatter
+     * @return (String)         Interval formatted in casual language
+     */
     private String casualFormatInterval(int secondsToWait) {
         String hoursString = "";
         String minutesString = "";
@@ -582,6 +748,15 @@ public class SkyXSessionThread implements Runnable {
     //  Rather than counting elapsed seconds, we'll calculate the end time and watch the clock. That
     //  way the wait is not polluted by processing time, delays from garbage collection, etc.
 
+    /**
+     * Sleep for the given number of seconds.  Do it in small bits, sending progress updates to
+     * the progress bar in the UI.
+     *
+     * Rather than counting elapsed seconds, we'll calculate the end time and watch the clock. That
+     * way the wait is not polluted by processing time, delays from garbage collection, etc.
+     * @param secondsToSleep            How long to sleep, in seconds
+     * @throws InterruptedException     User clicked Cancel while we were waiting
+     */
     private void sleepWithProgressBar(int secondsToSleep) throws InterruptedException {
         if (secondsToSleep > 0) {
             this.parent.startProgressBar(0, secondsToSleep);
@@ -601,8 +776,12 @@ public class SkyXSessionThread implements Runnable {
         }
     }
 
-    //  Get a good update interval for a progress bar.  Shorter interval, more frequent updates, for brief
-    //  time periods, longer intervals for longer time periods.
+    /**
+     * Get a good update interval for a progress bar.  Shorter interval, more frequent updates, for brief
+     * time periods, longer intervals for longer time periods.
+     * @param secondsToSleep        How long the total sleep will be
+     * @return (int)                How often, in seconds, should the progress bar be updated?
+     */
     private int calcUpdateInterval(int secondsToSleep) {
         int interval;
         if (secondsToSleep < 20)
