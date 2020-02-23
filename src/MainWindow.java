@@ -843,12 +843,26 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * User has clicked "Begin Session".
+     *
+     * The button would not have been enabled unless a minimum necessary set of information was
+     * available, so we can proceed. Spawn the sub-thread that does the actual processing.
+     */
     private void beginSessionButtonActionPerformed() {
-        this.restrictUiForSession(true);
-        SessionTimeBlock timeBlock = getStartAndEndTimes();
+        boolean proceed = true;
+        if (this.dataModel.getAutoSaveAfterEachFrame()) {
+            // We'll be doing auto-saves after each acquired frame.  However, the first one might be
+            // many hours from now, so now is the right time to ensure that a file to save into is known
+            proceed = this.protectedSaveProceed();
+        }
+        if (proceed) {
+            this.restrictUiForSession(true);
+            SessionTimeBlock timeBlock = getStartAndEndTimes();
 
-        initializeConsoleList();
-        spawnProcessingTask(timeBlock, this.sessionFrameTableModel);
+            initializeConsoleList();
+            spawnProcessingTask(timeBlock, this.sessionFrameTableModel);
+        }
     }
 
 
