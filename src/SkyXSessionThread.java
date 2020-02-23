@@ -108,7 +108,7 @@ public class SkyXSessionThread implements Runnable {
         LocalDateTime timeAfter = LocalDateTime.now();
         Duration timeTaken = Duration.between(timeAfter, timeBefore).abs();
         double downloadSeconds = timeTaken.getSeconds();
-        this.console(String.format("Binned %d x %d: %.1f seconds.", binning, binning, downloadSeconds), 2);
+        this.console(String.format("Binned %d x %d: %.02f seconds.", binning, binning, downloadSeconds), 2);
         return downloadSeconds;
     }
 
@@ -139,6 +139,9 @@ public class SkyXSessionThread implements Runnable {
         if (this.coolingMonitorTimer != null) {
             this.stopCoolingMonitor();
         }
+
+        //  Turn off progress bar
+        this.parent.stopProgressBar();
     }
 
     //  Acquire some or all of the frames in the plan.  We'll stop either when all the frames are
@@ -174,7 +177,7 @@ public class SkyXSessionThread implements Runnable {
         // Console message on what we're going to do
         String message = String.format("Take %d %s frames %s, binned %d x %d.",
                 numFramesNeeded, frameType.toString(),
-                frameType == FrameType.DARK_FRAME ? String.format(" of %f seconds", exposureSeconds) : "",
+                frameType == FrameType.DARK_FRAME ? String.format(" of %.02f seconds", exposureSeconds) : "",
                 binning, binning);
         this.console(message, 1);
         // Loop to acquire frames until all taken, time exceeded, or temperature abort
@@ -188,7 +191,7 @@ public class SkyXSessionThread implements Runnable {
                 break;
             } else {
                 this.console(String.format("Acquiring frame %d of %d.", frameCount, numFramesNeeded), 2);
-                this.acquireOneFrame(server, frameType, exposureSeconds, binning);
+                this.acquireOneFrame(server, thisFrameSet);
             }
         }
         return okToContinue;
@@ -222,7 +225,7 @@ public class SkyXSessionThread implements Runnable {
             ImmutablePair<Double, Double> temperatureInfo = server.getCameraTemperatureAndPower();
             double temperature = temperatureInfo.left;
             if (temperature - this.dataModel.getTemperatureTarget() > this.dataModel.getTemperatureAbortRiseLimit()) {
-                this.console(String.format("Camera temp %.1f exceeds target %.1f by more than %.1f.",
+                this.console(String.format("Camera temp %.02f exceeds target %.02f by more than %.1f.",
                         temperature, this.dataModel.getTemperatureTarget(),
                         this.dataModel.getTemperatureAbortRiseLimit()), 1);
                 risenTooMuch = true;
@@ -231,9 +234,41 @@ public class SkyXSessionThread implements Runnable {
         return risenTooMuch;
     }
 
-    private void acquireOneFrame(TheSkyXServer server, FrameType frameType, double exposureSeconds, int binning) {
+    //  Acquire a single frame with the given specifications.
+    //  To keep the UI responsive, we will start the acquisition asynchronously, then wait for it to
+    //  complete.  The amount of time we wait will include the previously-measured download time
+    //  so the UI doesn't freeze during the download.  1x1-binned frames take 20 seconds to download
+    //  on my system, so the time is significant.
+
+    private void acquireOneFrame(TheSkyXServer server, FrameSet frameSet) throws IOException, InterruptedException {
         // todo acquireOneFrame
         System.out.println("acquireOneFrame");
+        int totalExposureAndDownload = (int) Math.round(this.calcTotalAcquisitionTime(frameSet.getExposureSeconds(), frameSet.getBinning()));
+
+        //  Start asynchronous exposure
+        this.exposeFrame(server, frameSet.getFrameType(), frameSet.getExposureSeconds(),
+                frameSet.getBinning(), true, true);
+
+        //  Wait until exposure and download are probably complete, running a progress bar
+        this.sleepWithProgressBar(totalExposureAndDownload);
+
+        //  Now check with the camera and wait until the exposure is definitely complete
+        this.waitForExposureCompletion(server);
+
+        //  Tell the UI we're done so it can update the session plan table and handle autosaves
+        this.parent.oneFrameAcquired(frameSet);
+    }
+
+    private void waitForExposureCompletion(TheSkyXServer server) {
+        // todo waitForExposureCompletion
+        System.out.println("waitForExposureCompletion");
+    }
+
+    private double calcTotalAcquisitionTime(Double exposureSeconds, Integer binning) {
+        // todo calcTotalAcquisitionTime
+        System.out.println(String.format("calcTotalAcquisitionTime(%g,%d) STUB",
+                exposureSeconds, binning));
+        return 10.0;
     }
 
     private void simulateWork() throws InterruptedException {
@@ -390,7 +425,7 @@ public class SkyXSessionThread implements Runnable {
     private boolean waitForCoolingTarget(TheSkyXServer server) throws InterruptedException, IOException {
         boolean success = true;
         if (this.dataModel.getTemperatureRegulated()) {
-            this.console(String.format("Waiting for camera to cool to target of %.1f.",
+            this.console(String.format("Waiting for camera to cool to target of %.02f.",
                     this.dataModel.getTemperatureTarget()), 1);
             int totalAttempts = 1 + this.dataModel.getTemperatureFailRetryCount();
             while (totalAttempts > 0) {
@@ -448,7 +483,7 @@ public class SkyXSessionThread implements Runnable {
             ImmutablePair<Double, Double> tempAndPower = server.getCameraTemperatureAndPower();
             double currentTemperature = tempAndPower.left;
             double coolerPower = tempAndPower.right;
-            this.console(String.format("Camera temperature %.1f, cooler power %.0f%%.", currentTemperature, coolerPower), 2);
+            this.console(String.format("Camera temperature %.02f, cooler power %.0f%%.", currentTemperature, coolerPower), 2);
             double temperatureDifference = Math.abs(currentTemperature - this.dataModel.getTemperatureTarget());
             if (temperatureDifference <= this.dataModel.getTemperatureWithin()) {
                 success = true;

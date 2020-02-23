@@ -3040,10 +3040,18 @@ public class MainWindow extends JFrame {
     //  given the row index in the session table.  Highlight that row to show where we are.
     public void startRowIndex(int rowIndex) {
         assert (rowIndex >= 0) && (rowIndex < this.sessionFrameTableModel.getRowCount());
+        this.sessionFramesetTable.clearSelection();
+        this.sessionFramesetTable.setRowSelectionInterval(rowIndex, rowIndex);
+    }
+
+    //  The acquisition thread is telling us that a frame has been acquired.
+    //  Increment the "completed" count in the frameset.
+    //  If "auto save after each frame" is on, do a save
+
+    public void oneFrameAcquired(FrameSet frameSet) {
         this.consoleLock.lock();
         try {
-            this.sessionFramesetTable.clearSelection();
-            this.sessionFramesetTable.addRowSelectionInterval(rowIndex, rowIndex);
+            frameSet.setNumberComplete(frameSet.getNumberComplete() + 1);
         }
         finally {
             //  Use try-finally to ensure unlock happens even if some kind of exception occurs
@@ -3053,3 +3061,4 @@ public class MainWindow extends JFrame {
 }
 
 // todo make frame table narrower and console wider
+// todo when starting session, if autosave on, do a protected save
