@@ -3052,6 +3052,7 @@ public class MainWindow extends JFrame {
         this.consoleLock.lock();
         try {
             frameSet.setNumberComplete(frameSet.getNumberComplete() + 1);
+            // todo optional autosave
         }
         finally {
             //  Use try-finally to ensure unlock happens even if some kind of exception occurs

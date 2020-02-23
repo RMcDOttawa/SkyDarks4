@@ -59,7 +59,10 @@ public class SkyXSessionThread implements Runnable {
                 //  We're ready to actually acquire the frames in the plan
                 this.acquireFramesUntilEnd(server, this.sessionTimeBlock);
             }
-            // todo Optional warmup
+
+            // Optionally, turn off the camera cooler and wait a while so the chip can warm up slowly
+            this.optionalWarmUp(server);
+
             // todo Optional disconnect
         }
         catch (IOException ioEx) {
@@ -76,6 +79,19 @@ public class SkyXSessionThread implements Runnable {
         finally {
             this.stopCoolingMonitor();
             this.parent.skyXSessionThreadEnded();
+        }
+    }
+
+    /**
+     * Optionally, turn off the camera cooling and wait a while so the chip can warm slowy.
+     * @param server - the TSX server object, ready to use
+     */
+    private void optionalWarmUp(TheSkyXServer server) throws IOException, InterruptedException {
+        if (this.dataModel.getWarmUpWhenDone()) {
+            this.console("Warming up camera for "
+            + this.casualFormatInterval(this.dataModel.getWarmUpWhenDoneSeconds()) + ".", 1);
+            server.setCameraCooling(false, 0.0);  // Turn off cooling
+            this.sleepWithProgressBar(this.dataModel.getWarmUpWhenDoneSeconds());
         }
     }
 
@@ -173,7 +189,7 @@ public class SkyXSessionThread implements Runnable {
         FrameType frameType = thisFrameSet.getFrameType();
         double exposureSeconds = frameType == FrameType.BIAS_FRAME ? 0.0 : thisFrameSet.getExposureSeconds();
         // Console message on what we're going to do
-        String message = String.format("Take %d %s frames %s, binned %d x %d.",
+        String message = String.format("Take %d %s frames%s, binned %d x %d.",
                 numFramesNeeded, frameType.toString(),
                 frameType == FrameType.DARK_FRAME ? String.format(" of %.02f seconds", exposureSeconds) : "",
                 binning, binning);
