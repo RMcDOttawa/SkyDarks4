@@ -85,6 +85,13 @@ public class TheSkyXServer {
         this.sendCommandNoReturn(command);
     }
 
+    //  Send "Disconnect from camera" command to server.  No response expected
+
+    public void disconnectFromCamera() throws IOException {
+        String command = "ccdsoftCamera.Disconnect();";
+        this.sendCommandNoReturn(command);
+    }
+
     private void sendCommandNoReturn(String commandToSend) throws IOException {
         String commandPacket =  "/* Java Script */"
                 + "/* Socket Start Packet */"

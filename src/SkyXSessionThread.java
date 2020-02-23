@@ -63,7 +63,8 @@ public class SkyXSessionThread implements Runnable {
             // Optionally, turn off the camera cooler and wait a while so the chip can warm up slowly
             this.optionalWarmUp(server);
 
-            // todo Optional disconnect
+            // Optionally, disconnect camera when done
+            this.optionalDisconnect(server);
         }
         catch (IOException ioEx) {
             String theMessage = ioEx.getMessage();
@@ -79,6 +80,17 @@ public class SkyXSessionThread implements Runnable {
         finally {
             this.stopCoolingMonitor();
             this.parent.skyXSessionThreadEnded();
+        }
+    }
+
+    /**
+     * Optionally, disconnect the camera when we're done
+     * @param server - the TSX server object, ready to use
+     */
+    private void optionalDisconnect(TheSkyXServer server) throws IOException {
+        if (this.dataModel.getDisconnectWhenDone()) {
+            this.console("Disconnecting camera.", 1);
+            server.disconnectFromCamera();
         }
     }
 
