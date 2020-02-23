@@ -3058,15 +3058,22 @@ public class MainWindow extends JFrame {
         this.sessionFramesetTable.setRowSelectionInterval(rowIndex, rowIndex);
     }
 
-    //  The acquisition thread is telling us that a frame has been acquired.
-    //  Increment the "completed" count in the frameset.
-    //  If "auto save after each frame" is on, do a save
+    //
+
+    /**
+     * The acquisition thread is telling us that a frame has been acquired.
+     * Increment the "completed" count in the frameset, which will update it in the session table in the UI.
+     * If "auto save after each frame" is on, do a save.
+     * @param frameSet      The frame set which just acquired one more image
+     */
 
     public void oneFrameAcquired(FrameSet frameSet) {
         this.consoleLock.lock();
         try {
             frameSet.setNumberComplete(frameSet.getNumberComplete() + 1);
-            // todo optional autosave
+            if (this.dataModel.getAutoSaveAfterEachFrame()) {
+                this.saveMenuItemActionPerformed();
+            }
         }
         finally {
             //  Use try-finally to ensure unlock happens even if some kind of exception occurs
@@ -3076,4 +3083,3 @@ public class MainWindow extends JFrame {
 }
 
 // todo make frame table narrower and console wider
-// todo when starting session, if autosave on, do a protected save
