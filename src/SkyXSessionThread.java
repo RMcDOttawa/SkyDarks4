@@ -12,6 +12,9 @@ import java.util.Timer;
 public class SkyXSessionThread implements Runnable {
 
     private static final int COOLING_MONITOR_INTERVAL = 5;
+//    private static final double CAMERA_RESYNC_TIMEOUT_SECONDS = 3.0 * CommonUtils.SECONDS_IN_MINUTE;
+    private static final double CAMERA_RESYNC_TIMEOUT_SECONDS = 5;
+    private static final double CAMERA_RESYNC_CHECK_INTERVAL_SECONDS = 0.5;
     private CoolingMonitorTask coolingMonitorTask = null;
     private Timer coolingMonitorTimer = null;
 
@@ -123,8 +126,6 @@ public class SkyXSessionThread implements Runnable {
     //  at the time. Clean up any operations such as camera exposures in progress.
 
     private void cleanUpFromCancel(TheSkyXServer server) {
-        // todo cleanUpFromCancel
-        System.out.println("cleanUpFromCancel");
 
         // Abort any camera operation in progress
         if (server != null) {
@@ -166,8 +167,6 @@ public class SkyXSessionThread implements Runnable {
 
     private boolean acquireOneFrameSet(TheSkyXServer server, FrameSet thisFrameSet, SessionTimeBlock timeInfo) throws InterruptedException, IOException {
         boolean okToContinue = true;
-        // todo acquireOneFrameSet
-        System.out.println("acquireOneFrameSet: " + thisFrameSet);
         // Some frames may have been acquired in a previous session. How many are needed now?
         int numFramesNeeded = thisFrameSet.getNumberOfFrames() - thisFrameSet.getNumberComplete();
         assert numFramesNeeded > 0; // Else it shouldn't be in the list
@@ -241,8 +240,7 @@ public class SkyXSessionThread implements Runnable {
     //  on my system, so the time is significant.
 
     private void acquireOneFrame(TheSkyXServer server, FrameSet frameSet) throws IOException, InterruptedException {
-        // todo acquireOneFrame
-        System.out.println("acquireOneFrame");
+
         int totalExposureAndDownload = (int) Math.round(this.calcTotalAcquisitionTime(frameSet.getExposureSeconds(), frameSet.getBinning()));
 
         //  Start asynchronous exposure
@@ -259,16 +257,37 @@ public class SkyXSessionThread implements Runnable {
         this.parent.oneFrameAcquired(frameSet);
     }
 
-    private void waitForExposureCompletion(TheSkyXServer server) {
-        // todo waitForExposureCompletion
-        System.out.println("waitForExposureCompletion");
-    }
+    //  Calculate how long an exposure of the given time and binning is likely to take.
+    //  This is the exposure time plus the previously-measured download time for this binning.
 
     private double calcTotalAcquisitionTime(Double exposureSeconds, Integer binning) {
         // todo calcTotalAcquisitionTime
         System.out.println(String.format("calcTotalAcquisitionTime(%g,%d) STUB",
                 exposureSeconds, binning));
-        return 10.0;
+        double totalTimeEstimate = exposureSeconds;
+        if (this.downloadTimes.containsKey(binning)) {
+            totalTimeEstimate += this.downloadTimes.get(binning);
+        }
+        System.out.println("   Returning time estimate: " + totalTimeEstimate);
+        return totalTimeEstimate;
+    }
+
+    //  The asynchronous exposure is probably complete since we waited.  Or nearly so.
+    //  Now we wait until it is truly complete, by polling the camera in a loop.
+
+    private void waitForExposureCompletion(TheSkyXServer server) throws InterruptedException, IOException {
+        // todo waitForExposureCompletion
+        System.out.println("waitForExposureCompletion");
+        double totalSecondsWaiting = 0.0;
+        boolean isComplete = server.exposureIsComplete();
+        while ((!isComplete) && (totalSecondsWaiting < CAMERA_RESYNC_TIMEOUT_SECONDS)) {
+            Thread.sleep((int) Math.round(CAMERA_RESYNC_CHECK_INTERVAL_SECONDS * 1000));
+            totalSecondsWaiting += CAMERA_RESYNC_CHECK_INTERVAL_SECONDS;
+            isComplete = server.exposureIsComplete();
+        }
+        if (!isComplete) {
+            throw new IOException("Timed out waiting for camera exposure to complete");
+        }
     }
 
     private void simulateWork() throws InterruptedException {

@@ -192,4 +192,10 @@ public class TheSkyXServer {
         String command = "ccdsoftCamera.Abort();";
         this.sendCommandNoReturn(command);
     }
+
+    public boolean exposureIsComplete() {
+        // todo exposureIsComplete
+        System.out.println("exposureIsComplete");
+        return false;
+    }
 }
