@@ -188,14 +188,24 @@ public class TheSkyXServer {
         return result;
     }
 
+    /**
+     *
+     *   Send a camera abort command to the server, stopping any image acquisition in progress
+    */
+
     public void abortImageInProgress() throws IOException {
         String command = "ccdsoftCamera.Abort();";
         this.sendCommandNoReturn(command);
     }
 
-    public boolean exposureIsComplete() {
-        // todo exposureIsComplete
-        System.out.println("exposureIsComplete");
-        return false;
+    /**
+     * Ask server if the recently-started asynchronous exposure is complete.
+     * @return Indicator of completion
+     */
+    public boolean exposureIsComplete() throws IOException {
+        String commandWithReturn = "var path=ccdsoftCamera.IsExposureComplete;"
+                + "var Out;Out=path+\"\\n\";";
+        String returnString = this.sendCommandWithReturn(commandWithReturn);
+        return returnString.trim().equals("1");
     }
 }

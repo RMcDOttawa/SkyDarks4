@@ -11,9 +11,8 @@ import java.util.Timer;
 
 public class SkyXSessionThread implements Runnable {
 
-    private static final int COOLING_MONITOR_INTERVAL = 5;
-//    private static final double CAMERA_RESYNC_TIMEOUT_SECONDS = 3.0 * CommonUtils.SECONDS_IN_MINUTE;
-    private static final double CAMERA_RESYNC_TIMEOUT_SECONDS = 5;
+    private static final int COOLING_MONITOR_INTERVAL_SECONDS = 5;
+    private static final double CAMERA_RESYNC_TIMEOUT_SECONDS = 3.0 * CommonUtils.SECONDS_IN_MINUTE;
     private static final double CAMERA_RESYNC_CHECK_INTERVAL_SECONDS = 0.5;
     private CoolingMonitorTask coolingMonitorTask = null;
     private Timer coolingMonitorTimer = null;
@@ -261,14 +260,14 @@ public class SkyXSessionThread implements Runnable {
     //  This is the exposure time plus the previously-measured download time for this binning.
 
     private double calcTotalAcquisitionTime(Double exposureSeconds, Integer binning) {
-        // todo calcTotalAcquisitionTime
-        System.out.println(String.format("calcTotalAcquisitionTime(%g,%d) STUB",
-                exposureSeconds, binning));
         double totalTimeEstimate = exposureSeconds;
         if (this.downloadTimes.containsKey(binning)) {
-            totalTimeEstimate += this.downloadTimes.get(binning);
+            totalTimeEstimate += this.downloadTimes.get(binning) + 0.5;
+            // 0.5 seconds is a bit more just to be sure.  It's not critical, as we'll re-sync
+            // by waiting for the camera after.  However, we'd prefer to avoid having to re-sync
+            // to reduce network traffic.  This little half-second extra, determined experimentally,
+            // isn't noticeable but seems to allow the bias frames to complete most of the time.
         }
-        System.out.println("   Returning time estimate: " + totalTimeEstimate);
         return totalTimeEstimate;
     }
 
@@ -276,8 +275,6 @@ public class SkyXSessionThread implements Runnable {
     //  Now we wait until it is truly complete, by polling the camera in a loop.
 
     private void waitForExposureCompletion(TheSkyXServer server) throws InterruptedException, IOException {
-        // todo waitForExposureCompletion
-        System.out.println("waitForExposureCompletion");
         double totalSecondsWaiting = 0.0;
         boolean isComplete = server.exposureIsComplete();
         while ((!isComplete) && (totalSecondsWaiting < CAMERA_RESYNC_TIMEOUT_SECONDS)) {
@@ -403,8 +400,8 @@ public class SkyXSessionThread implements Runnable {
         this.coolingMonitorTask = new CoolingMonitorTask(this, server);
         this.coolingMonitorTimer = new Timer();
         this.coolingMonitorTimer.scheduleAtFixedRate(this.coolingMonitorTask,
-                COOLING_MONITOR_INTERVAL * 1000,
-                COOLING_MONITOR_INTERVAL * 1000);
+                COOLING_MONITOR_INTERVAL_SECONDS * 1000,
+                COOLING_MONITOR_INTERVAL_SECONDS * 1000);
     }
 
     //  this method is called by the cooling monitor.  Get temp and power and pass to UI
