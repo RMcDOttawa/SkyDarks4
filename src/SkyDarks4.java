@@ -6,7 +6,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.swing.*;
 
-public class pySkyDarks4 {
+public class SkyDarks4 {
 
 
     public static void main(String[] args) {
