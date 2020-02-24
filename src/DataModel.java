@@ -15,7 +15,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-
+/**
+ * Object representing the data model for the program.  This object contains all of the
+ * persistent data needed for a session.  Saving it to a file and restoring it later gives
+ * a complete recreation of the session.
+ *
+ * Note that the instance variables are set up as Java Beans properties so the XMLEncoder
+ * and XMLDecoder services can operate on them.
+ *
+ * Also note that this doesn't work for the LocalDate and LocalTime objects, so those
+ * are kludge-converted to strings when saving and restoring the model to a file
+ */
 public class DataModel  implements Serializable {
     //  Version control of the data model, to allow backward-compatibility of saved files
 
@@ -475,10 +485,17 @@ public class DataModel  implements Serializable {
 
     //  Creator static factories
 
+    /**
+     * Naked creator function.  Don't use this - use the newInstance static constructor
+     */
     private DataModel () {}
 
     private static final boolean CREATE_TESTING_FRAMESETS = false;
 
+    /**
+     * Create a new instance of the data model with default values.
+     * @return
+     */
     public static DataModel newInstance() {
         DataModel newModel = new DataModel();
 
@@ -501,8 +518,12 @@ public class DataModel  implements Serializable {
         return newModel;
     }
 
-    //  Get start time, one of the 4 dusk categories or the given time
-    //  Dusk categories are only available if lat/long are known
+    /**
+     * Get session start time, one of the 4 dusk categories or the given time
+     * Dusk categories are only available if lat/long are known
+     * @return      Time the session should start
+     *              (Includes the lead time if wake-on-lan option selected)
+     */
     public LocalTime appropriateStartTime() {
         LocalTime result = null;
         LocalDate startDate = LocalDate.now();  // Date right now
@@ -543,8 +564,11 @@ public class DataModel  implements Serializable {
         return result;
     }
 
-    //  Get stop time, sunrise, one of the 3 dawns, or the given time
-    //  Sunset and dawns are only available if lat/long are known
+    /**
+     * Get session end time, one of the 4 dawn categories or the given time
+     * Dusk categories are only available if lat/long are known
+     * @return      Time the session should end
+     */
     public LocalTime appropriateEndTime() {
         LocalTime result = null;
         LocalDate stopDate = LocalDate.now();  // Date right now
@@ -585,6 +609,12 @@ public class DataModel  implements Serializable {
         return result;
     }
 
+    /**
+     * Utiltiy method to convert LocalDate to the Calendar object used by the sunset calculation
+     * methods in the luckycatlabs package
+     * @param localDate
+     * @return
+     */
     private static Calendar localDateToCalendar(LocalDate localDate) {
         Calendar calendar = Calendar.getInstance();
         calendar.clear();
@@ -600,6 +630,11 @@ public class DataModel  implements Serializable {
         return calendar;
     }
 
+    /**
+     * Serialize this data model to XML.  Convert the LocalDate and LocalTime objects to strings
+     * since the native objects break the serialization.
+     * @return
+     */
     public String serialize() {
         // LocalDate and LocalTime values don't serialize well, and are causing errors.
         // So, we temporarily set them to null and convert them to serializable strings
@@ -635,12 +670,13 @@ public class DataModel  implements Serializable {
         return resultString;
     }
 
-    //  LocalDate and LocalTime objects don't seem to serialize, so we convert them to and
-    //  from strings when writing and reading files.
-
     private static final String dateFormatterPattern = "yyyy-MM-dd";
     private static final String timeFormatterPattern = "HH:mm:ss";
 
+    /**
+     * LocalDate and LocalTime objects don't seem to serialize, so we convert them to and
+     * from strings when writing and reading files.
+     */
     private void setDateAndTimeStrings() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormatterPattern);
 
@@ -669,10 +705,16 @@ public class DataModel  implements Serializable {
 
     }
 
-    //  Create a new instance of data model by decoding the provided xml string
-    //  This includes translating the encoded start and end dates and times back to local dates
-    //  See serialize above to see what that's about.
+    //
 
+    /**
+     * De-serializer
+     *
+     * Create a new instance of data model by decoding the provided xml string
+     * This includes translating the encoded start and end dates and times back to local dates
+     * See serialize above to see what that's about.    * @param serialized
+     * @return
+     */
     public static DataModel newFromXml(String serialized) {
         DataModel newModel = null;
         Object decodedObject = null;
@@ -692,10 +734,11 @@ public class DataModel  implements Serializable {
         return newModel;
     }
 
-    //  Before the data model was encoded to XML and saved to a file, we saved the LocalDate and LocalTime
-    //  attributes in string format and then set the objects to null, because they don't serialize well.
-    //  Now we restore those objects from the saved strings.
-
+    /**
+     * Before the data model was encoded to XML and saved to a file, we saved the LocalDate and LocalTime
+     * attributes in string format and then set the objects to null, because they don't serialize well.
+     * Now we restore those objects from the saved strings.
+     */
     private void restoreDatesAndTimes() {
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(dateFormatterPattern);
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(timeFormatterPattern);
@@ -730,9 +773,12 @@ public class DataModel  implements Serializable {
 
     }
 
-    //  Try to create a data model by reading xml encoding from file with given name
-    //  If it fails (missing file or invalid contents) return null
-
+    /**
+     * Try to create a data model by reading xml encoding from file with given name
+     * If it fails (missing file or invalid contents) return null
+     * @param fullPath      Absolute path to be opened and read
+     * @return
+     */
     public static DataModel tryLoadFromFile(String fullPath) {
         DataModel result;
         try {

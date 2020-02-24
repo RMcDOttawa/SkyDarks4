@@ -12,6 +12,8 @@ import org.jdesktop.beansbinding.AutoBinding.UpdateStrategy;
 
 
 /**
+ * Controller class for the dialog used to add a new frame set or edit an existing one.
+ * Links to a UI file created and edited by JFormDesigner
  * @author Richard McDonald
  */
 public class AddFramesetDialog extends JDialog {
@@ -30,9 +32,12 @@ public class AddFramesetDialog extends JDialog {
     }
 
 
-
-    //  This version of the constructor opens the dialog to create a new frame set
-
+    /**
+     * Constructor for "Add Frame Set Dialog".  Used for new frame sets (not editing),
+     * initializes fields with defaults, and hides the "Completed" field since that
+     * isn't intended to be set by the user on creation of a new frame set.
+     * @param owner     The main window controller creating this dialog
+     */
     public AddFramesetDialog(Window owner) {
         super(owner);
         initComponents();
@@ -47,8 +52,13 @@ public class AddFramesetDialog extends JDialog {
         root.setDefaultButton(this.saveButton);
     }
 
-    //  This version of the constructor, called with an existing frame set,
-    //  opens the dialog to edit that frame set
+    /**
+     * Constructor for "Add Frame Set Dialog".  Used for EDITING frame sets (not new),
+     * initializes fields with the given frame set, and shows the "Completed" field since that
+     * can be edited to change the number of already-acquired frames.
+     * @param owner             The main window controller creating this dialog
+     * @param frameSetToEdit    The frame set being edited, to initialize the window
+     */
 
     public AddFramesetDialog(Window owner, FrameSet frameSetToEdit) {
         super(owner);
@@ -65,6 +75,9 @@ public class AddFramesetDialog extends JDialog {
         this.setTitle("Edit Frame Set");
     }
 
+    /**
+     * Load the window fields from the values in the frame set stored inside us
+     */
     private void loadFields() {
         this.numberOfFrames.setText(String.valueOf(this.frameSet.getNumberOfFrames()));
         this.exposureSeconds.setText(String.valueOf(this.frameSet.getExposureSeconds()));
@@ -96,16 +109,19 @@ public class AddFramesetDialog extends JDialog {
         this.enableSaveButton();
     }
 
-    //  The Save button is enabled only when all 3 text fields are valid.
-    //  (No need to check radio buttons, as they can't be invalid)
-
+    /**
+     * Enable the Save button when appropriate.
+     * The Save button is enabled only when all 3 text fields are valid.
+     * (No need to check radio buttons, as they can't be invalid)
+     */
     private void enableSaveButton() {
         this.saveButton.setEnabled(this.exposureValid && this.numberOfFramesValid && this.numberCompleteValid);
     }
 
-    // Validate entry in Number of Frames field: must be a positive integer.
-    //  If valid, store it in the frame set.
-
+    /**
+     * Validate entry in Number of Frames field: must be a positive integer.
+     * If valid, store it in the frame set.
+     */
     private void numberOfFramesActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(this.numberOfFrames.getText(),
                 1, 1000);
@@ -117,7 +133,11 @@ public class AddFramesetDialog extends JDialog {
         this.enableSaveButton();
     }
 
-    // Set background colour of field to reflect validity: red if invalid
+    /**
+     * Set background colour of field to reflect validity: red if invalid
+     * @param theField      The window field we've validated
+     * @param isValid       true if field contents are valid, false if not
+     */
     private void colourFieldValidity(JTextField theField, boolean isValid) {
         Color backgroundColor = Color.RED;
         if (isValid) {
@@ -126,14 +146,21 @@ public class AddFramesetDialog extends JDialog {
         theField.setBackground(backgroundColor);
     }
 
+    /**
+     * Focus has moved out of the "number of frames" field.  We treat this as an action, the
+     * same as though the user had pressed Enter in the field.  Otherwise changes that are evident
+     * visually might not be reflected in the data - typically if the user types in a field and then
+     * exits it by tabbing or clicking the mouse.
+     */
     private void numberOfFramesFocusLost() {
         this.numberOfFramesActionPerformed();
     }
 
-    // Validate entry in Number Complete field: must be a positive integer.
-    //  If valid, store it in the frame set.  Extra validation:  the number complete can't
-    //  be larger than the total number of frame sets being acquired.
-
+    /**
+     * Validate entry in Number Complete field: must be a positive integer.
+     * If valid, store it in the frame set.  Extra validation:  the number complete can't
+     * be larger than the total number of frame sets being acquired.
+     */
     private void numberCompletedActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(this.numberCompleted.getText(),
                 0, this.frameSet.getNumberOfFrames());
@@ -145,10 +172,19 @@ public class AddFramesetDialog extends JDialog {
         this.enableSaveButton();
     }
 
+    /**
+     * Focus has moved out of the "number Completed" field.  We treat this as an action, the
+     * same as though the user had pressed Enter in the field.  Otherwise changes that are evident
+     * visually might not be reflected in the data - typically if the user types in a field and then
+     * exits it by tabbing or clicking the mouse.
+     */
     private void numberCompletedFocusLost() {
         this.numberCompletedActionPerformed();
     }
 
+    /**
+     * One of the 4 Binning radio buttons has been clicked.  Record the new setting.
+     */
     private void binningActionPerformed() {
         if (this.binning1x1.isSelected()) {
             this.frameSet.setBinning(1);
@@ -162,6 +198,9 @@ public class AddFramesetDialog extends JDialog {
         }
     }
 
+    /**
+     * One of the 2 frame type radio buttons has been clicked.  Record the new setting.
+     */
     private void biasDarkButtonActionPerformed() {
         if (this.biasButton.isSelected()) {
             this.frameSet.setFrameType(FrameType.BIAS_FRAME);
@@ -170,23 +209,26 @@ public class AddFramesetDialog extends JDialog {
         }
     }
 
-    //  Close the dialog and tell the caller that it was a "save" event, so they can
-    //  fetch the frameset we've created and deal with it.
-
+    /**
+     * Close the dialog and set a flat that will tell the caller that it was a "save" event,
+     * so they can fetch the frameset we've created and deal with it.
+     */
     private void saveButtonActionPerformed() {
         this.saveClicked = true;
         this.setVisible(false);
     }
 
-    //  Close the dialog and tell the caller it was cancelled.
-
+    /**
+     * Close the dialog and set a flat that will tell the caller it was cancelled.
+     */
     private void cancelButtonActionPerformed() {
         this.saveClicked = false;
         this.setVisible(false);
     }
 
-    // Validate exposure field and store if ok
-
+    /**
+     * Validate exposure field and store if ok
+     */
     private void exposureSecondsActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(this.exposureSeconds.getText(),
                 0, CommonUtils.SECONDS_IN_DAY);
@@ -198,10 +240,19 @@ public class AddFramesetDialog extends JDialog {
         this.enableSaveButton();
     }
 
+    /**
+     * Focus has moved out of the "exposure seconds" field.  We treat this as an action, the
+     * same as though the user had pressed Enter in the field.  Otherwise changes that are evident
+     * visually might not be reflected in the data - typically if the user types in a field and then
+     * exits it by tabbing or clicking the mouse.
+     */
     private void exposureSecondsFocusLost() {
         exposureSecondsActionPerformed();
     }
 
+    /**
+     * Automatically-generated method from JFormDesigner
+     */
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -403,6 +454,9 @@ public class AddFramesetDialog extends JDialog {
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
 
+    /**
+     * Automatically-generated instance variables from JFormDesigner
+     */
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JPanel dialogPane;

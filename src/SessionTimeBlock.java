@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
+/**
+ * "Convenience" class holding all the information about an acquisition session's
+ * start and end times.
+ */
 public class SessionTimeBlock {
 
     //  Start the session
@@ -27,10 +31,19 @@ public class SessionTimeBlock {
     public LocalDateTime getStopDateTime() { return endDateTime; }
     public void setStopDateTime(LocalDateTime stopDateTime) { this.endDateTime = stopDateTime; }
 
-    //  Static constructor factory
-
+    /**
+     * Null constructor - don't use this, use the static factory that follows
+     */
     private SessionTimeBlock() {};
 
+    /**
+     * Static constructor factory for this object
+     * @param startNow              Is the session supposed to start immediately?
+     * @param startDateTime         If not, when should it start?
+     * @param endWhenDone           Is the session supposed to run until all complete?
+     * @param endDateTime           If not, when should it end?
+     * @return                      new instance
+     */
     public static SessionTimeBlock of( boolean         startNow,
                                 LocalDateTime   startDateTime,
                                 boolean         endWhenDone,
@@ -43,6 +56,10 @@ public class SessionTimeBlock {
         return timeBlock;
     }
 
+    /**
+     * Make a readable string representing all this information
+     * @return (String)
+     */
     public String toString() {
 
         String startString = "";

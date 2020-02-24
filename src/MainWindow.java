@@ -40,6 +40,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
+ * Controller class for the main window - all the user interface interaction is managed
+ * from here.  The actual acquisition of dark and bias frames is done in a Thread spawned
+ * from this window, so the user interface can remain responsive while the Thread runs.
+ *
+ * A corresponding UI definition file, created by JFormDesigner, goes with this controller
  * @author Richard McDonald
  */
 public class MainWindow extends JFrame {
@@ -63,6 +68,9 @@ public class MainWindow extends JFrame {
 
     private ReentrantLock consoleLock = null;
 
+    /**
+     * Creator for the main window controller.
+     */
     public MainWindow() {
         this.frameTableSelectionListener = new FrameTableSelectionListener(this);
 
@@ -76,36 +84,59 @@ public class MainWindow extends JFrame {
         initComponents();
     }
 
+    /**
+     * User has Quit (Exited) the application.  We've intercepted that so we can do some house keeping
+     * before the application quits:
+     *    1. If there are unsaved data changes in the plan, offer a chance to save them.
+     *    2. If the acquisition thread is still running, cancel it.
+     */
     private void quitMenuItemClicked() {
-        //  If the acquisition subtask is running, stop it
-//        if (skyXThread != null) {
-//            skyXThread.interrupt();
-//            skyXThread = null;
-//        }
-        if (this.protectedSaveProceedNoCancel()) {
+        if (this.protectedSaveProceed()) {
+            //  If the acquisition subtask is running, stop it
+            if (skyXThread != null) {
+                skyXThread.interrupt();
+                skyXThread = null;
+            }
             System.exit(0);
         }
     }
 
+    /**
+     * Once we have opened or saved a file, we remember its path as a way to re-save
+     * @param thePath
+     */
     public void setFilePath(String thePath) {
         this.filePath = thePath;
     }
 
+    /**
+     * Quickly record the fact that something has changed that would require a save
+     */
     private void makeDirty() {
         this.documentDirtyFlag = true;
     }
 
+    /**
+     * A save or new file is done, nothing presently needs saving.
+     */
     public void makeNotDirty() {
         this.documentDirtyFlag = false;
     }
 
+    /**
+     * Return an indicaton of whether the plan has unsaved changes that should be protected
+     * @return
+     */
     private boolean isDirty() {
         return this.documentDirtyFlag;
     }
 
-    //  This listener method is invoked whenever the Tab is changed in the main tab view.
-    //  We're only interested in when the Run Session tab has become active, so we can
-    //  populate its data view.
+    /**
+     * This listener method is invoked whenever the Tab is changed in the main tab view.
+     * We're only interested in when the Run Session tab has become active, so we can
+     * populate its data view.
+     * @param event         The event that caused the tab change
+     */
     private void mainTabFrameStateChanged(ChangeEvent event) {
         JTabbedPane thePane = (JTabbedPane) event.getSource();
         int tabIndex = thePane.getSelectedIndex();
@@ -123,6 +154,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * One of the Start Date option radio buttons is selected. Record the selected option.
+     */
     private void startDateNowButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.NOW) {
             this.makeDirty();
@@ -131,6 +165,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Date option radio buttons is selected. Record the selected option.
+     */
     private void startDateTodayButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.TODAY) {
             this.makeDirty();
@@ -139,6 +176,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Date option radio buttons is selected. Record the selected option.
+     */
     private void startDateGivenButtonActionPerformed() {
         if (this.dataModel.getStartDateType() != StartDate.GIVEN_DATE) {
             this.makeDirty();
@@ -147,6 +187,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Time option radio buttons is selected. Record the selected option.
+     */
     private void startSunsetButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.SUNSET) {
             this.makeDirty();
@@ -155,6 +198,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Time option radio buttons is selected. Record the selected option.
+     */
     private void startCivilButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.CIVIL_DUSK) {
             this.makeDirty();
@@ -163,6 +209,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Time option radio buttons is selected. Record the selected option.
+     */
     private void startNauticalButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.NAUTICAL_DUSK) {
             this.makeDirty();
@@ -171,6 +220,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Time option radio buttons is selected. Record the selected option.
+     */
     private void startAstronomicalButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.ASTRONOMICAL_DUSK) {
             this.makeDirty();
@@ -179,6 +231,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * One of the Start Time option radio buttons is selected. Record the selected option.
+     */
     private void startGivenTimeButtonActionPerformed() {
         if (this.dataModel.getStartTimeType() != StartTime.GIVEN_TIME) {
             this.makeDirty();
@@ -187,6 +242,9 @@ public class MainWindow extends JFrame {
         this.displayStartTime();
     }
 
+    /**
+     * User has changed the given start date using the date picker.  Record the data.
+     */
     private void startDatePickerPropertyChange() {
         if (this.dataModel != null) {
             LocalDate newDate = startDatePicker.getDate();
@@ -198,6 +256,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * User has changed the given start time using the time picker.  Record the data.
+     */
     private void startTimePickerPropertyChange() {
         if (this.dataModel != null) {
             LocalTime newTime = startTimePicker.getTime();
@@ -209,6 +270,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * One of the End Date option radio buttons is selected. Record the selected option.
+     */
     private void endDateDoneButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.WHEN_DONE) {
             this.makeDirty();
@@ -217,6 +281,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Date option radio buttons is selected. Record the selected option.
+     */
     private void endDateTodayButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.TODAY_TOMORROW) {
             this.makeDirty();
@@ -225,6 +292,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Date option radio buttons is selected. Record the selected option.
+     */
     private void endDateGivenButtonActionPerformed() {
         if (this.dataModel.getEndDateType() != EndDate.GIVEN_DATE) {
             this.makeDirty();
@@ -233,6 +303,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * User has changed the given end date using the date picker.  Record the data.
+     */
     private void endDatePickerPropertyChange() {
         if (this.dataModel != null) {
             LocalDate newDate = endDatePicker.getDate();
@@ -244,6 +317,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * One of the End Time option radio buttons is selected. Record the selected option.
+     */
     private void endSunriseButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.SUNRISE) {
             this.makeDirty();
@@ -252,6 +328,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Time option radio buttons is selected. Record the selected option.
+     */
     private void endCivilButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.CIVIL_DAWN) {
             this.makeDirty();
@@ -260,6 +339,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Time option radio buttons is selected. Record the selected option.
+     */
     private void endNauticalButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.NAUTICAL_DAWN) {
             this.makeDirty();
@@ -268,6 +350,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Time option radio buttons is selected. Record the selected option.
+     */
     private void endAstronomicalButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.ASTRONOMICAL_DAWN) {
             this.makeDirty();
@@ -276,6 +361,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * One of the End Time option radio buttons is selected. Record the selected option.
+     */
     private void endGivenTimeButtonActionPerformed() {
         if (this.dataModel.getEndTimeType() != EndTime.GIVEN_TIME) {
             this.makeDirty();
@@ -284,6 +372,9 @@ public class MainWindow extends JFrame {
         this.displayEndTime();
     }
 
+    /**
+     * User has changed the given end time using the time picker.  Record the data.
+     */
     private void endTimePickerPropertyChange() {
         if (this.dataModel != null) {
             LocalTime newTime = endTimePicker.getTime();
@@ -295,6 +386,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * User has change the location name.  Record this information.
+     */
     private void locationNameActionPerformed() {
         String newName = locationName.getText().trim();
         if (!newName.equals(this.dataModel.getLocationName())) {
@@ -303,10 +397,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // Text field naming the time zone has changed.  To validate, we'll
-    // compare what was typed against the list of all possible names from
-    // the time zone class.
-
+    /**
+     * Text field naming the time zone has changed.  To validate, we'll
+     * compare what was typed against the list of all possible names from
+     * the time zone class.
+     */
     private void timeZoneNameActionPerformed() {
         String oldTimeZone = this.dataModel.getTimeZone();
         String proposedTimeZone = timeZoneName.getText().trim();
@@ -321,9 +416,12 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(timeZoneName, valid);
     }
 
-    // Validate proposed time zone name against names the built-in class will accept
-    // Do the comparison case-insensitive.
-
+    /**
+     * Validate proposed time zone name against names the built-in class will accept
+     * Do the comparison case-insensitive.
+     * @param proposedZone      Proposed time zone string
+     * @return (boolean)        Proposed string is a valid time zone specification
+     */
     private boolean validateTimeZone(String proposedZone) {
         String[] validZones = TimeZone.getAvailableIDs();
         boolean valid = false;
@@ -336,6 +434,9 @@ public class MainWindow extends JFrame {
         return valid;
     }
 
+    /**
+     * User has changed the Latitude field.  Validate it and store the data.
+     */
     private void latitudeActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(latitude.getText(),
                 -90.0, +90.0);
@@ -349,6 +450,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(latitude, validation.left);
     }
 
+    /**
+     * User has changed the Longitude field.  Validate it and store the data.
+     */
     private void longitudeActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(longitude.getText(),
                 -180.0, +180.0);
@@ -362,6 +466,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(longitude, validation.left);
     }
 
+    /**
+     * "Warm up when done" box changed.  Record the setting.
+     */
     private void warmUpCheckboxActionPerformed() {
         boolean checkBoxState = warmUpCheckbox.isSelected();
         if (this.dataModel.getWarmUpWhenDone() != checkBoxState) {
@@ -370,6 +477,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * "Disconnect up when done" box changed.  Record the setting.
+     */
     private void disconnectCheckboxActionPerformed() {
         boolean checkBoxState = disconnectCheckbox.isSelected();
         if (this.dataModel.getDisconnectWhenDone() != checkBoxState) {
@@ -378,6 +488,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Number of seconds to warm up field has been changed.  Validate and store.
+      */
     private void warmUpSecondsActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(warmUpSeconds.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
@@ -391,6 +504,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(warmUpSeconds, validation.left);
     }
 
+    /**
+     * "Camera is temperature-regulated" box changed.  Record the setting.
+     */
     private void temperatureRegulatedCheckboxActionPerformed() {
         boolean checkBoxState = temperatureRegulatedCheckbox.isSelected();
         if (this.dataModel.getTemperatureRegulated() != checkBoxState) {
@@ -399,6 +515,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Camera target temperature field changed.  Validate and store.
+     */
     private void targetTemperatureActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(targetTemperature.getText(),
                 CommonUtils.ABSOLUTE_ZERO, CommonUtils.WATER_BOILS);
@@ -412,9 +531,12 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(targetTemperature, validation.left);
     }
 
+    /**
+     * Temperature closeness threshold field changed.  Validate and store.
+     */
     private void temperatureWithinActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(temperatureWithin.getText(),
-                0.0, 100.0);
+                0.0, CommonUtils.WATER_BOILS);
         if (validation.left) {
             double tolerance = validation.right;
             if (tolerance != this.dataModel.getTemperatureWithin()) {
@@ -425,9 +547,13 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(temperatureWithin, validation.left);
     }
 
+    /**
+     * Field saying how often to check camera temperature while cooling has changed.
+     * Validate and store.
+     */
     private void coolingCheckIntervalActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingCheckInterval.getText(),
-                1, 60*60*24);
+                1, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
             int seconds = validation.right;
             if (seconds != this.dataModel.getTemperatureSettleSeconds()) {
@@ -438,9 +564,13 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingCheckInterval, validation.left);
     }
 
+    /**
+     * Field saying how long we're willing to wait for the camera to cool to target temperature changed.
+     * Validate and store.
+     */
     private void coolingTimeoutActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingTimeout.getText(),
-                1, 60*60*24);
+                1, CommonUtils.INT_SECONDS_IN_DAY);
         if (validation.left) {
             int timeout = validation.right;
             if (timeout != this.dataModel.getMaxCoolingWaitTime()) {
@@ -451,6 +581,10 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingTimeout, validation.left);
     }
 
+    /**
+     * Field saying how many times we're willing to retry cooling the camera has changed.
+     * Validate and store.
+     */
     private void coolingRetryCountActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingRetryCount.getText(),
                 0, 100);
@@ -464,6 +598,10 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingRetryCount, validation.left);
     }
 
+    /**
+     * Field saying how long to wait before we retry cooling the camera has changed.
+     * Validate and store.
+     */
     private void coolingRetryDelayActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(coolingRetryDelay.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
@@ -477,6 +615,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(coolingRetryDelay, validation.left);
     }
 
+    /**
+     * Checkbox saying whether to abort session if temperature rises checked. Store the setting.
+     */
     private void abortOnTempRiseCheckboxActionPerformed() {
         boolean boxState = abortOnTempRiseCheckbox.isSelected();
         if (this.dataModel.getTemperatureAbortOnRise() != boxState) {
@@ -485,6 +626,10 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Field saying how much the temperature has to rise to trigger an abort has changed.
+     * Validate and store.
+     */
     private void abortOnTempRiseThresholdActionPerformed() {
         ImmutablePair<Boolean, Double> validation = Validators.validFloatInRange(abortOnTempRiseThreshold.getText(),
                 0.1, CommonUtils.WATER_BOILS);
@@ -498,10 +643,11 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(abortOnTempRiseThreshold, validation.left);
     }
 
-    //  Validate and store the server address.
-    //  It might be an IP address or a host name, allow both.
-    //  It can also be blank.
-
+    /**
+     * Validate and store the server address.
+     * It might be an IP address or a host name, allow both.
+     * It can also be blank.
+     */
     private void serverAddressActionPerformed() {
         String proposedAddress = serverAddress.getText().trim();
         boolean valid;
@@ -520,6 +666,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(serverAddress, valid);
     }
 
+    /**
+     * Validate and store the server port number field
+     */
     private void portNumberActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(portNumber.getText(),
                 0, 65535);
@@ -533,6 +682,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(portNumber, validation.left);
     }
 
+    /**
+     * Checkbox saying whether to send "Wake on LAN" packet clicked. Record the setting.
+     */
     private void sendWOLcheckboxActionPerformed() {
         boolean checkBoxState = sendWOLcheckbox.isSelected();
         if (this.dataModel.getSendWakeOnLanBeforeStarting() != checkBoxState) {
@@ -541,6 +693,10 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Field saying how many seconds should be left after the Wake On LAN has changed.
+     * Validate and store this setting.
+     */
     private void wolSecondsBeforeActionPerformed() {
         ImmutablePair<Boolean, Integer> validation = Validators.validIntInRange(wolSecondsBefore.getText(),
                 0, CommonUtils.INT_SECONDS_IN_DAY);
@@ -554,6 +710,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolSecondsBefore, validation.left);
     }
 
+    /**
+     * Server MAC address for use with Wake-on-LAN changed. Validate and store.
+     */
     private void wolMacAddressActionPerformed() {
         String proposedMacAddress = wolMacAddress.getText().trim();
         byte[] macAddressBytes = RmNetUtils.parseMacAddress(proposedMacAddress);
@@ -565,6 +724,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolMacAddress, valid);
     }
 
+    /**
+     * Network broadcast address for use with Wake-on-LAN changed. Validate and store.
+     */
     private void wolBroadcastAddressActionPerformed() {
         String proposedBroadcastAddress = wolBroadcastAddress.getText().trim();
         boolean valid = RmNetUtils.validateIpAddress(proposedBroadcastAddress);
@@ -575,6 +737,9 @@ public class MainWindow extends JFrame {
         this.recordTextFieldValidity(wolBroadcastAddress, valid);
     }
 
+    /**
+     * Field saying whether to auto-save the plan after each acquire frame. Store the setting.
+     */
     private void autosaveCheckboxActionPerformed() {
         boolean checkBoxState = autosaveCheckbox.isSelected();
         if (this.dataModel.getAutoSaveAfterEachFrame() != checkBoxState) {
@@ -583,10 +748,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // Manually-established listener for selection changes in the frames plan table
-    //  We'll use this to enable and disable various editing buttons that are allowed
-    //  only with certain kinds of selections
-
+    /**
+     * Manually-established listener for selection changes in the frames plan table
+     * We'll use this to enable and disable various editing buttons that are allowed
+     * only with certain kinds of selections.  e.g. the Delete button is enabled
+     * only if one or more rows are selected.
+     */
     public void framePlanTableSelectionChanged() {
         int[] selectedRows = this.framesetTable.getSelectedRows();
         Arrays.sort(selectedRows);  // Ensure they're in ascending order
@@ -617,6 +784,9 @@ public class MainWindow extends JFrame {
         this.moveDownButton.setEnabled(enableMoveDown);
     }
 
+    /**
+     * Test Connection button responder.  Attempt to connect to the server and report success or failure.
+     */
     private void testConnectionButtonActionPerformed() {
         System.out.println("testConnectionButtonActionPerformed");
         String addressString = this.dataModel.getNetAddress().trim();
@@ -629,10 +799,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Send Wake On Lan packet to the network broadcast address, with the given MAC address
-    //  in the packet, to attempt to wake the server.  This is done immediately, and is
-    //  primarily for testing.  The delayed wake-on-lan feature is implemented in the session thread.
-
+    /**
+     * Send Wake On Lan packet to the network broadcast address, with the given MAC address
+     * in the packet, to attempt to wake the server.  This is done immediately, and is
+     * primarily for testing.  The delayed wake-on-lan feature is implemented in the session thread.
+     */
     private void sendWOLbuttonActionPerformed() {
         String addressString = wolBroadcastAddress.getText().trim(); // Could be IP or host name
         String macAddressString = wolMacAddress.getText().trim();
@@ -659,10 +830,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // User has clicked "+" in the framesets table area.  We will open a separate dialog
-    // window in which they can specify the parameters of a frameset to be added.  The new
-    // frameset will go above the selected row or, if nothing selected, at the end of the list
-
+    /**
+     * User has clicked "+" in the framesets table area.  We will open a separate dialog
+     * window in which they can specify the parameters of a frameset to be added.  The new
+     * frameset will go above the selected row or, if nothing selected, at the end of the list
+     */
     private void addFramesetButtonActionPerformed() {
         AddFramesetDialog addDialog = new AddFramesetDialog(this);
         addDialog.setVisible(true);
@@ -686,8 +858,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // 1 or more rows in the frame set table are selected, and the delete button has been clicked.
-    // We delete those rows from the table model and tell the table it needs to be updated
+    /**
+     * 1 or more rows in the frame set table are selected, and the delete button has been clicked.
+     * We delete those rows from the table model and tell the table it needs to be updated
+      */
     private void deleteFramesetButtonActionPerformed() {
         int[] selectedRowIndices = this.framesetTable.getSelectedRows();
 
@@ -701,9 +875,10 @@ public class MainWindow extends JFrame {
         this.makeDirty();
     }
 
-    // With one row selected, user has clicked "Edit".  Open a dialog to allow them to change
-    // the frame set.  We use the same dialog as "Add".
-
+    /**
+     * With one row selected, user has clicked "Edit".  Open a dialog to allow them to change
+     * the frame set.  We use the same dialog as "Add".
+     */
     private void editFramesetButtonActionPerformed() {
         //  There has to be exactly one row selected or the button would have been disabled.
         //  Get the frameset from that row.
@@ -722,8 +897,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // Set up double-click to act as Edit if exactly one row selected
-
+    /**
+     * Treat double-click to act as Edit if exactly one row selected, otherwise ignore
+     * @param mouseEvent
+     */
     private void framesetTableMouseClicked(MouseEvent mouseEvent) {
         if ((mouseEvent.getClickCount() == 2) && (mouseEvent.getButton() == MouseEvent.BUTTON1)) {
             int[] selectedRows = this.framesetTable.getSelectedRows();
@@ -733,10 +910,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  User has clicked "Bulk Add".  We open a dialog in which they can describe a large
-    //  set of bias and dark frames quickly. If they click "OK" we will then insert all those
-    //  frames into the plan.
-
+    /**
+     * User has clicked "Bulk Add".  We open a dialog in which they can describe a large
+     * set of bias and dark frames quickly. If they click "OK" we will then insert all those
+     * frames into the plan.
+     */
     private void bulkAddButtonActionPerformed() {
         System.out.println("bulkAddButtonActionPerformed");
         //  Open the bulk-add dialog and wait for the user to close the window when done
@@ -771,10 +949,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  User has clicked "Reset Completed".  This could cause them to lose the book keeping for their
-    //  in-progress acquisition plan, so we'll do an "are you sure" dialog.  Then, if they are sure,
-    //  set the Completed count to all the framesets in the plan back to zero.
-
+    /**
+     * User has clicked "Reset Completed".  This could cause them to lose the book keeping for their
+     * in-progress acquisition plan, so we'll do an "are you sure" dialog.  Then, if they are sure,
+     * set the Completed count to all the framesets in the plan back to zero.
+     */
     private void resetCompletedButtonActionPerformed() {
         //  Set up and display dialog asking the user if they want to save first
         int response = JOptionPane.showConfirmDialog(this,
@@ -787,12 +966,14 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Move Up button has been clicked.  "Up" is in the visual sense in the user interface.
-    //  In terms of data structure, it means moving elements to lower indices.
-    //  We know that
-    //      1 or more rows are selected
-    //      the first row is not selected
-    //  Move every selected row up one position
+    /**
+     * Move Up button has been clicked.  "Up" is in the visual sense in the user interface.
+     * In terms of data structure, it means moving elements to lower indices.
+     * We know that
+     *     1 or more rows are selected
+     *     the first row is not selected
+     * Move every selected row up one position
+      */
     private void moveUpButtonActionPerformed() {
         int[] selectedRows = this.framesetTable.getSelectedRows();
         assert(selectedRows.length > 0);    // Row(s) are selected
@@ -814,12 +995,14 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Move Down button has been clicked.  "Down" is in the visual sense in the user interface.
-    //  In terms of data structure, it means moving elements to higher indices.
-    //  We know that
-    //      1 or more rows are selected
-    //      the last row is not selected
-    //  Move every selected row down one position
+    /**
+     * Move Down button has been clicked.  "Down" is in the visual sense in the user interface.
+     * In terms of data structure, it means moving elements to higher indices.
+     * We know that
+     *      1 or more rows are selected; and
+     *      the last row is not selected
+     * Move every selected row down one position
+     */
     private void moveDownButtonActionPerformed() {
         int[] selectedRows = this.framesetTable.getSelectedRows();
         //  Process the rows in reverse order so we don't have to constantly adjust indices
@@ -865,24 +1048,25 @@ public class MainWindow extends JFrame {
         }
     }
 
-
-
-    //  The session console is a JList displaying console lines.  The list is fed by a
-    //  list model, which we will initialize to an empty list here.
-
+    /**
+     * The session console is a JList displaying console lines.  The list is fed by a
+     * list model, which we will initialize to an empty list here.
+     */
     private void initializeConsoleList() {
         this.consoleListModel = new DefaultListModel<>();
         this.lvConsole.setModel(this.consoleListModel);
     }
 
-    //  Add a line to the console pane in the session pane, and scroll to keep it visible
-    //  We'll do a thread-lock on this code since requests will be coming from the sub-thread and
-    //  we want to ensure we don't try to run the code more than once in parallel.
-
     private static final String INDENTATION_BLANKS = "    ";
 
+    /**
+     * Add a line to the console pane in the session pane, and scroll to keep it visible
+     * We'll do a thread-lock on this code since requests will be coming from the sub-thread and
+     * we want to ensure we don't try to run the code more than once in parallel.
+     * @param message
+     * @param messageLevel
+     */
     public void console(String message, int messageLevel) {
-//        System.out.println("Console: " + message + "," + messageLevel);
         this.consoleLock.lock();
         try {
             assert (messageLevel > 0);
@@ -898,8 +1082,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Receive the server's camera autosave path from the server and display it in the UI
-
+    /**
+     * Receive the server's camera autosave path from the server and display it in the UI
+     * @param autosavePath
+     */
     public void displayAutosavePath(String autosavePath) {
         this.consoleLock.lock();
         try {
@@ -915,9 +1101,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  A periodic timer in the session thread has just updated us on the state of the cooled camera.
-    //  Display this info in a UI field
-
+    /**
+     * A periodic timer in the session thread has just updated us on the state of the cooled camera.
+     * Display this info in a UI field
+     * @param temperature
+     * @param coolerPower
+     */
     public void reportCoolingStatus(double temperature, double coolerPower) {
         this.consoleLock.lock();
         try {
@@ -929,6 +1118,11 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Set the cooling status field to empty (at the end of a session).
+     * We set it to blanks rather than changing its Visibility, because changing the Visibility
+     * causes the layout manager to move things around and the motion is distracting.
+     */
     public void hideCoolingStatus() {
         this.consoleLock.lock();
         try {
@@ -940,10 +1134,13 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Also called from the processing thread, this set of methods displays a progress bar on the
-    //  UI.
-
-    //  Initialize progress bar to given max value, and set it visible.
+    /**
+     * Called from the processing thread, this set of methods displays a progress bar on the UI.
+     * Initialize progress bar to given max value, and set it visible.
+     * @param minValue      Minimum end of the range representing the work
+     * @param maxValue      Maximum end of the range representing the work
+     */
+    //
 
     public void startProgressBar(int minValue, int maxValue) {
         this.consoleLock.lock();
@@ -958,8 +1155,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Update the progress bar with the given value of progress toward the established maximum
-
+    /**
+     * Update the progress bar with the given value of progress toward the established maximum
+     * @param progressValue
+     */
     public void updateProgressBar(int progressValue) {
         this.consoleLock.lock();
         try {
@@ -971,8 +1170,9 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  End the progress bar, setting it back to invisible
-
+    /**
+     * End the progress bar, setting it back to invisible
+     */
     public void stopProgressBar() {
         this.consoleLock.lock();
         try {
@@ -984,11 +1184,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-
-    //  While the acquisition sub-task is running, the UI is restricted so that the user can not
-    //  visit the other tabs, and the only button working in the Session tab is the Cancel button.
-    //  Enter or leave this state.
-
+    /**
+     * While the acquisition sub-task is running, the UI is restricted so that the user can not
+     * visit the other tabs, and the only button working in the Session tab is the Cancel button.
+     * Enter or leave this state.
+     * @param sessionRunning    True = enter restricted state;  false = leave it
+     */
     private void restrictUiForSession(boolean sessionRunning) {
 
         // Tabs
@@ -1007,7 +1208,7 @@ public class MainWindow extends JFrame {
         this.beginSessionButton.setEnabled(!sessionRunning);
         this.cancelSessionButton.setEnabled(sessionRunning);
     }
-
+ to here
     private void cancelSessionButtonActionPerformed() {
         //  Send an Interrupt signal to the thread
         if (this.skyXThread != null) {

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 
 
 /**
+ * Controller class for the "Bulk Add" dialog, which has an accompanying UI form
+ * file created and managed by JFormDesigner
  * @author Richard McDonald
  */
 public class BulkAddDialog extends JDialog {
@@ -37,7 +39,10 @@ public class BulkAddDialog extends JDialog {
     private boolean exposureListValid = true;
     private ArrayList<Double> exposureLengthsList = new ArrayList<>();
 
-
+    /**
+     * Creator class to create and initialize the dialog
+     * @param owner     Controller for the main window, the parent of this dialog
+     */
 	public BulkAddDialog(MainWindow owner) {
 		super(owner);
         initComponents();
@@ -49,6 +54,11 @@ public class BulkAddDialog extends JDialog {
                 JComponent.WHEN_FOCUSED);
 	}
 
+    /**
+     * User has pasted text into the exposure lengths field.  We'll treat this as a field action
+     * so pasted-in text is immediately validated and stored.
+     * @param exposureLengths   The JTextArea that just received the Paste event
+     */
     private void handlePasteToExposuresField(JTextArea exposureLengths) {
         try {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -65,11 +75,18 @@ public class BulkAddDialog extends JDialog {
         }
     }
 
+    /**
+     * Public Getter class that the main window can use, after the dialog terminates, to
+     * tell whether the user clicked Save or Cancel.
+     * @return  boolean         Was Save clicked?
+     */
     public boolean getSaveClicked() {
 		return this.saveClicked;
 	}
 
-	//  Validate the "number of bias frames" field.  It can be empty, or a non-negative integer.
+    /**
+     * Validate the "number of bias frames" field.  It can be empty, or a non-negative integer.
+     */
     private void numBiasFramesActionPerformed() {
         String fieldContents = numBiasFrames.getText().trim();
         boolean isValid;
@@ -89,6 +106,12 @@ public class BulkAddDialog extends JDialog {
         this.enableSaveButton();
     }
 
+    /**
+     * Focus has moved out of the "number of bias frames" field.  We treat this as an action, the
+     * same as though the user had pressed Enter in the field.  Otherwise changes that are evident
+     * visually might not be reflected in the data - typically if the user types in a field and then
+     * exits it by tabbing or clicking the mouse.
+     */
     private void numBiasFramesFocusLost() {
         this.numBiasFramesActionPerformed();
     }
@@ -112,55 +135,87 @@ public class BulkAddDialog extends JDialog {
         this.enableSaveButton();
 	}
 
+    /**
+     * Focus has moved out of the "number of dark frames" field.  We treat this as an action, the
+     * same as though the user had pressed Enter in the field.  Otherwise changes that are evident
+     * visually might not be reflected in the data - typically if the user types in a field and then
+     * exits it by tabbing or clicking the mouse.
+     */
     private void numDarkFramesFocusLost() {
         this.numDarkFramesActionPerformed();
     }
 
+    /**
+     * A bias binning button has been clicked.  Record the value.
+     */
     private void biasBinned1x1ActionPerformed() {
 		this.biasBinningSelected[0] = biasBinned1x1.isSelected();
 		this.enableSaveButton();
 	}
 
+    /**
+     * A bias binning button has been clicked.  Record the value.
+     */
     private void biasBinned2x2ActionPerformed() {
         this.biasBinningSelected[1] = biasBinned2x2.isSelected();
 		this.enableSaveButton();
 	}
 
+    /**
+     * A bias binning button has been clicked.  Record the value.
+     */
     private void biasBinned3x3ActionPerformed() {
         this.biasBinningSelected[2] = biasBinned3x3.isSelected();
 		this.enableSaveButton();
     }
 
+    /**
+     * A bias binning button has been clicked.  Record the value.
+     */
     private void biasBinned4x4ActionPerformed() {
         this.biasBinningSelected[3] = biasBinned4x4.isSelected();
 		this.enableSaveButton();
 	}
 
+    /**
+     * A dark binning button has been clicked.  Record the value.
+     */
     private void darkBinned1x1ActionPerformed() {
         this.darkBinningSelected[0] = darkBinned1x1.isSelected();
 		this.enableSaveButton();
     }
 
+    /**
+     * A dark binning button has been clicked.  Record the value.
+     */
     private void darkBinned2x2ActionPerformed() {
         this.darkBinningSelected[1] = darkBinned2x2.isSelected();
 		this.enableSaveButton();
     }
 
+    /**
+     * A dark binning button has been clicked.  Record the value.
+     */
     private void darkBinned3x3ActionPerformed() {
         this.darkBinningSelected[2] = darkBinned3x3.isSelected();
 		this.enableSaveButton();
 	}
 
+    /**
+     * A dark binning button has been clicked.  Record the value.
+     */
     private void darkBinned4x4ActionPerformed() {
         this.darkBinningSelected[3] = darkBinned4x4.isSelected();
 		this.enableSaveButton();
 	}
 
-	//  Key has been typed in the exposure lengths field.  We'll do two things:
-    //  1. Check if it was the Tab key.  If so, tab out of this field, don't enter a tab character.
-    //  2. Otherswise, validate the field.  This just means ensuring it is a list of integer or float
-    //      numbers separated by whitespace or commas
-
+    /**
+     * A key has been typed in the exposure lengths field.  We'll do two things:
+     *     1. Check if it was the Tab key.  If so, tab out of this field, don't enter a tab character.
+     *     2. Otherwise, validate the field.  This just means ensuring it is a list of integer or float
+     *        numbers separated by whitespace or commas
+     * @param keyEvent      the key-typed event
+     */
     private void exposureLengthsKeyTyped(KeyEvent keyEvent) {
         if (keyEvent.getExtendedKeyCode() == KeyEvent.VK_TAB) {
             // Tab key has been pressed.  Tab to next or previous field (shift key = previous)
@@ -180,6 +235,12 @@ public class BulkAddDialog extends JDialog {
 		this.enableSaveButton();
 	}
 
+    /**
+     * Validate the string that contains the list of exposure lengths.  This should be a list of
+     * positive numbers separated by white space or commas.
+     * @param textToValidate        The string to be validated
+     * @param exposureLengths       The JTextArea, for setting colour to show validity
+     */
     private void validateExposureLengths(String textToValidate, JTextArea exposureLengths) {
         ImmutablePair<Boolean, ArrayList<Double>> parseResults = this.parseExposures(textToValidate);
         this.exposureListValid = parseResults.left;
@@ -187,14 +248,18 @@ public class BulkAddDialog extends JDialog {
         this.colourFieldValidity(exposureLengths, parseResults.left);
     }
 
-    //  Parse and validate the exposures list string.  Rules:
-    //  It can be empty, or
-    //  It can be a list of numbers separated by commas or white space
-    //  Numbers are integers or floating point numbers, non-negative
-    //  Multiple white spaces are OK and are ignored.
-    //
-    //  We return a validity indicator, and a list of parsed values
-    
+    /**
+     * Parse and validate the exposures list string.  Rules:
+     *     It can be empty, or
+     *     It can be a list of numbers separated by commas or white space
+     *     Numbers are integers or floating point numbers, non-negative
+     *     Multiple white spaces are OK and are ignored.
+     *
+     *     We return a validity indicator, and a list of parsed values
+     * @param text          Text to be parsed and validated
+     * @return              A Pair, consisting of a Boolean validity indicator and
+     *                      an array of Doubles which are the valid parsed values
+     */
     private ImmutablePair<Boolean, ArrayList<Double>> parseExposures(String text) {
         String[] tokens = text.trim().split("[\\s,]+");
         ArrayList<Double> values = new ArrayList<>(tokens.length);
@@ -211,7 +276,11 @@ public class BulkAddDialog extends JDialog {
 	    return ImmutablePair.of(allValid, values);
     }
 
-    // Set background colour of field to reflect validity: red if invalid
+    /**
+     * Set background colour of a JTextComponent field to reflect validity: red if invalid
+     * @param theField      Field whose colour is to be set
+     * @param isValid       Validity of the field
+     */
     private void colourFieldValidity(JTextComponent theField, boolean isValid) {
         Color backgroundColor = Color.RED;
         if (isValid) {
@@ -220,10 +289,11 @@ public class BulkAddDialog extends JDialog {
         theField.setBackground(backgroundColor);
     }
 
-    //	Enable the save button only if there is something actionable described in the form.
-	//	i.e. at least some bias or dark frames (number of frames and binnings) and, for darks,
-	//	a valid exposures field.
-
+    /**
+     * Enable the save button only if there is something actionable described in the form.
+     * i.e. at least some bias or dark frames (number of frames and binnings) and, for darks,
+     * a valid exposures field.
+     */
 	private void enableSaveButton() {
 
 		boolean biasGiven = this.numBiasValid && this.numBiasValue > 0;
@@ -236,6 +306,11 @@ public class BulkAddDialog extends JDialog {
         || (darksGiven && anyDarkBinning && this.exposureListValid && this.exposureLengthsList.size() > 0));
 	}
 
+    /**
+     * Utility function - count how many items in the array of boolean values are true
+     * @param theArray      Array of boolean values
+     * @return (int)        Number of true values in the array
+     */
 	private int countTrue(boolean[] theArray) {
 	    int count = 0;
 	    for (boolean theBool: theArray) {
@@ -246,6 +321,10 @@ public class BulkAddDialog extends JDialog {
 	    return count;
     }
 
+    /**
+     * User has clicked the Save button.  Ensure all the data are stored for retrieval,
+     * and close the dialog with a flag telling the user we did a Save.
+     */
     private void saveButtonActionPerformed() {
 	    // Before we close, we re-parse the exposures list, because I've found that
         // certain cut-paste operations in the field can get missed and the pre-parsed
@@ -260,6 +339,10 @@ public class BulkAddDialog extends JDialog {
         this.setVisible(false);
     }
 
+    /**
+     * User has clicked the Cancel button.  Close the dialog with a flag telling the
+     * user that we did a Cancel.
+     */
     private void cancelButtonActionPerformed() {
         this.saveClicked = false;
         this.setVisible(false);
@@ -523,9 +606,14 @@ public class BulkAddDialog extends JDialog {
 
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
-    // Generate the list of framesets described by the form's settings
-    //      Bias frames if quantity and binnings are given
-    //      Dark frames if quantity, binnings, and one or more exposure times are given
+    /**
+     * Generate the list of framesets described by the form's settings
+     *       Bias frames if quantity and binning are given
+     *       Dark frames if quantity, binning, and one or more exposure times are given
+     * This method is intended to be called after the dialog is Saved and closed, and
+     * enables the calling parent to retrieve the frames described by the dialog
+     * @return      List of frame sets described by the completed dialog
+     */
     public ArrayList<FrameSet> generateFramesToAdd() {
         int estimatedNumberNeeded = this.countTrue(this.biasBinningSelected)
                 + (this.countTrue(this.darkBinningSelected) * this.exposureLengthsList.size());

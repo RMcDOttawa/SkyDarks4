@@ -1,5 +1,9 @@
 import java.io.Serializable;
 
+/**
+ * Description of a "Frame Set".  A frame set is a collection of a given number of
+ * frames with identical specifications.  e.g. 32 dark frames, 10 seconds, binned 1x1.
+ */
 public class FrameSet implements Serializable {
 
     //  Properties of a Frame Set, and their default values
@@ -52,8 +56,15 @@ public class FrameSet implements Serializable {
         this.numberComplete = numberComplete;
     }
 
-    //  Static creator factory methods
-
+    /**
+     * Static creator factory methods
+     * @param count                 Number of frames in this set
+     * @param frameType             Bias or Dark frames
+     * @param exposureSeconds       If dark, exposure time in seconds
+     * @param binning               Binning - 1x1, 2x2, etc.
+     * @param completed             How many are already complete?
+     * @return
+     */
     public static FrameSet of(Integer count,
                               FrameType frameType,
                               Double exposureSeconds,
@@ -68,8 +79,10 @@ public class FrameSet implements Serializable {
         return newFrameSet;
     }
 
-    // Make a copy of ourselves, return as a new frame set
-    
+    /**
+     * Make a copy of ourselves, return as a new frame set
+     * @return
+     */
     public FrameSet copy() {
         FrameSet newFrameSet = new FrameSet();
         newFrameSet.numberOfFrames = this.numberOfFrames;
@@ -80,8 +93,10 @@ public class FrameSet implements Serializable {
         return newFrameSet;
     }
 
-    //  Render to string
-
+    /**
+     * Render to string
+     * @return
+     */
     public String toString() {
         return "FrameSet "
                 + "(#=" + numberOfFrames
