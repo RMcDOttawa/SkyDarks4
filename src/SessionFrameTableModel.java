@@ -1,11 +1,20 @@
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 
+/**
+ * Data model driving the "session frame table", a table that appears on the "Run Session"
+ * tab in the main user interface window. This table contains frame sets that will be acquired
+ * in the session - i.e. it omits any frame sets that are completed.
+ */
 public class SessionFrameTableModel extends AbstractTableModel {
     public String[] columnHeaders = {"#", "Typ", "Exp", "Bin", "Done"};
     private ArrayList<FrameSet> sessionFramesets;
 
-    //  Constructor, given the full frameset list
+    /**
+     * Static constructor, given the full frameset list
+     * @param allFrameSets      Frame sets to be considered for inclusion in session table
+     * @return (object)         The table model constructed
+     */
     public static SessionFrameTableModel of (ArrayList<FrameSet> allFrameSets) {
         SessionFrameTableModel newModel = new SessionFrameTableModel();
 
@@ -23,16 +32,31 @@ public class SessionFrameTableModel extends AbstractTableModel {
         return newModel;
     }
 
+    /**
+     * Tell the table how many rows there are
+     * @return  (int)       Number of rows in the table
+     */
     @Override
     public int getRowCount() {
         return this.sessionFramesets.size();
     }
 
+    /**
+     * Tell the table how many columns there are (this is a fixed property of the data
+     * we are displaying.)
+     * @return  (int)       Number of columns in the table
+     */
     @Override
     public int getColumnCount() {
         return this.columnHeaders.length;
     }
 
+    /**
+     * Get value to be displayed in a given table cell
+     * @param rowIndex          zero-based row index of the cell
+     * @param columnIndex       zero-based column index of the cell
+     * @return (String)         string to be displayed in the indexed cell
+     */
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         FrameSet row = this.sessionFramesets.get(rowIndex);
@@ -59,11 +83,20 @@ public class SessionFrameTableModel extends AbstractTableModel {
         return result;
     }
 
+    /**
+     * Return the header text to be placed over a column
+     * @param column        Zero-based column index
+     * @return (String)     Column header text
+     */
     @Override
     public String getColumnName(int column) {
         return this.columnHeaders[column];
     }
 
+    /**
+     * Return the list of framesets driving this data model
+     * @return (array)      List of frame sets
+     */
     public ArrayList<FrameSet> getSessionFramesets() {
         return this.sessionFramesets;
     }

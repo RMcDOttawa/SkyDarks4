@@ -103,7 +103,7 @@ public class MainWindow extends JFrame {
 
     /**
      * Once we have opened or saved a file, we remember its path as a way to re-save
-     * @param thePath
+     * @param thePath           Absolute path to file, to be remembered
      */
     public void setFilePath(String thePath) {
         this.filePath = thePath;
@@ -124,8 +124,8 @@ public class MainWindow extends JFrame {
     }
 
     /**
-     * Return an indicaton of whether the plan has unsaved changes that should be protected
-     * @return
+     * Return an indication of whether the plan has unsaved changes that should be protected
+     * @return (boolean)        Indicator if file needs saving
      */
     private boolean isDirty() {
         return this.documentDirtyFlag;
@@ -899,7 +899,7 @@ public class MainWindow extends JFrame {
 
     /**
      * Treat double-click to act as Edit if exactly one row selected, otherwise ignore
-     * @param mouseEvent
+     * @param mouseEvent        Mouse event that might be a double-click
      */
     private void framesetTableMouseClicked(MouseEvent mouseEvent) {
         if ((mouseEvent.getClickCount() == 2) && (mouseEvent.getButton() == MouseEvent.BUTTON1)) {
@@ -1063,8 +1063,8 @@ public class MainWindow extends JFrame {
      * Add a line to the console pane in the session pane, and scroll to keep it visible
      * We'll do a thread-lock on this code since requests will be coming from the sub-thread and
      * we want to ensure we don't try to run the code more than once in parallel.
-     * @param message
-     * @param messageLevel
+     * @param message               Text message to be added to console log
+     * @param messageLevel          Indentation level of message (1 = base level)
      */
     public void console(String message, int messageLevel) {
         this.consoleLock.lock();
@@ -1084,7 +1084,7 @@ public class MainWindow extends JFrame {
 
     /**
      * Receive the server's camera autosave path from the server and display it in the UI
-     * @param autosavePath
+     * @param autosavePath          Auto-save path to be displayed
      */
     public void displayAutosavePath(String autosavePath) {
         this.consoleLock.lock();
@@ -1104,8 +1104,8 @@ public class MainWindow extends JFrame {
     /**
      * A periodic timer in the session thread has just updated us on the state of the cooled camera.
      * Display this info in a UI field
-     * @param temperature
-     * @param coolerPower
+     * @param temperature           Camera temperature to be displayed
+     * @param coolerPower           Cooler power, as %, to be displayed
      */
     public void reportCoolingStatus(double temperature, double coolerPower) {
         this.consoleLock.lock();
@@ -1157,7 +1157,7 @@ public class MainWindow extends JFrame {
 
     /**
      * Update the progress bar with the given value of progress toward the established maximum
-     * @param progressValue
+     * @param progressValue         Value, toward previously-recorded maximum, for progress bar
      */
     public void updateProgressBar(int progressValue) {
         this.consoleLock.lock();
@@ -1208,7 +1208,11 @@ public class MainWindow extends JFrame {
         this.beginSessionButton.setEnabled(!sessionRunning);
         this.cancelSessionButton.setEnabled(sessionRunning);
     }
- to here
+
+    /**
+     * User has clicked the "Cancel Session" button.  Cancel the running acquisition
+     * task and free its resources
+     */
     private void cancelSessionButtonActionPerformed() {
         //  Send an Interrupt signal to the thread
         if (this.skyXThread != null) {
@@ -1221,14 +1225,26 @@ public class MainWindow extends JFrame {
 
     //  Get details of start and stop times.
     //  Start Time
-    //      If "now", record that as boolean flag.
-    //      Otherwise, use the specified date and time.
-    //      If "today' and the time has passed, treat this as "now"
-    //  Stop Time
-    //      If "when done", record that as boolean flag.
-    //      Otherwise, use specified date and time.
-    //      If date & time is  earlier than the start date & time, advance one day
+    //    //      If "now", record that as boolean flag.
+    //    //      Otherwise, use the specified date and time.
+    //    //      If "today' and the time has passed, treat this as "now"
+    //    //  Stop Time
+    //    //      If "when done", record that as boolean flag.
+    //    //      Otherwise, use specified date and time.
+    //    //      If date & time is  earlier than the start date & time, advance one day
 
+    /**
+     * Summarize all the information about session start and end times in one place
+     *   Start Time
+     *          If "now", record that as boolean flag.
+     *          Otherwise, use the specified date and time.
+     *          If "today' and the time has passed, treat this as "now"
+     *   Stop Time
+     *          If "when done", record that as boolean flag.
+     *          Otherwise, use specified date and time.
+     *          If date & time is  earlier than the start date & time, advance one day
+     * @return (time block)         Everything you could want to know about start and end time
+     */
     private SessionTimeBlock getStartAndEndTimes() {
 //        System.out.println("getStartAndEndTimes");
 
@@ -1300,9 +1316,12 @@ public class MainWindow extends JFrame {
         return SessionTimeBlock.of(startNow, startDateTime, stopWhenDone, endDateTime);
     }
 
-    //  Start the separate thread that manages the file acquisition.  This is run as a separate
-    //  thread so that the user interface, managed from here, remains responsive.
-
+    /**
+     * Start the separate thread that manages the file acquisition.  This is run as a separate
+     * thread so that the user interface, managed from here, remains responsive.
+     * @param timeBlock             Object summarizing start and end times
+     * @param sessionTableModel     Table model for the session, giving the frame sets list
+     */
     private void spawnProcessingTask(SessionTimeBlock timeBlock,
                                      SessionFrameTableModel sessionTableModel) {
         this.consoleLock = new ReentrantLock();
@@ -1312,8 +1331,9 @@ public class MainWindow extends JFrame {
         this.skyXThread.start();
     }
 
-    //  The processing sub-thread tells us when it is done via message to this method
-
+    /**
+     * The processing sub-thread tells us when it is done via message to this method
+     */
     public void skyXSessionThreadEnded() {
         this.console("Session ended.", 1);
         this.sessionFramesetTable.clearSelection();
@@ -1321,78 +1341,68 @@ public class MainWindow extends JFrame {
         this.consoleLock = null;
     }
 
+    /**
+     * The following "Focus Lost" methods cause jTextFields to treat losing focus
+     * the same as an action. So if a user changes the contents of a field then tabs
+     * or clicks out of it, the field is processed as though they pressed "Enter"
+     */
     private void serverAddressFocusLost() {
         this.serverAddressActionPerformed();
     }
-
     private void locationNameFocusLost() {
         locationNameActionPerformed();
     }
-
     private void timeZoneNameFocusLost() {
         timeZoneNameActionPerformed();
     }
-
     private void latitudeFocusLost() {
         latitudeActionPerformed();
     }
-
     private void longitudeFocusLost() {
         longitudeActionPerformed();
     }
-
     private void targetTemperatureFocusLost() {
         targetTemperatureActionPerformed();
     }
-
     private void temperatureWithinFocusLost() {
         temperatureWithinActionPerformed();
     }
-
     private void coolingCheckIntervalFocusLost() {
         coolingCheckIntervalActionPerformed();
     }
-
     private void coolingTimeoutFocusLost() {
         coolingTimeoutActionPerformed();
     }
-
     private void coolingRetryCountFocusLost() {
         coolingRetryCountActionPerformed();
     }
-
     private void coolingRetryDelayFocusLost() {
         coolingRetryDelayActionPerformed();
     }
-
     private void abortOnTempRiseThresholdFocusLost() {
         abortOnTempRiseThresholdActionPerformed();
     }
-
     private void portNumberFocusLost() {
         portNumberActionPerformed();
     }
-
     private void wolSecondsBeforeFocusLost() {
         wolSecondsBeforeActionPerformed();
     }
-
     private void wolMacAddressFocusLost() {
         wolMacAddressActionPerformed();
     }
-
     private void wolBroadcastAddressFocusLost() {
         wolBroadcastAddressActionPerformed();
     }
-
     private void warmUpSecondsFocusLost() {
         this.warmUpSecondsActionPerformed();
     }
 
-    //  OPEN menu has been invoked.
-    //  Use a file dialog to get the file to be opened.  Open and decode it to a new data model
-    //  then update the displayed window to reflect that new data model.
-
+    /**
+     * OPEN menu has been invoked.
+     * Use a file dialog to get the file to be opened.  Open and decode it to a new data model
+     * then update the displayed window to reflect that new data model.
+     */
     private void openMenuItemActionPerformed() {
         if (protectedSaveProceed()) {
             FileDialog fileDialog = new FileDialog(this, "Plan File", FileDialog.LOAD);
@@ -1407,13 +1417,15 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // We're about to do something that will erase the current frame set plan.  If it is "dirty", i.e.
-    // contains changes not yet saved to disk, ask the user if they want to do a save.  If they do, do the
-    // save.  There are 3 possible outcomes on a dirty document
-    //  1. Do a save
-    //  2. Don't do a save, losing the unsaved changes
-    //  3. Cancel, don't do the operation that caused this
-
+    /**
+     * We're about to do something that will erase the current frame set plan.  If it is "dirty", i.e.
+     * contains changes not yet saved to disk, ask the user if they want to do a save.  If they do, do the
+     * save.  There are 3 possible outcomes on a dirty document
+     * 1. Do a save
+     * 2. Don't do a save, losing the unsaved changes
+     * 3. Cancel, don't do the operation that caused this
+     * @return (boolean)       OK to proceed (i.e. user didn't click "Cancel")
+     */
     private boolean protectedSaveProceed() {
         boolean proceed = true;
         if (this.isDirty()) {
@@ -1440,6 +1452,11 @@ public class MainWindow extends JFrame {
         return proceed;
     }
 
+    /**
+     * Same as the "Protected Save" method above, but with no Cancel button offered, just Save and Discard
+     * @return     (boolean)        OK to proceed (can only be true)
+     */
+    @SuppressWarnings("unused")
     private boolean protectedSaveProceedNoCancel() {
         if (this.isDirty()) {
             Object[] options = { "Discard", "Save"};
@@ -1461,8 +1478,10 @@ public class MainWindow extends JFrame {
         return true;
     }
 
-    //  Given full path name of an existing file, read it, decode it, and change over to that data model
-
+    /**
+     * Given full path name of an existing file, read it, decode it, and change over to that data model
+     * @param fullPath      Full absolute path name of the file to read
+     */
     private void readFromFile(String fullPath) {
         try {
             byte[] encoded = Files.readAllBytes(Paths.get(fullPath));
@@ -1480,8 +1499,9 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // NEW menu invoked. Create a new default data model and load it.
-
+    /**
+     * NEW menu invoked. Create a new default data model and load it.
+     */
     private void newMenuItemActionPerformed() {
         if (protectedSaveProceed()) {
             DataModel newDataModel = DataModel.newInstance();
@@ -1492,9 +1512,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  User has selected the "Save As" menu item.  Prompt for a new name and location
-    //  for the file, then write out serialized data model.
-
+    /**
+     * User has selected the "Save As" menu item.  Prompt for a new name and location
+     * for the file, then write out serialized data model.
+     */
     private void saveAsMenuItemActionPerformed() {
 
         // The following code block is the native Java Swing file chooser.  However, it
@@ -1535,8 +1556,11 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Write the current data model, serialized to XML, to the given file
-    //  Go through a temporary file so there is no data loss in the event of a crash
+    /**
+     * Write the current data model, serialized to XML, to the given file
+     * Go through a temporary file so there is no data loss in the event of a crash
+     * @param fileToSave        File object of file to be saved
+     */
     private void writeToFile(File fileToSave) {
         // Write serialized data model to file
         String serialized = this.dataModel.serialize();
@@ -1554,6 +1578,7 @@ public class MainWindow extends JFrame {
             writer.close();
 
             //  Content is now in temporary file.   Delete original file name and rename temporary.
+            @SuppressWarnings("unused")
             boolean deleteResult = fileToSave.delete();
             if (!tempFile.renameTo(fileToSave)) {
                 JOptionPane.showMessageDialog(null,
@@ -1576,9 +1601,10 @@ public class MainWindow extends JFrame {
 
     }
 
-    //  SAVE menu invoked.  If we already have a file defined, just re-save it.
-    //  Otherwise, treat this like a Save-As so the file gets prompted.
-
+    /**
+     * SAVE menu invoked.  If we already have a file defined, just re-save it.
+     * Otherwise, treat this like a Save-As so the file gets prompted.
+     */
     private void saveMenuItemActionPerformed() {
         if (this.filePath.equals("")) {
             this.saveAsMenuItemActionPerformed();
@@ -1587,9 +1613,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // User has clicked the system close button on the window.
-    //  Do an "unsaved data protection" then exit the program
-
+    /**
+     * User has clicked the system close button on the window.
+     * Do an "unsaved data protection" then exit the program
+     */
     private void thisWindowClosing() {
         if (protectedSaveProceed()) {
             this.setVisible(false);
@@ -1597,11 +1624,12 @@ public class MainWindow extends JFrame {
         }
     }
 
-    // The window, and hence the Console JList, has been resized.  We need to calculate the
-    //  number of rows that will fit in the new size and change the visibleRows property to the new value
-    //  in order for the console to continue to contain the maximum number of rows that will fit.
-    //  Also re-adjust scrolling to ensure last row is still visible.
-
+    /**
+     * The window, and hence the Console JList, has been resized.  We need to calculate the
+     * number of rows that will fit in the new size and change the visibleRows property to the new value
+     * in order for the console to continue to contain the maximum number of rows that will fit.
+     * Also re-adjust scrolling to ensure last row is still visible.
+     */
     private void lvConsoleComponentResized() {
         JList consoleList = this.lvConsole;
         JScrollPane scrollPane = this.consoleScrollPane;
@@ -2982,6 +3010,11 @@ public class MainWindow extends JFrame {
     private BindingGroup bindingGroup;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
+    /**
+     * Load the UI in the window we're controlling from the given data model
+     * @param dataModelInput    Data model to load and retain
+     * @param windowTitle       Title to assign to the window
+     */
     public void loadDataModel(DataModel dataModelInput, String windowTitle) {
         this.dataModel = dataModelInput;
         this.setTitle(windowTitle);
@@ -3130,12 +3163,15 @@ public class MainWindow extends JFrame {
 //        this.coolingMessage.setText(" ");
     }
 
-    //  The Begin button on the session tab is enabled only if the session is ready to run.
-    //  We check the following:
-    //      1. No invalid text fields recorded in the validity dictionary;
-    //      2. Server name and port are given
-    //      3. At least one incomplete frame set is in the session table
-
+    /**
+     * The Begin button on the session tab is enabled only if the session is ready to run.
+     * We check the following:
+     * 1. No invalid text fields recorded in the validity dictionary;
+     * 2. Server name and port are given
+     * 3. At least one incomplete frame set is in the session table
+     * Because the Begin button is so crucial to the function of the application, we will
+     * set a tool tip to explain why it is disabled
+     */
     private void enableBeginButton() {
         boolean okToBegin = true;
         String toolTip = "Begin the acquisition session.";
@@ -3159,6 +3195,11 @@ public class MainWindow extends JFrame {
         this.beginSessionButton.setEnabled(okToBegin);
     }
 
+    /**
+     * Count how many framesets are in the session. (Count framesets where the number of frames
+     * completed is less than the total number desired, i.e. don't count completed sets)
+     * @return  (int)       Number of non-complete frame sets in session
+     */
     private int countSessionFrameSets() {
         int result = 0;
         if (this.sessionFrameTableModel != null) {
@@ -3167,14 +3208,22 @@ public class MainWindow extends JFrame {
         return result;
     }
 
+    /**
+     * Report whether everything we need to know about the server is ready for a connection.
+     * All we need to is confirm there is something in the server address field.  The port number
+     * cannot be invalid, nor can the contents of the server address field if it is non-blank.
+     * @return  (boolean)       Indicator if server is ready to connect
+     */
     private boolean serverInfoReady() {
         // The server name can be blank - ensure it isn't.
         return this.dataModel.getNetAddress().trim().length() > 0;
     }
 
-    // Determine if any text input fields are still invalid.  (We've been recording valid/invalid flags
-    // for fields in a dictionary as we process their input.)
-
+    /**
+     * Determine if any text input fields are still invalid.  (We've been recording valid/invalid flags
+     * for fields in a dictionary as we process their input.)
+     * @return (boolean)        Indicator if any invalid text fields remain
+     */
     private boolean anyInvalidTextFields() {
         boolean anyInvalid = false;
         for (HashMap.Entry<JTextField,Boolean> entry : this.textFieldValidity.entrySet()) {
@@ -3187,8 +3236,10 @@ public class MainWindow extends JFrame {
         return anyInvalid;
     }
 
-    //  Set the Start Time Display field to the time that will be used with the current settings
-    //  Sunset, dusk, given time, etc.  If start is "Now", blank the field.
+    /**
+     * Set the Start Time Display field to the time that will be used with the current settings
+     * Sunset, dusk, given time, etc.  If start is "Now", blank the field.
+     */
     private void displayStartTime() {
         if (this.dataModel.getStartDateType() == StartDate.NOW) {
             startTimeDisplay.setText(" ");
@@ -3202,8 +3253,10 @@ public class MainWindow extends JFrame {
         }
     }
 
-    //  Set the End Time Display field to the time that will be used with the current settings
-    //  Sunrise, dawn, given time, etc.  If end is "When Done", blank the field.
+    /**
+     * Set the End Time Display field to the time that will be used with the current settings
+     * Sunrise, dawn, given time, etc.  If end is "When Done", blank the field.
+     */
     private void displayEndTime() {
         if (this.dataModel.getEndDateType() == EndDate.WHEN_DONE) {
             endTimeDisplay.setText(" ");
@@ -3217,16 +3270,23 @@ public class MainWindow extends JFrame {
         }
     }
 
-
+    /**
+     * Can't remember what this override method is for, and suspect it isn't needed.
+     * I've put a debug breakpoint in, in hopes of finding out why it's called.
+     * @param bounds        Dunno what this is
+     */
     @Override
     public void setMaximizedBounds(Rectangle bounds) {
         super.setMaximizedBounds(bounds);
     }
 
-    //  Record the validity of the given text field.
-    //  In a dict indexed by the text field, record the validity state so we can, later, quickly check
-    //  if all the fields are valid.  Also colour the field red if it is not valid.
-
+    /**
+     * Record the validity of the given text field.
+     * In a dict indexed by the text field, record the validity state so we can, later, quickly check
+     * if all the fields are valid.  Also colour the field red if it is not valid.
+     * @param theField      The Swift JTextField being validated
+     * @param isValid       Whether that field contains valid data
+     */
     private void recordTextFieldValidity(JTextField theField, boolean isValid) {
         //  Record validity in map
         if (this.textFieldValidity.containsKey(theField)) {
@@ -3243,16 +3303,21 @@ public class MainWindow extends JFrame {
         theField.setBackground(backgroundColor);
     }
 
-    //  We're loading a new data model, which can only be valid since we don't save invalid ones.
-    //  So, clear any field validity warnings in the table, by setting the validity to True
-    //  and resetting the field colour.
+    /**
+     * We're loading a new data model, which can only be valid since we don't save invalid ones.
+     * So, clear any field validity warnings in the table, by setting the validity to True
+     * and resetting the field colour.
+     */
 
     private void clearFieldValidityWarnings() {
         this.textFieldValidity.forEach((key,value) -> this.recordTextFieldValidity(key,true));
     }
 
-    //  We've been notified from the acquisition thread that it is starting a new frame set, and
-    //  given the row index in the session table.  Highlight that row to show where we are.
+    /**
+     * We've been notified from the acquisition thread that it is starting a new frame set, and
+     * given the row index in the session table.  Highlight that row to show where we are.
+     * @param rowIndex      Zero-based index in the session table of the frameset we're starting
+     */
     public void startRowIndex(int rowIndex) {
         assert (rowIndex >= 0) && (rowIndex < this.sessionFrameTableModel.getRowCount());
         this.sessionFramesetTable.clearSelection();

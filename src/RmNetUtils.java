@@ -1,13 +1,11 @@
-
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import java.io.BufferedReader;
-import java.net.InetAddress;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.*;
-import java.util.Iterator;
 
+/**
+ * Utility methods for handling network addresses and testing connections
+ */
 public class RmNetUtils {
 
     static final int CONNECT_TIMEOUT = 3000;
@@ -17,6 +15,15 @@ public class RmNetUtils {
     //      Each token is from 1 to 63 characters, and the entire name is max 253 characters.
     //      Each token can contain letters, digits, hyphens.  May not start with hyphen.
 
+    /**
+     * Test if a string is a valid host name (syntactically valid, not looked up on network)
+     * Specifications from wikipedia:
+     *      A domain name is a series of tokens separated by dots.
+     *     Each token is from 1 to 63 characters, and the entire name is max 253 characters.
+     *      Each token can contain letters, digits, hyphens.  May not start with hyphen.
+     * @param proposedHostName      The name to be tested
+     * @return (boolean)            Host name is valid
+     */
     public static boolean validateHostName(String proposedHostName) {
         String hostNameTrimmed = proposedHostName.trim();
 //        System.out.println("validateHostName: " + hostNameTrimmed);
@@ -43,17 +50,25 @@ public class RmNetUtils {
         return valid;
     }
 
+    /**
+     * Determine if the given string is a valid IPv4 address
+     *  e.g. 192.168.1.123
+     * @param proposedAddress       String to validate
+     * @return (boolean)            indicator of validity
+     */
     public static boolean validateIpAddress(String proposedAddress) {
-//        System.out.println("validateIpAddress: " + proposedAddress);
         byte[] theAddress = parseIP4Address(proposedAddress);
         return theAddress != null;
     }
 
-    //  Parse a string to an IP4 address.
-    //  Format is 4 dot-separated numbers between 0 and 255
-    //  e.g. 192.168.1.10.
-    //  Returns a 4-byte array if valid, null if not
-
+    /**
+     * Parse a string to an IP4 address.
+     * Format is 4 dot-separated numbers between 0 and 255
+     * e.g. 192.168.1.10.
+     * Returns a 4-byte array if valid, null if not
+     * @param inputString   String to be parsed as IP address
+     * @return (array)      Array of 4 bytes parsed as IP address
+     */
     public static byte[] parseIP4Address(String inputString) {
         byte[] result = null;
 
@@ -82,25 +97,16 @@ public class RmNetUtils {
         return result;
     }
 
-    //  Get the all-subnet broadcast address corresponding to the given IP address.
-    //  This is done by simply replacing the last byte with "255"
-
-    public static byte[] broadCastAddressForIp(byte[] ipAddressBytes) {
-//        System.out.println("broadCastAddressForIp: " + formatBytesToDecimalString(ipAddressBytes, "."));
-        assert(ipAddressBytes.length == 4);
-        byte[] bytesCopy = ipAddressBytes.clone();
-        bytesCopy[3] = (byte) 255;
-        return bytesCopy;
-    }
-
-    //  Send WOL magic packet to given broadcast range with given MAC.  Return success indicator
-
+    /**
+     * Send WOL magic packet to given broadcast range with given MAC.  Return success indicator
+     * @param broadcastAddressBytes     Parsed byte array of sublan broadcast address
+     * @param macAddressBytes           Parsed byte array of target MAC address
+     * @throws IOException              I/O error returned from network
+     */
     public static void sendWakeOnLan(byte[] broadcastAddressBytes, byte[] macAddressBytes) throws IOException {
-        boolean success = true;
-//        System.out.println("SendWakeOnLan(" + formatBytesToDecimalString(broadcastAddressBytes, ".")
-//                + "," + formatBytesToHexString(macAddressBytes, ":") + ") STUB");
         assert(broadcastAddressBytes.length == 4);
         assert(macAddressBytes.length == 6);
+
         //  Make up magic packet
         byte[] magicPacket = new byte[6 + 16 * macAddressBytes.length];
         for (int i = 0; i < 6; i++) {
@@ -113,13 +119,19 @@ public class RmNetUtils {
         InetAddress address = InetAddress.getByAddress(broadcastAddressBytes);
         DatagramPacket packet = new DatagramPacket(magicPacket, magicPacket.length, address, 9);
         DatagramSocket socket = new DatagramSocket();
-//            System.out.println("  Packet: " + packet + ", socket: " + socket);
+
         socket.send(packet);
         socket.close();
     }
 
+    /**
+     * Format a bytes array to printable hexadecimal for testing purposes.
+     * @param bytes         Bytes array to format
+     * @param separator     Character that should separate bytes
+     * @return (String)
+     */
+    @SuppressWarnings("unused")
     public static String formatBytesToHexString(byte[] bytes, String separator) {
-//        System.out.println("formatBytesToHexString");
         StringBuilder builder = new StringBuilder(bytes.length * 3);
         for (int i = 0; i < bytes.length; i++) {
             byte thisByte = bytes[i];
@@ -132,9 +144,15 @@ public class RmNetUtils {
         return builder.toString();
     }
 
-
+    /**
+     * Format a bytes array to a string of decimal numbers with a separator
+     * e.g. an IP address.
+     * @param bytes         Bytes array to be formatted
+     * @param separator     Separator ("." for traditional IP address format)
+     * @return (String)
+     */
+    @SuppressWarnings("unused")
     public static String formatBytesToDecimalString(byte[] bytes, String separator) {
-//        System.out.println("formatBytesToDecimalString");
         StringBuilder builder = new StringBuilder(bytes.length * 3);
         for (int i = 0; i < bytes.length; i++) {
             byte thisByte = bytes[i];
@@ -147,13 +165,17 @@ public class RmNetUtils {
         return builder.toString();
     }
 
-    //  Parse Mac address.  12 byte code tokens separated by ":", "-", or "."
-    //  return 12-byte array, or NULL if not valid
+    /**
+     * Parse Mac address.  12 byte code tokens separated by ":", "-", or "."
+     * return 12-byte array, or NULL if not valid
+     * @param proposedMacAddress    String to be parsed
+     * @return                      Byte array if valid, null if not valid
+     */
 
     public static byte[] parseMacAddress(String proposedMacAddress) {
 //        System.out.println("parseMacAddress(" + proposedMacAddress + ")");
         byte[] result = null;
-        String[] tokens = proposedMacAddress.toUpperCase().split("[:\\.\\-]");
+        String[] tokens = proposedMacAddress.toUpperCase().split("[:.\\-]");
 //        System.out.println("   Tokens parsed: " + tokens.toString());
         if (tokens.length == 6) {
             result = new byte[6];
@@ -178,9 +200,14 @@ public class RmNetUtils {
         return result;
     }
 
+    /**
+     * Attempt to connect to the given server address and port, report if successful
+     * @param ipAddressBytes    Parsed bytes of IPv4 address
+     * @param port              Port number (integer)
+     * @return                  Success indicator
+     */
+    @SuppressWarnings("unused")
     public static boolean testConnectionIP(byte[] ipAddressBytes, int port) {
-//        System.out.println("testConnection(" + formatBytesToDecimalString(ipAddressBytes,".")
-//                + ", " + port + ")");
         boolean success;
         try {
             InetAddress address = InetAddress.getByAddress(ipAddressBytes);
@@ -195,10 +222,14 @@ public class RmNetUtils {
         return success;
     }
 
-    //  Get IP address byte set from a give string.
-    //  The string might be an IP address in numeric dot-notation, or it might
-    //  be a host name to be looked up.
-    //  Return null if neither approach can turn into an IP address
+    /**
+     * Get IP address byte set from a give string.
+     * The string might be an IP address in numeric dot-notation, or it might
+     * be a host name to be looked up.
+     * Return null if neither approach can turn into an IP address
+     * @param theString         String to be parsed
+     * @return                  Bytes of IP address, or null if not valid
+     */
 
     public static byte[] parseIP4FromString(String theString) {
         byte[] resultIpAddress = parseIP4Address(theString);
@@ -208,14 +239,18 @@ public class RmNetUtils {
                 InetAddress addressFromHost =  InetAddress.getByName(theString);
                 resultIpAddress = addressFromHost.getAddress();
             } catch (UnknownHostException e) {
-                resultIpAddress = null;
+                //resultIpAddress = null;
             }
         }
         return resultIpAddress;
     }
 
-    //  Test connection to given server and port.  Server might be a name or an IP address.
-
+    /**
+     * Test connection to given server and port.  Server might be a name or an IP address.
+     * @param addressString     Address to connect to
+     * @param port              Port to connect to
+     * @return                  Pair (success indicator, message)
+     */
     public static ImmutablePair<Boolean, String> testConnection(String addressString, int port) {
         boolean success = false;
         String message = "";

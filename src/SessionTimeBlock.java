@@ -20,21 +20,25 @@ public class SessionTimeBlock {
 
     //  Getters and Setters
     public boolean isStartNow() { return startNow; }
+    @SuppressWarnings("unused")
     public void setStartNow(boolean startNow) { this.startNow = startNow; }
 
     public LocalDateTime getStartDateTime() { return startDateTime; }
+    @SuppressWarnings("unused")
     public void setStartDateTime(LocalDateTime startDateTime) { this.startDateTime = startDateTime; }
 
     public boolean isStopWhenDone() { return endWhenDone; }
+    @SuppressWarnings("unused")
     public void setStopWhenDone(boolean stopWhenDone) { this.endWhenDone = stopWhenDone; }
 
     public LocalDateTime getStopDateTime() { return endDateTime; }
+    @SuppressWarnings("unused")
     public void setStopDateTime(LocalDateTime stopDateTime) { this.endDateTime = stopDateTime; }
 
     /**
      * Null constructor - don't use this, use the static factory that follows
      */
-    private SessionTimeBlock() {};
+    private SessionTimeBlock() {}
 
     /**
      * Static constructor factory for this object
@@ -62,8 +66,8 @@ public class SessionTimeBlock {
      */
     public String toString() {
 
-        String startString = "";
-        String endString = "";
+        String startString;
+        String endString;
 
         if (this.startNow) {
             startString = "now";
