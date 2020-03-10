@@ -77,8 +77,13 @@ public class MainWindow extends JFrame {
         //  Catch main Quit menu so we can check for unsaved data
         if (Desktop.isDesktopSupported()) {
             Desktop desktop = Desktop.getDesktop();
-            desktop.setQuitStrategy(QuitStrategy.CLOSE_ALL_WINDOWS);
-            desktop.setQuitHandler((QuitEvent evt, QuitResponse res) -> quitMenuItemClicked());
+            String osName = System.getProperty("os.name").toLowerCase();
+            // the following doesn't work on windows, even though the above "isDesktopSupported"
+            // said it does.  So only set quit strategy on non-windows.
+            if (!osName.toUpperCase().contains("WINDOWS")) {
+                desktop.setQuitStrategy(QuitStrategy.CLOSE_ALL_WINDOWS);
+                desktop.setQuitHandler((QuitEvent evt, QuitResponse res) -> quitMenuItemClicked());
+            }
         }
 
         initComponents();
@@ -788,7 +793,6 @@ public class MainWindow extends JFrame {
      * Test Connection button responder.  Attempt to connect to the server and report success or failure.
      */
     private void testConnectionButtonActionPerformed() {
-        System.out.println("testConnectionButtonActionPerformed");
         String addressString = this.dataModel.getNetAddress().trim();
         int port = this.dataModel.getPortNumber();
         ImmutablePair<Boolean, String> result = RmNetUtils.testConnection(addressString, port);
@@ -916,12 +920,10 @@ public class MainWindow extends JFrame {
      * frames into the plan.
      */
     private void bulkAddButtonActionPerformed() {
-        System.out.println("bulkAddButtonActionPerformed");
         //  Open the bulk-add dialog and wait for the user to close the window when done
         BulkAddDialog bulkAddDialog = new BulkAddDialog(this);
         bulkAddDialog.setVisible(true);
         if (bulkAddDialog.getSaveClicked()) {
-            System.out.println("Bulk add save clicked");
             //  User clicked "Save" not "Cancel", so we want to do bulk entry
             //  Get the complete list of frame sets represented by the filled-in form
             ArrayList<FrameSet> frameSetsToAdd = bulkAddDialog.generateFramesToAdd();
@@ -1778,7 +1780,7 @@ public class MainWindow extends JFrame {
         coolingMessage = new JLabel();
 
         //======== this ========
-        setMinimumSize(new Dimension(800, 600));
+        setMinimumSize(new Dimension(850, 622));
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -1826,20 +1828,21 @@ public class MainWindow extends JFrame {
 
         //======== mainTabFrame ========
         {
-            mainTabFrame.setPreferredSize(new Dimension(800, 600));
+            mainTabFrame.setPreferredSize(new Dimension(850, 600));
+            mainTabFrame.setMinimumSize(new Dimension(850, 600));
             mainTabFrame.addChangeListener(e -> mainTabFrameStateChanged(e));
 
             //======== startEndTab ========
             {
                 startEndTab.setLayout(new MigLayout(
-                        "hidemode 3,alignx center",
-                        // columns
-                        "[331,grow,fill]para" +
-                                "[330:332,grow,fill]",
-                        // rows
-                        "[]unrel" +
-                                "[]para" +
-                                "[]"));
+                    "hidemode 3,alignx center",
+                    // columns
+                    "[331,grow,fill]para" +
+                    "[330:332,grow,fill]",
+                    // rows
+                    "[]unrel" +
+                    "[]para" +
+                    "[]"));
 
                 //---- label1 ----
                 label1.setText("Session Start and End");
@@ -1850,23 +1853,23 @@ public class MainWindow extends JFrame {
                 {
                     panel6.setBorder(LineBorder.createBlackLineBorder());
                     panel6.setLayout(new MigLayout(
-                            "fill,insets 4 4 4 16,hidemode 3,align left top,gap 4 4",
-                            // columns
-                            "[47,left]" +
-                                    "[115,grow,left]" +
-                                    "[grow,fill]",
-                            // rows
-                            "[]" +
-                                    "[]" +
-                                    "[grow,fill]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[grow,fill]" +
-                                    "[grow,fill]" +
-                                    "[grow,fill]" +
-                                    "[grow,fill]" +
-                                    "[grow,fill]" +
-                                    "[]"));
+                        "fill,insets 4 4 4 16,hidemode 3,align left top,gap 4 4",
+                        // columns
+                        "[47,left]" +
+                        "[115,grow,left]" +
+                        "[grow,fill]",
+                        // rows
+                        "[]" +
+                        "[]" +
+                        "[grow,fill]" +
+                        "[]" +
+                        "[]" +
+                        "[grow,fill]" +
+                        "[grow,fill]" +
+                        "[grow,fill]" +
+                        "[grow,fill]" +
+                        "[grow,fill]" +
+                        "[]"));
 
                     //---- label2 ----
                     label2.setText("Session Start");
@@ -1951,23 +1954,23 @@ public class MainWindow extends JFrame {
                 {
                     panel5.setBorder(LineBorder.createBlackLineBorder());
                     panel5.setLayout(new MigLayout(
-                            "fill,insets 4 16 4 4,hidemode 3,align left top,gap 4 4",
-                            // columns
-                            "[43,left]" +
-                                    "[fill]" +
-                                    "[grow,fill]",
-                            // rows
-                            "[]" +
-                                    "[]" +
-                                    "[grow,fill]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[grow,fill]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]"));
+                        "fill,insets 4 16 4 4,hidemode 3,align left top,gap 4 4",
+                        // columns
+                        "[43,left]" +
+                        "[fill]" +
+                        "[grow,fill]",
+                        // rows
+                        "[]" +
+                        "[]" +
+                        "[grow,fill]" +
+                        "[]" +
+                        "[]" +
+                        "[grow,fill]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]"));
 
                     //---- label8 ----
                     label8.setText("Session End");
@@ -2048,17 +2051,17 @@ public class MainWindow extends JFrame {
                 {
                     panel3.setBorder(LineBorder.createBlackLineBorder());
                     panel3.setLayout(new MigLayout(
-                            "fill,insets 04 4 4 16,hidemode 3,align left top,gap 4 4",
-                            // columns
-                            "[fill]" +
-                                    "[grow,fill]",
-                            // rows
-                            "[grow,fill]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]"));
+                        "fill,insets 04 4 4 16,hidemode 3,align left top,gap 4 4",
+                        // columns
+                        "[fill]" +
+                        "[grow,fill]",
+                        // rows
+                        "[grow,fill]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]"));
 
                     //---- label9 ----
                     label9.setText("Location (for Dusk/Dawn Calculation)");
@@ -2131,18 +2134,18 @@ public class MainWindow extends JFrame {
                 {
                     panel4.setBorder(LineBorder.createBlackLineBorder());
                     panel4.setLayout(new MigLayout(
-                            "fill,insets 04 16 4 4,hidemode 3,align left top,gap 4 4",
-                            // columns
-                            "[fill]" +
-                                    "[grow,fill]" +
-                                    "[fill]",
-                            // rows
-                            "[grow,fill]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]"));
+                        "fill,insets 04 16 4 4,hidemode 3,align left top,gap 4 4",
+                        // columns
+                        "[fill]" +
+                        "[grow,fill]" +
+                        "[fill]",
+                        // rows
+                        "[grow,fill]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]"));
 
                     //---- label14 ----
                     label14.setText("When Done");
@@ -2187,34 +2190,34 @@ public class MainWindow extends JFrame {
             //======== temperatureTab ========
             {
                 temperatureTab.setLayout(new MigLayout(
-                        "hidemode 3,alignx center",
-                        // columns
-                        "[75,fill]" +
-                                "[label]",
-                        // rows
-                        "[]para"));
+                    "hidemode 3,alignx center",
+                    // columns
+                    "[75,fill]" +
+                    "[label]",
+                    // rows
+                    "[]para"));
 
                 //======== panel1 ========
                 {
                     panel1.setBorder(LineBorder.createBlackLineBorder());
                     panel1.setLayout(new MigLayout(
-                            "hidemode 3,alignx center",
-                            // columns
-                            "[56,fill]" +
-                                    "[grow,fill]" +
-                                    "[left]" +
-                                    "[68,grow,fill]" +
-                                    "[614,fill]",
-                            // rows
-                            "[]para" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]" +
-                                    "[]"));
+                        "hidemode 3,alignx center",
+                        // columns
+                        "[56,fill]" +
+                        "[grow,fill]" +
+                        "[left]" +
+                        "[68,grow,fill]" +
+                        "[614,fill]",
+                        // rows
+                        "[]para" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]" +
+                        "[]"));
 
                     //---- label5 ----
                     label5.setText("Camera Temperature Settings");
@@ -2370,24 +2373,24 @@ public class MainWindow extends JFrame {
             //======== serverTab ========
             {
                 serverTab.setLayout(new MigLayout(
-                        "hidemode 3,alignx center",
-                        // columns
-                        "[fill]" +
-                                "[grow,fill]" +
-                                "[fill]" +
-                                "[fill]" +
-                                "[grow,fill]",
-                        // rows
-                        "[]" +
-                                "[33]" +
-                                "[]" +
-                                "[]" +
-                                "[]" +
-                                "[]" +
-                                "[]" +
-                                "[]" +
-                                "[]" +
-                                "[]"));
+                    "hidemode 3,alignx center",
+                    // columns
+                    "[fill]" +
+                    "[grow,fill]" +
+                    "[fill]" +
+                    "[fill]" +
+                    "[grow,fill]",
+                    // rows
+                    "[]" +
+                    "[33]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]"));
 
                 //---- label39 ----
                 label39.setText("Network Settings");
@@ -2574,72 +2577,72 @@ public class MainWindow extends JFrame {
                 GroupLayout framesPlanTabLayout = new GroupLayout(framesPlanTab);
                 framesPlanTab.setLayout(framesPlanTabLayout);
                 framesPlanTabLayout.setHorizontalGroup(
-                        framesPlanTabLayout.createParallelGroup()
+                    framesPlanTabLayout.createParallelGroup()
+                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                            .addGroup(framesPlanTabLayout.createParallelGroup()
+                                .addComponent(scrollPane1, GroupLayout.Alignment.TRAILING)
                                 .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                        .addGroup(framesPlanTabLayout.createParallelGroup()
-                                                .addComponent(scrollPane1, GroupLayout.Alignment.TRAILING)
-                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                        .addGroup(framesPlanTabLayout.createParallelGroup()
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(9, 9, 9)
-                                                                        .addComponent(autosaveCheckbox, GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE))
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(156, 156, 156)
-                                                                        .addComponent(hSpacer1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                                        .addGap(1, 1, 1)
-                                                                        .addComponent(editFramesetButton)
-                                                                        .addGap(96, 96, 96)
-                                                                        .addComponent(hSpacer2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                                                        .addGap(1, 1, 1)
-                                                                        .addComponent(resetCompletedButton)
-                                                                        .addGap(1, 1, 1)
-                                                                        .addComponent(hSpacer3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(237, 237, 237)
-                                                                        .addComponent(bulkAddButton))
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(80, 80, 80)
-                                                                        .addComponent(deleteFramesetButton))
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(10, 10, 10)
-                                                                        .addComponent(addFramesetButton)))
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(moveUpButton)
-                                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                        .addComponent(moveDownButton)
-                                                        .addGap(1, 1, 1))
-                                                .addComponent(label40, GroupLayout.DEFAULT_SIZE, 767, Short.MAX_VALUE))
-                                        .addContainerGap())
+                                    .addGroup(framesPlanTabLayout.createParallelGroup()
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(9, 9, 9)
+                                            .addComponent(autosaveCheckbox, GroupLayout.DEFAULT_SIZE, 664, Short.MAX_VALUE))
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(156, 156, 156)
+                                            .addComponent(hSpacer1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .addGap(1, 1, 1)
+                                            .addComponent(editFramesetButton)
+                                            .addGap(96, 96, 96)
+                                            .addComponent(hSpacer2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                            .addGap(1, 1, 1)
+                                            .addComponent(resetCompletedButton)
+                                            .addGap(1, 1, 1)
+                                            .addComponent(hSpacer3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(237, 237, 237)
+                                            .addComponent(bulkAddButton))
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(80, 80, 80)
+                                            .addComponent(deleteFramesetButton))
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(10, 10, 10)
+                                            .addComponent(addFramesetButton)))
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(moveUpButton)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(moveDownButton)
+                                    .addGap(1, 1, 1))
+                                .addComponent(label40, GroupLayout.DEFAULT_SIZE, 842, Short.MAX_VALUE))
+                            .addContainerGap())
                 );
                 framesPlanTabLayout.setVerticalGroup(
-                        framesPlanTabLayout.createParallelGroup()
+                    framesPlanTabLayout.createParallelGroup()
+                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                            .addGap(27, 27, 27)
+                            .addComponent(label40)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+                            .addGroup(framesPlanTabLayout.createParallelGroup()
                                 .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                        .addGap(27, 27, 27)
-                                        .addComponent(label40)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
-                                        .addGroup(framesPlanTabLayout.createParallelGroup()
-                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                        .addGap(4, 4, 4)
-                                                        .addGroup(framesPlanTabLayout.createParallelGroup()
-                                                                .addComponent(editFramesetButton)
-                                                                .addComponent(resetCompletedButton)
-                                                                .addGroup(framesPlanTabLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                                                        .addComponent(moveDownButton)
-                                                                        .addComponent(moveUpButton))
-                                                                .addComponent(bulkAddButton)
-                                                                .addComponent(deleteFramesetButton)
-                                                                .addComponent(addFramesetButton)
-                                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                                        .addGap(8, 8, 8)
-                                                                        .addGroup(framesPlanTabLayout.createParallelGroup()
-                                                                                .addComponent(hSpacer1, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)
-                                                                                .addComponent(hSpacer2, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)
-                                                                                .addComponent(hSpacer3, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)))))
-                                                .addGroup(framesPlanTabLayout.createSequentialGroup()
-                                                        .addGap(30, 30, 30)
-                                                        .addComponent(autosaveCheckbox)))
-                                        .addGap(12, 12, 12))
+                                    .addGap(4, 4, 4)
+                                    .addGroup(framesPlanTabLayout.createParallelGroup()
+                                        .addComponent(editFramesetButton)
+                                        .addComponent(resetCompletedButton)
+                                        .addGroup(framesPlanTabLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                            .addComponent(moveDownButton)
+                                            .addComponent(moveUpButton))
+                                        .addComponent(bulkAddButton)
+                                        .addComponent(deleteFramesetButton)
+                                        .addComponent(addFramesetButton)
+                                        .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                            .addGap(8, 8, 8)
+                                            .addGroup(framesPlanTabLayout.createParallelGroup()
+                                                .addComponent(hSpacer1, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(hSpacer2, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)
+                                                .addComponent(hSpacer3, GroupLayout.PREFERRED_SIZE, 12, GroupLayout.PREFERRED_SIZE)))))
+                                .addGroup(framesPlanTabLayout.createSequentialGroup()
+                                    .addGap(30, 30, 30)
+                                    .addComponent(autosaveCheckbox)))
+                            .addGap(12, 12, 12))
                 );
             }
             mainTabFrame.addTab("Frames Plan", null, framesPlanTab, "Lists the frames to be acquired, and progress to date.");
@@ -2647,24 +2650,22 @@ public class MainWindow extends JFrame {
             //======== runSessionTab ========
             {
                 runSessionTab.setLayout(new MigLayout(
-                        "hidemode 3",
-                        // columns
-                        "[grow,fill]" +
-                                "[fill]" +
-                                "[115,grow,fill]" +
-                                "[grow,fill]" +
-                                "[fill]" +
-                                "[52,fill]" +
-                                "[grow,fill]" +
-                                "[fill]" +
-                                "[fill]",
-                        // rows
-                        "[]" +
-                                "[27]" +
-                                "[]" +
-                                "[grow]" +
-                                "[]" +
-                                "[]"));
+                    "hidemode 3",
+                    // columns
+                    "[grow,fill]" +
+                    "[fill]" +
+                    "[115,grow,fill]" +
+                    "[grow,fill]" +
+                    "[fill]" +
+                    "[124,fill]" +
+                    "[270!,shrink 0,fill]",
+                    // rows
+                    "[]" +
+                    "[27]" +
+                    "[]" +
+                    "[grow]" +
+                    "[]" +
+                    "[]"));
 
                 //---- label44 ----
                 label44.setText("Acquisition Session");
@@ -2682,7 +2683,7 @@ public class MainWindow extends JFrame {
                 autosavePath.setToolTipText("The path on the server where TheSkyX will be auto-saving acquired images.");
                 autosavePath.setHorizontalAlignment(SwingConstants.LEFT);
                 autosavePath.setPreferredSize(new Dimension(560, 30));
-                runSessionTab.add(autosavePath, "cell 2 1 6 1,width 500:800:800,height 30:30:50");
+                runSessionTab.add(autosavePath, "cell 2 1 5 1,width 500:800:800,height 30:30:50");
 
                 //---- label32 ----
                 label32.setText("Console Log:");
@@ -2731,7 +2732,7 @@ public class MainWindow extends JFrame {
                     sessionFramesetTable.setMaximumSize(new Dimension(32767, 32767));
                     scrollPane3.setViewportView(sessionFramesetTable);
                 }
-                runSessionTab.add(scrollPane3, "cell 6 3 3 1,align left top,grow 0 0");
+                runSessionTab.add(scrollPane3, "cell 6 3,align left top,grow 0 0");
 
                 //---- progressBar ----
                 progressBar.setVisible(false);
@@ -2752,8 +2753,8 @@ public class MainWindow extends JFrame {
                 runSessionTab.add(cancelSessionButton, "cell 3 5,alignx trailing,growx 0");
 
                 //---- coolingMessage ----
-                coolingMessage.setText("During acquisition, camera temperature displayed here.");
-                runSessionTab.add(coolingMessage, "cell 6 5 2 1,alignx right,growx 0");
+                coolingMessage.setText("  ");
+                runSessionTab.add(coolingMessage, "cell 6 5,alignx right,growx 0");
             }
             mainTabFrame.addTab("Run Session", null, runSessionTab, "Console to start and monitor the acquisition process");
         }
@@ -2792,86 +2793,86 @@ public class MainWindow extends JFrame {
         //---- bindings ----
         bindingGroup = new BindingGroup();
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateNowButton, ELProperty.create("${not selected}"),
-                startSunsetButton, BeanProperty.create("enabled")));
+            startDateNowButton, ELProperty.create("${not selected}"),
+            startSunsetButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateNowButton, ELProperty.create("${not selected}"),
-                startCivilButton, BeanProperty.create("enabled")));
+            startDateNowButton, ELProperty.create("${not selected}"),
+            startCivilButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateNowButton, ELProperty.create("${not selected}"),
-                startNauticalButton, BeanProperty.create("enabled")));
+            startDateNowButton, ELProperty.create("${not selected}"),
+            startNauticalButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateNowButton, ELProperty.create("${not selected}"),
-                startAstronomicalButton, BeanProperty.create("enabled")));
+            startDateNowButton, ELProperty.create("${not selected}"),
+            startAstronomicalButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateNowButton, ELProperty.create("${not selected}"),
-                startGivenTimeButton, BeanProperty.create("enabled")));
+            startDateNowButton, ELProperty.create("${not selected}"),
+            startGivenTimeButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startDateGivenButton, BeanProperty.create("selected"),
-                startDatePicker, BeanProperty.create("enabled")));
+            startDateGivenButton, BeanProperty.create("selected"),
+            startDatePicker, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateDoneButton, ELProperty.create("${not selected}"),
-                endSunriseButton, BeanProperty.create("enabled")));
+            endDateDoneButton, ELProperty.create("${not selected}"),
+            endSunriseButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateDoneButton, ELProperty.create("${not selected}"),
-                endCivilButton, BeanProperty.create("enabled")));
+            endDateDoneButton, ELProperty.create("${not selected}"),
+            endCivilButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateDoneButton, ELProperty.create("${not selected}"),
-                endNauticalButton, BeanProperty.create("enabled")));
+            endDateDoneButton, ELProperty.create("${not selected}"),
+            endNauticalButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateDoneButton, ELProperty.create("${not selected}"),
-                endAstronomicalButton, BeanProperty.create("enabled")));
+            endDateDoneButton, ELProperty.create("${not selected}"),
+            endAstronomicalButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateDoneButton, ELProperty.create("${not selected}"),
-                endGivenTimeButton, BeanProperty.create("enabled")));
+            endDateDoneButton, ELProperty.create("${not selected}"),
+            endGivenTimeButton, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endDateGivenButton, BeanProperty.create("selected"),
-                endDatePicker, BeanProperty.create("enabled")));
+            endDateGivenButton, BeanProperty.create("selected"),
+            endDatePicker, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                endGivenTimeButton, BeanProperty.create("selected"),
-                endTimePicker, BeanProperty.create("enabled")));
+            endGivenTimeButton, BeanProperty.create("selected"),
+            endTimePicker, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                targetTemperature, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            targetTemperature, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                temperatureWithin, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            temperatureWithin, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                coolingCheckInterval, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            coolingCheckInterval, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                coolingTimeout, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            coolingTimeout, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                coolingRetryCount, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            coolingRetryCount, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                coolingRetryDelay, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            coolingRetryDelay, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
-                abortOnTempRiseCheckbox, BeanProperty.create("enabled")));
+            temperatureRegulatedCheckbox, ELProperty.create("${selected}"),
+            abortOnTempRiseCheckbox, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                sendWOLcheckbox, ELProperty.create("${selected}"),
-                wolSecondsBefore, BeanProperty.create("enabled")));
+            sendWOLcheckbox, ELProperty.create("${selected}"),
+            wolSecondsBefore, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                sendWOLcheckbox, ELProperty.create("${selected}"),
-                wolMacAddress, BeanProperty.create("enabled")));
+            sendWOLcheckbox, ELProperty.create("${selected}"),
+            wolMacAddress, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                sendWOLcheckbox, BeanProperty.create("selected"),
-                wolBroadcastAddress, BeanProperty.create("enabled")));
+            sendWOLcheckbox, BeanProperty.create("selected"),
+            wolBroadcastAddress, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                warmUpCheckbox, BeanProperty.create("selected"),
-                warmUpSeconds, BeanProperty.create("enabled")));
+            warmUpCheckbox, BeanProperty.create("selected"),
+            warmUpSeconds, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                startGivenTimeButton, BeanProperty.create("selected"),
-                startTimePicker, BeanProperty.create("enabled")));
+            startGivenTimeButton, BeanProperty.create("selected"),
+            startTimePicker, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                this, ELProperty.create("${dataModel.temperatureRegulated and dataModel.temperatureAbortOnRise}"),
-                abortOnTempRiseThreshold, BeanProperty.create("enabled")));
+            this, ELProperty.create("${dataModel.temperatureRegulated and dataModel.temperatureAbortOnRise}"),
+            abortOnTempRiseThreshold, BeanProperty.create("enabled")));
         bindingGroup.addBinding(Bindings.createAutoBinding(UpdateStrategy.READ_WRITE,
-                this, ELProperty.create("${dataModel.netAddress != \"\"}"),
-                testConnectionButton, BeanProperty.create("enabled")));
+            this, ELProperty.create("${dataModel.netAddress != \"\"}"),
+            testConnectionButton, BeanProperty.create("enabled")));
         bindingGroup.bind();
         // JFormDesigner - End of component initialization  //GEN-END:initComponents
     }
