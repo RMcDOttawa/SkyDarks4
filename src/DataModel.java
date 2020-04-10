@@ -35,8 +35,8 @@ public class DataModel  implements Serializable {
     //  Location of the site (for calculating sun times)
     private String locationName = "EWHO";
     private String timeZone = "EST";
-    private Double latitude = 45.309645;
-    private Double longitude = -75.886471;
+    private Double latitude = 45.;
+    private Double longitude = -75.;
     public static final double LATITUDE_NULL = -99999.0;
     public static final double LONGITUDE_NULL = -99999.0;
 
