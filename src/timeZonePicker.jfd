@@ -1,0 +1,88 @@
+JFDML JFormDesigner: "7.0.1.0.272" Java: "11.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+			name: "this"
+			"minimumSize": new java.awt.Dimension( 285, 420 )
+			"defaultCloseOperation": 0
+			"modal": true
+			"title": "Select Time Zone"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "dialogPane"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets dialog,hidemode 3,gap 0 6"
+					"$columnConstraints": "[62,fill][fill][157,grow,fill][139,right]"
+					"$rowConstraints": "[top][257:316,grow,top][bottom]"
+				} ) {
+					name: "contentPanel"
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "label1"
+						"text": "Search:"
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "searchField"
+						"toolTipText": "Type to filter displayed time zones"
+						addEvent( new FormEvent( "java.awt.event.KeyListener", "keyReleased", "searchFieldKeyReleased", true ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0 3 1"
+					} )
+					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+						name: "timeZoneScrollPane"
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+							name: "panel1"
+							add( new FormComponent( "javax.swing.JList" ) {
+								name: "timeZoneList"
+								"selectionMode": 0
+								"toolTipText": "Click to select time zone to use."
+								"visibleRowCount": 14
+								"prototypeCellValue": "Canada/Toronto"
+								"maximumSize": new java.awt.Dimension( 101, 32767 )
+								addEvent( new FormEvent( "javax.swing.event.ListSelectionListener", "valueChanged", "timeZoneListValueChanged", false ) )
+								addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "timeZoneListMouseClicked", true ) )
+							}, new FormLayoutConstraints( class java.lang.String ) {
+								"value": "Center"
+							} )
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1 4 1"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "okButton"
+						"text": "Ok"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "okButtonClicked", false ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "tag ok,cell 0 2"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "cancelButton"
+						"text": "Cancel"
+						addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "cancelButtonClicked", false ) )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "tag cancel,cell 3 2"
+					} )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			}, new FormLayoutConstraints( class java.lang.String ) {
+				"value": "Center"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 5, 0 )
+			"size": new java.awt.Dimension( 360, 425 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "frameTypeGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 441 )
+		} )
+		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
+			name: "binningGroup"
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 501 )
+		} )
+	}
+}

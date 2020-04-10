@@ -431,6 +431,7 @@ public class MainWindow extends JFrame {
         String[] validZones = TimeZone.getAvailableIDs();
         boolean valid = false;
         for (String zone : validZones) {
+            System.out.println(zone);
             if (proposedZone.equalsIgnoreCase(zone)) {
                 valid = true;
                 break;
@@ -1645,6 +1646,23 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * The "Pick" button beside the time zone has been clicked.
+     * We'll open a dialog window that allows the user to pick from among the time zone
+     * strings supported.  Set the new time zone if they exit with "Ok".
+     * @param e
+     */
+	private void pickTimeZoneButtonActionPerformed(ActionEvent e) {
+        TimeZonePicker timeZonePicker = new TimeZonePicker(this);
+        timeZonePicker.setVisible(true);
+        if (timeZonePicker.getSaveClicked()) {
+            this.dataModel.setTimeZone(timeZonePicker.getSelectedZone());
+            this.timeZoneName.setText(timeZonePicker.getSelectedZone());
+            this.displayStartTime();
+            this.displayEndTime();
+        }
+	}
+
     @SuppressWarnings({"Convert2MethodRef", "SpellCheckingInspection"})
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
@@ -1694,6 +1712,7 @@ public class MainWindow extends JFrame {
         locationName = new JTextField();
         label13 = new JLabel();
         timeZoneName = new JTextField();
+        pickTimeZoneButton = new JButton();
         label12 = new JLabel();
         latitude = new JTextField();
         label10 = new JLabel();
@@ -2054,7 +2073,8 @@ public class MainWindow extends JFrame {
                         "fill,insets 04 4 4 16,hidemode 3,align left top,gap 4 4",
                         // columns
                         "[fill]" +
-                        "[grow,fill]",
+                        "[grow,fill]" +
+                        "[fill]",
                         // rows
                         "[grow,fill]" +
                         "[]" +
@@ -2066,7 +2086,7 @@ public class MainWindow extends JFrame {
                     //---- label9 ----
                     label9.setText("Location (for Dusk/Dawn Calculation)");
                     label9.setFont(new Font("Lucida Grande", Font.PLAIN, 18));
-                    panel3.add(label9, "cell 0 0 2 1");
+                    panel3.add(label9, "cell 0 0 3 1");
 
                     //---- label11 ----
                     label11.setText("Name: ");
@@ -2081,14 +2101,15 @@ public class MainWindow extends JFrame {
                             locationNameFocusLost();
                         }
                     });
-                    panel3.add(locationName, "cell 1 2");
+                    panel3.add(locationName, "cell 1 2 2 1");
 
                     //---- label13 ----
                     label13.setText("Time Zone: ");
                     panel3.add(label13, "cell 0 3");
 
                     //---- timeZoneName ----
-                    timeZoneName.setToolTipText("Time zone identifier. Standard abbreviation, or Continent/City, or offset from GMT as Etc/GMT-5. Search \"java TimeZone class\" to see all the valid values.");
+                    timeZoneName.setToolTipText("Time zone identifier. Click \"Pick\" button to select from the available zone settings.");
+                    timeZoneName.setEditable(false);
                     timeZoneName.addActionListener(e -> timeZoneNameActionPerformed());
                     timeZoneName.addFocusListener(new FocusAdapter() {
                         @Override
@@ -2097,6 +2118,11 @@ public class MainWindow extends JFrame {
                         }
                     });
                     panel3.add(timeZoneName, "cell 1 3");
+
+                    //---- pickTimeZoneButton ----
+                    pickTimeZoneButton.setText("Pick");
+                    pickTimeZoneButton.addActionListener(e -> pickTimeZoneButtonActionPerformed(e));
+                    panel3.add(pickTimeZoneButton, "cell 2 3");
 
                     //---- label12 ----
                     label12.setText("Latitude: ");
@@ -2111,7 +2137,7 @@ public class MainWindow extends JFrame {
                             latitudeFocusLost();
                         }
                     });
-                    panel3.add(latitude, "cell 1 4");
+                    panel3.add(latitude, "cell 1 4 2 1");
 
                     //---- label10 ----
                     label10.setText("Longitude: ");
@@ -2126,7 +2152,7 @@ public class MainWindow extends JFrame {
                             longitudeFocusLost();
                         }
                     });
-                    panel3.add(longitude, "cell 1 5");
+                    panel3.add(longitude, "cell 1 5 2 1");
                 }
                 startEndTab.add(panel3, "cell 0 2,aligny top,growy 0");
 
@@ -2620,7 +2646,7 @@ public class MainWindow extends JFrame {
                             .addGap(27, 27, 27)
                             .addComponent(label40)
                             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+                            .addComponent(scrollPane1, GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                             .addGroup(framesPlanTabLayout.createParallelGroup()
                                 .addGroup(framesPlanTabLayout.createSequentialGroup()
                                     .addGap(4, 4, 4)
@@ -2924,6 +2950,7 @@ public class MainWindow extends JFrame {
     private JTextField locationName;
     private JLabel label13;
     private JTextField timeZoneName;
+    private JButton pickTimeZoneButton;
     private JLabel label12;
     private JTextField latitude;
     private JLabel label10;
