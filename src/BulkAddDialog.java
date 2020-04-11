@@ -603,7 +603,6 @@ public class BulkAddDialog extends JDialog {
     private JLabel label6;
     private JButton saveButton;
     private JButton cancelButton;
-
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
     /**
